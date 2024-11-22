@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AUTOMEDIC
+AutoMedic is a Point of Sale (POS) system designed specifically for automotive repair shops. The system aims to streamline operations by providing features such as service management, employee management, and user authentication. Although the project is not yet complete, it currently supports core functionalities with many more features planned for the future.
 
-## Getting Started
+## INSTALLATION
+## PREREQUISITES
+- Node.js
+- PostgreSQL
 
-First, run the development server:
+## Setup
+### Clone the repository:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```sh
+git clone https://github.com/iqtier/automedic.git
+cd automedic
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Install dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+npm install
+```
+Setup environment variables: Create a .env file in the root directory and add the following:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+DATABASE_URL=your_database_url
+NEXT_PUBLIC_API_URL=your_api_url
+```
+Run database migrations:
 
-## Learn More
+```sh
+npx prisma migrate dev --name init
+```
+Start the development server:
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Usage
+Open your browser and navigate to http://localhost:3000 to see the application in action. You can add, edit, and delete services, manage employees, and handle authentication through the interface.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Features
+- User Authentication: Secure user authentication and role-based access.
 
-## Deploy on Vercel
+- Employee Management: Manage employees' information and roles.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Service Management: Add, edit, and delete automotive services.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Planned Features
+- Inventory Management: Track and manage inventory of parts and materials.
+
+- Customer Management: Store and manage customer information and service history.
+
+- Billing and Invoicing: Generate invoices and process payments.
+
+- Reporting and Analytics: Generate reports and analyze business data.
+
+- Appointment Scheduling: Schedule and manage repair appointments.
+
+- Notifications: Send notifications for upcoming appointments and service reminders.
+
+## Technologies
+- Next.js: React framework for server-side rendering and generating static websites.
+
+- TypeScript: Typed superset of JavaScript that compiles to plain JavaScript.
+
+- React: JavaScript library for building user interfaces.
+
+- Prisma: Next-generation ORM for Node.jsand TypeScript.
+
+- PostgreSQL: Open-source relational database.
+
+## License
+This project is licensed under the MIT License. See the LICENSE file for details.
