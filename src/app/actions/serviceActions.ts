@@ -9,11 +9,11 @@ export async function createService(
   data: z.infer<typeof ServiceSchema>
 ): Promise<ActionResult<Service>> {
   try {
-    console.log(data);
+  
     const service = await prisma.service.create({
       data: {
         name: data.name,
-        price: parseFloat(data.price),
+        price: data.price,
         fields: {
           create: data.fields.map((field) => ({
             name: field.name,
@@ -38,7 +38,7 @@ export async function updateService(
       where: { id: Number(serviceId) },
       data: {
         name: data.name,
-        price: parseFloat(data.price),
+        price: data.price,
         fields: {
           deleteMany: {},
           create: data.fields.map((field) => ({

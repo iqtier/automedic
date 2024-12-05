@@ -19,7 +19,7 @@ const HomeLayout = async ({ children }: { children: React.ReactNode }) => {
       <AppSidebar />
       <SidebarInset>
         <NavBar />
-        <div className="mt-16 m-5">{children}</div>
+        <div className="m-5">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

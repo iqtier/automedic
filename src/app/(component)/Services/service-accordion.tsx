@@ -14,13 +14,8 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { deleteService } from "@/app/actions/serviceActions";
 import ServiceForm from "@/app/(component)/Services/service-form";
-type ServiceField = { name: string; value: string };
-type Service = {
-  id: number;
-  name: string;
-  price: number;
-  fields: ServiceField[];
-};
+import { Service } from "@/types/type";
+
 type ServicesAccordionProps = { services: Service[]; isAdmin: boolean };
 
 const ServicesAccordion: React.FC<ServicesAccordionProps> = ({

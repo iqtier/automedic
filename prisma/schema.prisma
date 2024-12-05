@@ -22,19 +22,59 @@ model User {
   created_at DateTime @default(now())
 }
 
-model Service {
-  id     Int             @id @default(autoincrement())
-  name   String
-  price  Float
-  fields ServiceFields[]
-  createdAt DateTime @default(now()) 
-  
-}
+
 
 model ServiceFields {
   id        Int     @id @default(autoincrement())
   serviceId Int
   name      String
   value     String
-  service   Service @relation(fields: [serviceId], references: [id],onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model Customer {
+  id    String @id @default(cuid())
+  name  String
+  email String @unique
+  phone String @unique
+  cars  Car[]
+  Appointment Appointment[]
+}
+
+model Car {
+  id         Int      @id @default(autoincrement())
+  make       String
+  model      String
+  year       String
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model Appointment {
+  id         Int      @id @default(autoincrement())
+  date       DateTime
+  time       String
+  customer   Customer @relation(fields: [customerid], references: [id])
+  customerid String
+
+  ServiceAppointment ServiceIdQty[]
+}
+
+model ServiceIdQty {
+  id            String      @id @default(uuid())
+  appointmentId Int
+ 
+  qty           String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  serviceId Int 
+  service Service @relation(fields: [serviceId], references: [id])
+}
+model Service {
+  id        Int             @id @default(autoincrement())
+  name      String
+  price     Float
+  fields    ServiceFields[]
+  createdAt DateTime        @default(now())
+
+  ServiceIdQty ServiceIdQty[]
 }

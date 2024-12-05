@@ -11,73 +11,45 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { SquarePlus, Trash2 } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { Service, ServiceSchema } from "@/types/type";
-import { createService, updateService } from "@/app/actions/serviceActions";
+import { CustomerSchema, CustomerType } from "@/types/type";
+import { createCustomer } from "@/app/actions/customerActions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
-
-type AddServiceFormProps = { isEdit: boolean; serviceToEdit: Service | null };
-
-const ServiceForm: React.FC<AddServiceFormProps> = ({
-  isEdit,
-  serviceToEdit,
-}) => {
-
-
+const CustomerForm = () => {
   const router = useRouter();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-
-  const addForm = useForm<z.infer<typeof ServiceSchema>>({
-    resolver: zodResolver(ServiceSchema),
-    defaultValues: { name: "", price: "" },
+  const form = useForm<CustomerType>({
+    resolver: zodResolver(CustomerSchema),
   });
-
-  
-  const editForm = useForm<z.infer<typeof ServiceSchema>>({
-    resolver:zodResolver(ServiceSchema),
-    defaultValues:{
-      ...serviceToEdit,
-      price:serviceToEdit?.price.toString()
-    }
-  })
-
-  const form = isEdit? editForm: addForm;
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "fields",
+    name: "cars",
   });
 
-  async function onSubmit(data: z.infer<typeof ServiceSchema>) {
-    let result;
-    if (isEdit) {
-
-      if (serviceToEdit?.id !== undefined) {
-        result = await updateService(serviceToEdit?.id , data);
-      }
-    } else {
-      result = await createService(data);
-    }
+  async function onSubmit(data: CustomerType) {
+    const result = await createCustomer(data);
+    
     if (result?.status === "success") {
-      toast.success(`Service successfully ${isEdit ? "updated" : "added"}`);
+      toast.success(`Customer successfully added}`);
       router.refresh();
-      setIsSheetOpen(false);
+      setIsDialogOpen(false);
       form.reset();
     } else {
       form.setError("root.serverError", { message: result?.error as string });
@@ -86,21 +58,19 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
   }
 
   return (
-    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-      <SheetTrigger asChild>
-        <Button className="" onClick={() => setIsSheetOpen(true)}>
-          {isEdit ? "Edit" : "Add Service"}
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogTrigger asChild>
+        <Button className="" onClick={() => setIsDialogOpen(true)}>
+          Add Customer
         </Button>
-      </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>{isEdit ? "Edit Service" : "Add Service"}</SheetTitle>
-          <SheetDescription>
-            {isEdit
-              ? "Edit your service details here."
-              : "Add your service here. Click save when you're done."}
-          </SheetDescription>
-        </SheetHeader>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Customer</DialogTitle>
+          <DialogDescription>
+            Add your Customer here. Click save when you're done
+          </DialogDescription>
+        </DialogHeader>
 
         <Form {...form}>
           <form
@@ -112,9 +82,9 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Service Name</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Service name" {...field} />
+                    <Input placeholder="Name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,18 +92,30 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
             />
             <FormField
               control={form.control}
-              name="price"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Unit Price</FormLabel>
+                  <FormLabel>Eamil</FormLabel>
                   <FormControl>
-                    <Input placeholder="Price" {...field} />
+                    <Input placeholder="Eamil" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Phone Number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {fields.map((field, index) => (
               <div
                 key={field.id}
@@ -141,12 +123,12 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
               >
                 <FormField
                   control={form.control}
-                  name={`fields.${index}.name`}
+                  name={`cars.${index}.make`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Field Name</FormLabel>
+                      <FormLabel>Make</FormLabel>
                       <FormControl>
-                        <Input placeholder="Field Name" {...field} />
+                        <Input placeholder="Make" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -154,12 +136,25 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
                 />
                 <FormField
                   control={form.control}
-                  name={`fields.${index}.value`}
+                  name={`cars.${index}.model`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Value</FormLabel>
+                      <FormLabel>Model</FormLabel>
                       <FormControl>
-                        <Input placeholder="Value" {...field} />
+                        <Input placeholder="Model" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`cars.${index}.year`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Year</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Year" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -178,22 +173,21 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
 
             <Button
               type="button"
-              onClick={() => append({ name: "", value: "" })}
+              onClick={() => append({ make: "", model: "", year:""})}
             >
-              Add Field
+              Add Car
             </Button>
 
-            <SheetFooter>
+            <DialogFooter>
               <Button className="w-full font-bold" type="submit">
-                {isEdit ? "Update Service" : "ADD SERVICE"}
+                ADD Customer
               </Button>
-            </SheetFooter>
+            </DialogFooter>
           </form>
         </Form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default ServiceForm;
-
+export default CustomerForm;
