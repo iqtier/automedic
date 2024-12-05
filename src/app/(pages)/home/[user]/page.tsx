@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-'use client'
+"use client"
 import React from 'react'
 import { useParams } from 'next/navigation'
-import NavBar from "@/app/(component)/Navbar/NavBar";
-const  page = async () => {
+
+const  Page = () => {
   const params = useParams<{ user: string }>()
   return (
     <div>
@@ -14,4 +14,4 @@ const  page = async () => {
   )
 }
 
-export default page
+export default Page

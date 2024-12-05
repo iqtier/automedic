@@ -2,7 +2,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -22,7 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { SquarePlus, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { CustomerSchema, CustomerType } from "@/types/type";
@@ -68,7 +67,7 @@ const CustomerForm = () => {
         <DialogHeader>
           <DialogTitle>Add Customer</DialogTitle>
           <DialogDescription>
-            Add your Customer here. Click save when you're done
+            Add your Customer here. Click save when you are done
           </DialogDescription>
         </DialogHeader>
 

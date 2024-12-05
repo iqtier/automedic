@@ -2,7 +2,6 @@
 
 import { prisma } from "@/lib/prisma";
 import { ActionResult, CustomerType } from "@/types/type";
-import { z } from "zod";
 import {  Customer } from "@prisma/client";
 
 export async function createCustomer(

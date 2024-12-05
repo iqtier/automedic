@@ -8,11 +8,9 @@ import {
   User,
   ShoppingBasket,
   Wrench,
-  BadgeDollarSign,
   Swords,
   DollarSign,
 } from "lucide-react";
-import { usePathname } from 'next/navigation'
 import { TeamSwitcher } from "./team-switcher";
 import {
   Sidebar,
@@ -21,8 +19,6 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import SideBarItem from "./SideBarItem";

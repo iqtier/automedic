@@ -1,7 +1,5 @@
 import {
-    Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -11,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
   import React from 'react'
+import { UseFormReturn } from "react-hook-form";
   
 
 interface InputProps {
-  form:any,
+  form:UseFormReturn<any>
   name:string,label:string, 
   placeholder:string, 
   ispassword:boolean
