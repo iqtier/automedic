@@ -45,7 +45,7 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
 
   const addForm = useForm<z.infer<typeof ServiceSchema>>({
     resolver: zodResolver(ServiceSchema),
-    defaultValues: { name: "", price: 0 },
+   
   });
 
   
@@ -53,7 +53,7 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
     resolver:zodResolver(ServiceSchema),
     defaultValues:{
       ...serviceToEdit,
-      price:serviceToEdit?.price
+      price:serviceToEdit?.price.toString()
     }
   })
 

@@ -29,7 +29,7 @@ export const UserSchema = z.object({
 export const ServiceSchema = z.object({
   id:z.number(),
   name: z.string().min(1, "Please Provide a service name."),
-  price: z.number().min(1, "Please provide a unit price"),
+  price: z.string().min(1, "Please provide a unit price"),
   fields: z.array(
     z.object({
       name: z.string().min(1, "Provide a field name"),
