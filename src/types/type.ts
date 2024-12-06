@@ -27,7 +27,7 @@ export const UserSchema = z.object({
 });
 
 export const ServiceSchema = z.object({
-  id:z.number(),
+
   name: z.string().min(1, "Please Provide a service name."),
   price: z.string().min(1, "Please provide a unit price"),
   fields: z.array(

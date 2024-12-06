@@ -11,7 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -22,7 +22,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { SquarePlus, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Service, ServiceSchema } from "@/types/type";
@@ -30,34 +30,29 @@ import { createService, updateService } from "@/app/actions/serviceActions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
-
 type AddServiceFormProps = { isEdit: boolean; serviceToEdit: Service | null };
 
 const ServiceForm: React.FC<AddServiceFormProps> = ({
   isEdit,
   serviceToEdit,
 }) => {
-
-
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-
   const addForm = useForm<z.infer<typeof ServiceSchema>>({
     resolver: zodResolver(ServiceSchema),
-   
+    defaultValues: { name: "", price: "" },
   });
 
-  
   const editForm = useForm<z.infer<typeof ServiceSchema>>({
-    resolver:zodResolver(ServiceSchema),
-    defaultValues:{
+    resolver: zodResolver(ServiceSchema),
+    defaultValues: {
       ...serviceToEdit,
-      price:serviceToEdit?.price.toString()
-    }
-  })
+      price: serviceToEdit?.price.toString(),
+    },
+  });
 
-  const form = isEdit? editForm: addForm;
+  const form = isEdit ? editForm : addForm;
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -67,9 +62,8 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
   async function onSubmit(data: z.infer<typeof ServiceSchema>) {
     let result;
     if (isEdit) {
-
       if (serviceToEdit?.id !== undefined) {
-        result = await updateService(serviceToEdit?.id , data);
+        result = await updateService(serviceToEdit?.id, data);
       }
     } else {
       result = await createService(data);
@@ -182,12 +176,10 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
             >
               Add Field
             </Button>
-
-            <SheetFooter>
-              <Button className="w-full font-bold" type="submit">
-                {isEdit ? "Update Service" : "ADD SERVICE"}
-              </Button>
-            </SheetFooter>
+            <Button className="w-full font-bold" type="submit">
+              {isEdit ? "Update " : "ADD "}
+            </Button>
+            <SheetFooter></SheetFooter>
           </form>
         </Form>
       </SheetContent>
@@ -196,4 +188,3 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
 };
 
 export default ServiceForm;
-
