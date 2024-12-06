@@ -9,8 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -22,8 +23,6 @@ model User {
   created_at DateTime @default(now())
 }
 
-
-
 model ServiceFields {
   id        Int     @id @default(autoincrement())
   serviceId Int
@@ -33,11 +32,11 @@ model ServiceFields {
 }
 
 model Customer {
-  id    String @id @default(cuid())
-  name  String
-  email String @unique
-  phone String @unique
-  cars  Car[]
+  id          String        @id @default(cuid())
+  name        String
+  email       String        @unique
+  phone       String        @unique
+  cars        Car[]
   Appointment Appointment[]
 }
 
@@ -61,14 +60,15 @@ model Appointment {
 }
 
 model ServiceIdQty {
-  id            String      @id @default(uuid())
+  id            String @id @default(uuid())
   appointmentId Int
- 
-  qty           String
-  appointment   Appointment @relation(fields: [appointmentId], references: [id])
-  serviceId Int 
-  service Service @relation(fields: [serviceId], references: [id])
+
+  qty         String
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  serviceId   Int
+  service     Service     @relation(fields: [serviceId], references: [id])
 }
+
 model Service {
   id        Int             @id @default(autoincrement())
   name      String
