@@ -21,32 +21,57 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Trash2 } from "lucide-react";
+import { Trash2, UserPlus } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { CustomerSchema, CustomerType } from "@/types/type";
-import { createCustomer } from "@/app/actions/customerActions";
+import { createCustomer, updateCustomer } from "@/app/actions/customerActions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
-const CustomerForm = () => {
+type Customer = CustomerType & { id: string };
+type CustomerFormProps = { isEdit: boolean; customerToEdit: Customer | null,fromBooking: boolean};
+const CustomerForm: React.FC<CustomerFormProps> = ({
+  isEdit,
+  customerToEdit,
+  fromBooking
+}) => {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const form = useForm<CustomerType>({
+  const addForm = useForm<CustomerType>({
     resolver: zodResolver(CustomerSchema),
+    defaultValues:{
+      name:"",
+      email: "",
+      phone:""
+    }
   });
 
+  const editForm = useForm<CustomerType>({
+    resolver: zodResolver(CustomerSchema),
+    defaultValues: {
+      ...customerToEdit,
+    },
+  });
+  const form = isEdit ? editForm : addForm;
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "cars",
   });
 
   async function onSubmit(data: CustomerType) {
-    const result = await createCustomer(data);
-    
+    let result;
+    if (isEdit) {
+      if (customerToEdit?.id !== undefined) {
+        result = await updateCustomer(customerToEdit?.id, data);
+      }
+    } else {
+      result = await createCustomer(data);
+    }
+
     if (result?.status === "success") {
-      toast.success(`Customer successfully added}`);
+      toast.success(`Customer successfully ${isEdit ? "updated" : "added"}}`);
       router.refresh();
       setIsDialogOpen(false);
       form.reset();
@@ -60,14 +85,16 @@ const CustomerForm = () => {
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Button className="" onClick={() => setIsDialogOpen(true)}>
-          Add Customer
+          {isEdit ?  "Edit" : fromBooking? <UserPlus />:"Add"}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Customer</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Customer" : "Add Customer"}</DialogTitle>
           <DialogDescription>
-            Add your Customer here. Click save when you are done
+            {isEdit
+              ? "Edit your customer details here."
+              : "Add your customer here. Click save when you're done."}
           </DialogDescription>
         </DialogHeader>
 
@@ -172,14 +199,14 @@ const CustomerForm = () => {
 
             <Button
               type="button"
-              onClick={() => append({ make: "", model: "", year:""})}
+              onClick={() => append({ make: "", model: "", year: "" })}
             >
               Add Car
             </Button>
 
             <DialogFooter>
               <Button className="w-full font-bold" type="submit">
-                ADD Customer
+                {isEdit ? "Update " : "ADD "}
               </Button>
             </DialogFooter>
           </form>

@@ -31,10 +31,11 @@ const items = [
     icon: Activity,
   },
   {
-    title: "Appoinment",
-    url: "/home/appoinment",
+    title: "Bookings",
+    url: "/home/bookings",
     icon: CalendarCheck,
   },
+ 
   {
     title: "Employees",
     url: "/home/employees",

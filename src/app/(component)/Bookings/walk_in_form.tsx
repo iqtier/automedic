@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import "react-day-picker/style.css";
 import {
   Dialog,
- 
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -61,33 +60,47 @@ const timeSlots = [
   { label: "04:30 PM", value: "16:30" },
   { label: "05:00 PM", value: "17:00" },
 ] as const;
-type AppointmentFormType = z.infer<typeof AppointmentSchema>;
+type WalkInServiceFormType = z.infer<typeof AppointmentSchema>;
 type Customers = CustomerType & { id: string };
-type AppointmentFormProps = { services: Service[]; customers: Customers[] };
+type WalkInServiceFormProps = { services: Service[]; customers: Customers[] };
 
-const AppointmentForm: React.FC<AppointmentFormProps> = ({ services,customers }) => {
+const WalkInServiceForm: React.FC<WalkInServiceFormProps> = ({
+  services,
+  customers,
+}) => {
   const [month, setMonth] = useState(new Date());
 
-  const form = useForm<AppointmentFormType>({
+  const form = useForm<WalkInServiceFormType>({
     resolver: zodResolver(AppointmentSchema),
+    defaultValues: {
+      date: new Date(),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      customer_id:""
+    },
   });
 
-  const { fields, append, remove } = useFieldArray<AppointmentFormType>({
+  const { fields, append, remove } = useFieldArray<WalkInServiceFormType>({
     control: form.control,
     name: "services_id_qty",
   });
-  async function onSubmit(data: AppointmentFormType) {
-    await createAppointmet(data)
+  async function onSubmit(data: WalkInServiceFormType) {
+    await createAppointmet(data);
     form.reset();
   }
 
   return (
     <div>
       <Dialog>
-        <DialogTrigger asChild>
-          <Button>Add New appointment</Button>
+        <DialogTrigger
+          asChild
+          className="px-8 py-4 bg-green-500 text-white font-bold rounded-lg hover:bg-green-700"
+        >
+          <Button>Walk In Service</Button>
         </DialogTrigger>
-        <DialogContent >
+        <DialogContent>
           <DialogHeader>
             <DialogTitle className="mb-5">Appoinment</DialogTitle>
           </DialogHeader>
@@ -135,9 +148,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ services,customers })
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
-                    name="time"
+                    name="customer_id"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <Popover>
@@ -152,10 +166,11 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ services,customers })
                                 )}
                               >
                                 {field.value
-                                  ? timeSlots.find(
-                                      (slot) => slot.value === field.value
-                                    )?.label
-                                  : "Select time slot"}
+                                  ? customers.find(
+                                      (customer) =>
+                                        customer.id.toString() === field.value
+                                    )?.name
+                                  : "Select customer"}
                                 <ChevronsUpDown className="opacity-50" />
                               </Button>
                             </FormControl>
@@ -163,25 +178,28 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ services,customers })
                           <PopoverContent className="w-[200px] p-0">
                             <Command>
                               <CommandInput
-                                placeholder="Search time slot..."
+                                placeholder="Search customer..."
                                 className="h-9"
                               />
                               <CommandList>
-                                <CommandEmpty>No time slot found.</CommandEmpty>
+                                <CommandEmpty>No customer found.</CommandEmpty>
                                 <CommandGroup>
-                                  {timeSlots.map((slot) => (
+                                  {customers.map((customer) => (
                                     <CommandItem
-                                      value={slot.label}
-                                      key={slot.value}
+                                      value={customer.name}
+                                      key={customer.id}
                                       onSelect={() => {
-                                        form.setValue("time", slot.value);
+                                        form.setValue(
+                                          `customer_id`,
+                                          customer.id.toString()
+                                        );
                                       }}
                                     >
-                                      {slot.label}
+                                      {customer.name}
                                       <Check
                                         className={cn(
                                           "ml-auto",
-                                          slot.value === field.value
+                                          customer.id.toString() === field.value
                                             ? "opacity-100"
                                             : "opacity-0"
                                         )}
@@ -198,75 +216,6 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ services,customers })
                       </FormItem>
                     )}
                   />
-                 
-                 <FormField
-                      control={form.control}
-                      name="customer_id"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  className={cn(
-                                    "w-[200px] justify-between",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value
-                                    ? customers.find(
-                                        (customer) =>
-                                          customer.id.toString() === field.value
-                                      )?.name
-                                    : "Select customer"}
-                                  <ChevronsUpDown className="opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[200px] p-0">
-                              <Command>
-                                <CommandInput
-                                  placeholder="Search customer..."
-                                  className="h-9"
-                                />
-                                <CommandList>
-                                  <CommandEmpty>No customer found.</CommandEmpty>
-                                  <CommandGroup>
-                                    {customers.map((customer) => (
-                                      <CommandItem
-                                        value={customer.name}
-                                        key={customer.id}
-                                        onSelect={() => {
-                                          form.setValue(
-                                            `customer_id`,
-                                            customer.id.toString()
-                                          );
-                                        }}
-                                      >
-                                        {customer.name}
-                                        <Check
-                                          className={cn(
-                                            "ml-auto",
-                                            customer.id.toString() ===
-                                              field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                 </div>
 
                 {fields.map((item, index) => (
@@ -388,4 +337,4 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ services,customers })
   );
 };
 
-export default AppointmentForm;
+export default WalkInServiceForm;
