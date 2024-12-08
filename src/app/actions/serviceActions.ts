@@ -62,11 +62,11 @@ export async function deleteService(
   id: number
 ): Promise<ActionResult<Service>> {
   try {
-    console.log(id)
+  
     const deleteService = await prisma.service.delete({
       where: { id: id },
     });
-    console.log(deleteService)
+    
     return { status: "success", data: deleteService };
   } catch (error) {
     return { status: "error", error: error as string };

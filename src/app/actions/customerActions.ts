@@ -14,11 +14,11 @@ export async function createCustomer(
         name: data.name,
         email: data.email,
         phone: data.phone,
-        cars: {
-          create: data.cars.map((car) => ({
-            make:car.make,
-            model: car.model,
-            year: car.year,
+        vehicles: {
+          create: data.vehicles.map((vehicle) => ({
+            make:vehicle.make,
+            model: vehicle.model,
+            year: vehicle.year,
           })),
         },
       },
@@ -40,12 +40,12 @@ export async function updateCustomer(
       data: {
         name: data.name,
         email: data.email,
-        cars: {
+        vehicles: {
           deleteMany: {},
-          create: data.cars.map((car) => ({
-            make: car.make,
-            model:car.model,
-            year:car.year
+          create: data.vehicles.map((vehicle) => ({
+            make: vehicle.make,
+            model:vehicle.model,
+            year:vehicle.year
           })),
         },
       },
@@ -57,20 +57,21 @@ export async function updateCustomer(
 }
 
 export async function getAllCustomer() {
-  return await prisma.customer.findMany({ include: { cars: true } });
+  return await prisma.customer.findMany({ include: { vehicles : true } });
 }
 
 export async function deleteCustomer(
   id: string
 ): Promise<ActionResult<Customer>> {
+  
   try {
-    console.log(id)
-    const deleteCustomer= await prisma.customer.delete({
+    const deleteCustomer = await prisma.customer.delete({
       where: { id: id },
     });
     
     return { status: "success", data: deleteCustomer };
   } catch (error) {
+    console.log(error)
     return { status: "error", error: error as string };
   }
 }

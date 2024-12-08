@@ -41,35 +41,36 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { createAppointmet } from "@/app/actions/appointmentActions";
-const timeSlots = [
-  { label: "09:00 AM", value: "09:00" },
-  { label: "09:30 AM", value: "09:30" },
-  { label: "10:00 AM", value: "10:00" },
-  { label: "10:30 AM", value: "10:30" },
-  { label: "11:00 AM", value: "11:00" },
-  { label: "11:30 AM", value: "11:30" },
-  { label: "12:00 PM", value: "12:00" },
-  { label: "12:30 PM", value: "12:30" },
-  { label: "01:00 PM", value: "13:00" },
-  { label: "01:30 PM", value: "13:30" },
-  { label: "02:00 PM", value: "14:00" },
-  { label: "02:30 PM", value: "14:30" },
-  { label: "03:00 PM", value: "15:00" },
-  { label: "03:30 PM", value: "15:30" },
-  { label: "04:00 PM", value: "16:00" },
-  { label: "04:30 PM", value: "16:30" },
-  { label: "05:00 PM", value: "17:00" },
-] as const;
+import CustomerForm from "../Customer/CustomerForm";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+
+interface Car {
+  id: number;
+  make: string;
+  model: string;
+  year: string;
+  customerId: string;
+}
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  vehicles: Car[];
+}
+
 type WalkInServiceFormType = z.infer<typeof AppointmentSchema>;
-type Customers = CustomerType & { id: string };
-type WalkInServiceFormProps = { services: Service[]; customers: Customers[] };
+
+type WalkInServiceFormProps = { services: Service[]; customers: Customer[] };
 
 const WalkInServiceForm: React.FC<WalkInServiceFormProps> = ({
   services,
   customers,
 }) => {
   const [month, setMonth] = useState(new Date());
-
+  const router = useRouter();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const form = useForm<WalkInServiceFormType>({
     resolver: zodResolver(AppointmentSchema),
     defaultValues: {
@@ -78,7 +79,10 @@ const WalkInServiceForm: React.FC<WalkInServiceFormProps> = ({
         hour: "2-digit",
         minute: "2-digit",
       }),
-      customer_id:""
+      customer_id: "",
+      vehicle_id: "",
+      services_id_qty: [],
+      type: "Drive through"
     },
   });
 
@@ -87,22 +91,30 @@ const WalkInServiceForm: React.FC<WalkInServiceFormProps> = ({
     name: "services_id_qty",
   });
   async function onSubmit(data: WalkInServiceFormType) {
-    await createAppointmet(data);
-    form.reset();
+    const result = await createAppointmet(data);
+    if (result?.status === "success") {
+      toast.success(`Appointment successfully added`);
+      router.refresh();
+      setIsDialogOpen(false);
+      form.reset();
+    } else {
+      form.setError("root.serverError", { message: result?.error as string });
+      toast.error(`${result?.error}`);
+    }
   }
 
   return (
     <div>
-      <Dialog>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger
           asChild
           className="px-8 py-4 bg-green-500 text-white font-bold rounded-lg hover:bg-green-700"
         >
-          <Button>Walk In Service</Button>
+          <Button>Drive Through</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="mb-5">Appoinment</DialogTitle>
+            <DialogTitle className="mb-5">Drive through Service</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -190,9 +202,10 @@ const WalkInServiceForm: React.FC<WalkInServiceFormProps> = ({
                                       key={customer.id}
                                       onSelect={() => {
                                         form.setValue(
-                                          `customer_id`,
+                                          "customer_id",
                                           customer.id.toString()
                                         );
+                                        form.setValue("vehicle_id", ""); // Reset vehicle selection when customer changes
                                       }}
                                     >
                                       {customer.name}
@@ -215,6 +228,105 @@ const WalkInServiceForm: React.FC<WalkInServiceFormProps> = ({
                         <FormMessage />
                       </FormItem>
                     )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="vehicle_id"
+                    render={({ field }) => (
+                      <FormItem className="">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-[200px] justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                                disabled={!form.watch("customer_id")} // Disable if no customer is selected
+                              >
+                                {field.value
+                                  ? customers
+                                      .find(
+                                        (customer) =>
+                                          customer.id ===
+                                          form.watch("customer_id")
+                                      )
+                                      ?.vehicles.find(
+                                        (vehicle) =>
+                                          vehicle.id.toString() === field.value
+                                      )?.make +
+                                    " " +
+                                    customers
+                                      .find(
+                                        (customer) =>
+                                          customer.id ===
+                                          form.watch("customer_id")
+                                      )
+                                      ?.vehicles.find(
+                                        (vehicle) =>
+                                          vehicle.id.toString() === field.value
+                                      )?.model
+                                  : "Select vehicle"}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[200px] p-0">
+                            <Command>
+                              <CommandInput
+                                placeholder="Search vehicle..."
+                                className="h-9"
+                              />
+                              <CommandList>
+                                <CommandEmpty>No vehicle found.</CommandEmpty>
+                                <CommandGroup>
+                                  {customers
+                                    .find(
+                                      (customer) =>
+                                        customer.id ===
+                                        form.watch("customer_id")
+                                    )
+                                    ?.vehicles.map((vehicle) => (
+                                      <CommandItem
+                                        value={
+                                          vehicle.make + " " + vehicle.model
+                                        }
+                                        key={vehicle.id}
+                                        onSelect={() => {
+                                          form.setValue(
+                                            "vehicle_id",
+                                            vehicle.id.toString()
+                                          );
+                                        }}
+                                      >
+                                        {vehicle.make + " " + vehicle.model}
+                                        <Check
+                                          className={cn(
+                                            "ml-auto",
+                                            vehicle.id.toString() ===
+                                              field.value
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                      </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <CustomerForm
+                    isEdit={false}
+                    customerToEdit={null}
+                    fromBooking={true}
                   />
                 </div>
 

@@ -57,7 +57,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   const form = isEdit ? editForm : addForm;
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "cars",
+    name: "vehicles",
   });
 
   async function onSubmit(data: CustomerType) {
@@ -121,9 +121,9 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Eamil</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Eamil" {...field} />
+                    <Input placeholder="Email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -149,7 +149,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
               >
                 <FormField
                   control={form.control}
-                  name={`cars.${index}.make`}
+                  name={`vehicles.${index}.make`}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Make</FormLabel>
@@ -162,7 +162,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 />
                 <FormField
                   control={form.control}
-                  name={`cars.${index}.model`}
+                  name={`vehicles.${index}.model`}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Model</FormLabel>
@@ -175,7 +175,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 />
                 <FormField
                   control={form.control}
-                  name={`cars.${index}.year`}
+                  name={`vehicles.${index}.year`}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Year</FormLabel>

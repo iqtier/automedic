@@ -19,11 +19,13 @@ const Clients: React.FC<{isAdmin: boolean, customers:Customers[]}> = ({isAdmin, 
   const router = useRouter();
 
   const handleDeleteClick = async (id: string) => {
+    console.log(id)
     try {
-      const result = await deleteCustomer(id); // Ensure this function exists and works as expected
+      const result = await deleteCustomer(id); 
+   
       if (result.status === "success") {
         toast.success("Customer deleted successfully");
-        router.refresh(); // Refresh the page or handle the update to reflect changes
+        router.refresh(); 
       } else {
         toast.error("Failed to delete customer");
       }
@@ -47,9 +49,9 @@ const Clients: React.FC<{isAdmin: boolean, customers:Customers[]}> = ({isAdmin, 
               <p>{customer.email}</p>
             </AccordionTrigger>
 
-            {customer.cars?.map((car, index) => (
+            {customer.vehicles?.map((vehicle, index) => (
               <AccordionContent key={index}>
-                <strong>{car.make}</strong> {car.model} {car.year}
+                <strong>{vehicle.make}</strong> {vehicle.model} {vehicle.year}
               </AccordionContent>
             ))}
             {isAdmin && (

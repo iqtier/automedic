@@ -42,6 +42,8 @@ import {
 } from "@/components/ui/command";
 import { createAppointmet } from "@/app/actions/appointmentActions";
 import CustomerForm from "../Customer/CustomerForm";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 const timeSlots = [
   { label: "09:00 AM", value: "09:00" },
   { label: "09:30 AM", value: "09:30" },
@@ -61,18 +63,41 @@ const timeSlots = [
   { label: "04:30 PM", value: "16:30" },
   { label: "05:00 PM", value: "17:00" },
 ] as const;
+interface Vehicle {
+  id: number;
+  make: string;
+  model: string;
+  year: string;
+  customerId: string;
+}
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  vehicles: Vehicle[];
+}
+
 type AppointmentFormType = z.infer<typeof AppointmentSchema>;
-type Customers = CustomerType & { id: string };
-type AppointmentFormProps = { services: Service[]; customers: Customers[] };
+
+type AppointmentFormProps = { services: Service[]; customers: Customer[] };
 
 const AppointmentForm: React.FC<AppointmentFormProps> = ({
   services,
   customers,
 }) => {
   const [month, setMonth] = useState(new Date());
-
+  const router = useRouter();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const form = useForm<AppointmentFormType>({
     resolver: zodResolver(AppointmentSchema),
+    defaultValues: {
+      time: "",
+      customer_id: "",
+      vehicle_id: "",
+      services_id_qty: [],
+      type: "Appointment",
+    },
   });
 
   const { fields, append, remove } = useFieldArray<AppointmentFormType>({
@@ -80,13 +105,21 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
     name: "services_id_qty",
   });
   async function onSubmit(data: AppointmentFormType) {
-    await createAppointmet(data);
-    form.reset();
+    const result = await createAppointmet(data);
+    if (result?.status === "success") {
+      toast.success(`Appointment successfully added`);
+      router.refresh();
+      setIsDialogOpen(false);
+      form.reset();
+    } else {
+      form.setError("root.serverError", { message: result?.error as string });
+      toast.error(`${result?.error}`);
+    }
   }
 
   return (
     <div>
-      <Dialog>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger
           asChild
           className="px-8 py-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-700"
@@ -246,9 +279,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
                                       key={customer.id}
                                       onSelect={() => {
                                         form.setValue(
-                                          `customer_id`,
+                                          "customer_id",
                                           customer.id.toString()
                                         );
+                                        form.setValue("vehicle_id", ""); // Reset vehicle selection when customer changes
                                       }}
                                     >
                                       {customer.name}
@@ -269,11 +303,108 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
                         </Popover>
 
                         <FormMessage />
-                     
                       </FormItem>
                     )}
                   />
-                    <CustomerForm isEdit= {false} customerToEdit={null} fromBooking={true}/>
+                  <FormField
+                    control={form.control}
+                    name="vehicle_id"
+                    render={({ field }) => (
+                      <FormItem className="">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-[200px] justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                                disabled={!form.watch("customer_id")} // Disable if no customer is selected
+                              >
+                                {field.value
+                                  ? customers
+                                      .find(
+                                        (customer) =>
+                                          customer.id ===
+                                          form.watch("customer_id")
+                                      )
+                                      ?.vehicles.find(
+                                        (vehicle) =>
+                                          vehicle.id.toString() === field.value
+                                      )?.make +
+                                    " " +
+                                    customers
+                                      .find(
+                                        (customer) =>
+                                          customer.id ===
+                                          form.watch("customer_id")
+                                      )
+                                      ?.vehicles.find(
+                                        (vehicle) =>
+                                          vehicle.id.toString() === field.value
+                                      )?.model
+                                  : "Select vehicle"}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[200px] p-0">
+                            <Command>
+                              <CommandInput
+                                placeholder="Search vehicle..."
+                                className="h-9"
+                              />
+                              <CommandList>
+                                <CommandEmpty>No vehicle found.</CommandEmpty>
+                                <CommandGroup>
+                                  {customers
+                                    .find(
+                                      (customer) =>
+                                        customer.id ===
+                                        form.watch("customer_id")
+                                    )
+                                    ?.vehicles.map((vehicle) => (
+                                      <CommandItem
+                                        value={
+                                          vehicle.make + " " + vehicle.model
+                                        }
+                                        key={vehicle.id}
+                                        onSelect={() => {
+                                          form.setValue(
+                                            "vehicle_id",
+                                            vehicle.id.toString()
+                                          );
+                                        }}
+                                      >
+                                        {vehicle.make + " " + vehicle.model}
+                                        <Check
+                                          className={cn(
+                                            "ml-auto",
+                                            vehicle.id.toString() ===
+                                              field.value
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                      </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <CustomerForm
+                    isEdit={false}
+                    customerToEdit={null}
+                    fromBooking={true}
+                  />
                 </div>
 
                 {fields.map((item, index) => (
