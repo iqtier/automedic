@@ -16,7 +16,7 @@ export async function createAppointmet(
     status,
     payment_status,
     payment_method,
-    technician_id,
+    technician_ids,
   } = data;
   try {
     const appointment = await prisma.appointment.create({
@@ -24,11 +24,11 @@ export async function createAppointmet(
         date: new Date(date),
         time: time,
         customerid: customer_id,
-        vehicleId: Number(vehicle_id),
+        vehicle_id: Number(vehicle_id),
         status: status,
         payment_status: payment_status,
         payment_method: payment_method,
-        technician_id: technician_id,
+        
         ServiceAppointment: {
           create: services_id_qty.map((serviceIdQty) => ({
             qty: serviceIdQty.qty,
@@ -52,8 +52,8 @@ export async function getAllAppointments() {
     include: {
       customer: true,
       vehicle: true,
-     
       ServiceAppointment: { include: { service: true } },
+      technicians: { include: { technician: true, }, },
     },
   });
   return appointments.map((appointment) => ({
@@ -70,7 +70,7 @@ export async function getAllAppointments() {
     })),
     status:appointment.status,
     note: appointment.note,
-    technican_id: appointment.technician_id,
+    technicians: appointment.technicians.map(t => t.technician.name).join(', '),
     payment_status: appointment.payment_status,
     payment_method: appointment.payment_method
   }));
