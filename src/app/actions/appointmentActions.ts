@@ -1,12 +1,12 @@
 "use server";
-import { ActionResult, AppointmentSchema } from "@/types/type";
+import { ActionResult, BookingSchema } from "@/types/type";
 import { format } from 'date-fns';
-import { Appointment } from "@prisma/client";
+import { Booking} from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 export async function createAppointmet(
-  data: z.infer<typeof AppointmentSchema>
-): Promise<ActionResult<Appointment>> {
+  data: z.infer<typeof BookingSchema>
+): Promise<ActionResult<Booking>> {
   const {
     date,
     time,
@@ -17,9 +17,10 @@ export async function createAppointmet(
     payment_status,
     payment_method,
     technician_ids,
+    type
   } = data;
   try {
-    const appointment = await prisma.appointment.create({
+    const booking = await prisma.booking.create({
       data: {
         date: new Date(date),
         time: time,
@@ -28,8 +29,8 @@ export async function createAppointmet(
         status: status,
         payment_status: payment_status,
         payment_method: payment_method,
-        
-        ServiceAppointment: {
+        booking_type:type,
+        services: {
           create: services_id_qty.map((serviceIdQty) => ({
             qty: serviceIdQty.qty,
             serviceId: parseInt(serviceIdQty.id), // Convert id to integer
@@ -37,41 +38,42 @@ export async function createAppointmet(
         },
       },
       include: {
-        ServiceAppointment: true,
+        services: true,
       },
     });
-    return { status: "success", data: appointment };
+    return { status: "success", data: booking };
   } catch (error) {
     console.error("Error creating service:", error);
     return { status: "error", error: error as string };
   }
 }
 
-export async function getAllAppointments() {
-  const appointments = await prisma.appointment.findMany({
+export async function getAllBookings() {
+  const bookings = await prisma.booking.findMany({
     include: {
       customer: true,
       vehicle: true,
-      ServiceAppointment: { include: { service: true } },
+      services: { include: { service: true } },
       technicians: { include: { technician: true, }, },
     },
   });
-  return appointments.map((appointment) => ({
-    appointid: appointment.id,
-    date: format(appointment.date, 'dd MMM yyyy'),
-    time: appointment.time,
-    customerEmail: appointment.customer.email,
-    vehicle: appointment.vehicle
-      ? `${appointment.vehicle.make} ${appointment.vehicle.model} ${appointment.vehicle.year}`
+  return bookings.map((booking) => ({
+    bookingid: booking.id,
+    date: format(booking.date, 'dd MMM yyyy'),
+    time: booking.time,
+    customerEmail: booking.customer.email,
+    vehicle: booking.vehicle
+      ? `${booking.vehicle.make} ${booking.vehicle.model} ${booking.vehicle.year}`
       : "No vehicle associated",
-    services: appointment.ServiceAppointment.map((sa) => ({
+    services: booking.services.map((sa) => ({
       name: sa.service.name,
       quantity: sa.qty,
     })),
-    status:appointment.status,
-    note: appointment.note,
-    technicians: appointment.technicians.map(t => t.technician.name).join(', '),
-    payment_status: appointment.payment_status,
-    payment_method: appointment.payment_method
+    status:booking.status,
+    note: booking.note,
+    technicians: booking.technicians.map(t => t.technician.name).join(', '),
+    booking_type:booking.booking_type,
+    payment_status: booking.payment_status,
+    payment_method: booking.payment_method
   }));
 } // Example usage

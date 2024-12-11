@@ -1,5 +1,5 @@
 import React from "react";
-import AppointmentForm from "@/app/(component)/Bookings/appointment_form";
+import AppointmentForm from "@/app/(component)/Bookings/booking_form";
 import AppointmentCalendar from "@/app/(component)/Bookings/appointment_calendar";
 import { getAllServices } from "@/app/actions/serviceActions";
 

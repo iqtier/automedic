@@ -37,7 +37,7 @@ export const ServiceSchema = z.object({
   ),
 });
 
-export const AppointmentSchema = z.object({
+export const BookingSchema = z.object({
   date: z.date({
     required_error: "A date of birth is required.",
   }),

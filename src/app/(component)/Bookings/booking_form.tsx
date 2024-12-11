@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { z } from "zod";
-import { Service, AppointmentSchema, CustomerType } from "@/types/type";
+import { Service, BookingSchema, CustomerType } from "@/types/type";
 import { cn } from "@/lib/utils";
 import "react-day-picker/style.css";
 import {
@@ -78,21 +78,32 @@ interface Customer {
   vehicles: Vehicle[];
 }
 
-type AppointmentFormType = z.infer<typeof AppointmentSchema>;
+type BookingFormType = z.infer<typeof BookingSchema>;
 
-type AppointmentFormProps = { services: Service[]; customers: Customer[] };
+type BookingFormProps = {
+  services: Service[];
+  customers: Customer[];
+  isEdit: boolean;
+  isAppointment: boolean;
+};
 
-const AppointmentForm: React.FC<AppointmentFormProps> = ({
+const BookingForm: React.FC<BookingFormProps> = ({
   services,
   customers,
+  isEdit,
+  isAppointment,
 }) => {
   const [month, setMonth] = useState(new Date());
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const form = useForm<AppointmentFormType>({
-    resolver: zodResolver(AppointmentSchema),
+  const form = useForm<BookingFormType>({
+    resolver: zodResolver(BookingSchema),
     defaultValues: {
-      time: "",
+      date: isAppointment? undefined : new Date(),
+      time:isAppointment? "":new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }) ,
       customer_id: "",
       vehicle_id: "",
       services_id_qty: [],
@@ -100,11 +111,11 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
     },
   });
 
-  const { fields, append, remove } = useFieldArray<AppointmentFormType>({
+  const { fields, append, remove } = useFieldArray<BookingFormType>({
     control: form.control,
     name: "services_id_qty",
   });
-  async function onSubmit(data: AppointmentFormType) {
+  async function onSubmit(data: BookingFormType) {
     const result = await createAppointmet(data);
     if (result?.status === "success") {
       toast.success(`Appointment successfully added`);
@@ -122,19 +133,25 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger
           asChild
-          className="px-8 py-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-700"
+          className={`px-8 py-4  text-white font-bold rounded-lg ${
+            isAppointment
+              ? " hover:bg-blue-700 bg-blue-500"
+              : " bg-green-500 hover:bg-green-700"
+          }`}
         >
-          <Button>Appointment</Button>
+          <Button>{isAppointment ? "Appointment" : "Drive Through"}</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="mb-5">Appoinment</DialogTitle>
+            <DialogTitle className="mb-5">
+              {isAppointment ? "Appointment" : "Drive Through"}
+            </DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <div className="flex flex-col gap-y-5 ">
                 <div className="flex flex-row gap-x-3">
-                  <FormField
+                  {isAppointment && <FormField
                     control={form.control}
                     name="date"
                     render={({ field }) => (
@@ -174,7 +191,12 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
                       </FormItem>
                     )}
                   />
-                  <FormField
+                  
+                  
+                  } 
+                  
+                  {
+                    isAppointment && <FormField
                     control={form.control}
                     name="time"
                     render={({ field }) => (
@@ -237,6 +259,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
                       </FormItem>
                     )}
                   />
+                  }
+                  
+                  
 
                   <FormField
                     control={form.control}
@@ -526,4 +551,4 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
   );
 };
 
-export default AppointmentForm;
+export default BookingForm;
