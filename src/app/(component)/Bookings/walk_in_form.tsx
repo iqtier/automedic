@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { z } from "zod";
-import { Service, AppointmentSchema, CustomerType } from "@/types/type";
+import { Service, BookingSchema, CustomerType } from "@/types/type";
 import { cn } from "@/lib/utils";
 import "react-day-picker/style.css";
 import {
@@ -60,7 +60,7 @@ interface Customer {
   vehicles: Car[];
 }
 
-type WalkInServiceFormType = z.infer<typeof AppointmentSchema>;
+type WalkInServiceFormType = z.infer<typeof BookingSchema>;
 
 type WalkInServiceFormProps = { services: Service[]; customers: Customer[] };
 
@@ -72,7 +72,7 @@ const WalkInServiceForm: React.FC<WalkInServiceFormProps> = ({
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const form = useForm<WalkInServiceFormType>({
-    resolver: zodResolver(AppointmentSchema),
+    resolver: zodResolver(BookingSchema),
     defaultValues: {
       date: new Date(),
       time: new Date().toLocaleTimeString([], {
