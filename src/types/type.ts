@@ -89,10 +89,73 @@ export type ServiceType = z.infer<typeof ServiceSchema>;
 export type ActionResult<T> =
   | { status: "success"; data: T }
   | { status: "error"; error: string };
-export type ServiceField = { name: string; value: string };
+
 export type Service = {
   id: number;
   name: string;
   price: number;
-  fields: ServiceField[];
+  fields: ServiceFields[];
+};
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+  created_at: Date;
+};
+type ServiceFields = {
+  id: number;
+  serviceId: number;
+  name: string;
+  value: string;
+};
+type Customer = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  vehicles: Vehicle[];
+  bookings: Booking[];
+};
+type Vehicle = {
+  id: number;
+  make: string;
+  model: string;
+  year: string;
+  customerId: string;
+  customer: Customer;
+  bookings: Booking[];
+};
+type ServiceIdQty = {
+  id: string;
+  bookingId: number;
+  qty: string;
+  serviceId: number;
+  booking: Booking;
+  service: Service;
+};
+
+export type Booking = {
+  id: number;
+  date: Date;
+  time: string;
+  vehicle_id?: number | null;
+  booking_type?: string | null;
+  status: string;
+  note: string;
+  payment_status: string;
+  payment_method: string;
+  customerid: string;
+  services: ServiceIdQty[];
+  technicians: BookingTechnician[];
+  vehicle?: Vehicle | null;
+  customer: Customer;
+};
+type BookingTechnician = {
+  id: number;
+  bookingId: number;
+  technicianId: string;
+  booking: Booking;
+  technician: User;
 };

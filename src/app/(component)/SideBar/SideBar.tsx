@@ -25,11 +25,7 @@ import SideBarItem from "./SideBarItem";
 
 // This is sample data.
 const items = [
-  {
-    title: "Dashboard",
-    url: "/home/dashboard",
-    icon: Activity,
-  },
+
   {
     title: "Bookings",
     url: "/home/bookings",

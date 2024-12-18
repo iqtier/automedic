@@ -43,7 +43,7 @@ export function LoginForm() {
     }
   }
   return (
-    <Card className="mx-auto max-w-sm  dark:bg-gray-700 shadow-2xl ring-2 ring-purple-500 ring-offset-4 ring-offset-slate-50 dark:ring-offset-slate-900   ">
+    <Card className="mx-auto max-w-sm  dark:bg-gray-700 shadow-2xl   dark:ring-offset-slate-900   ">
       <CardHeader>
         <CardTitle className="text-2xl">Login</CardTitle>
         <CardDescription>

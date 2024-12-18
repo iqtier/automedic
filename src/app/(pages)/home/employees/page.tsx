@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { getUserByEmail } from "@/app/actions/authActions";
 
 
-import { columns } from "@/app/(component)/Table/userColumns";
+import { columns } from "@/app/(component)/Table/userTableColumns";
 import { DataTable } from "@/app/(component)/Table/data-table";
 
 
