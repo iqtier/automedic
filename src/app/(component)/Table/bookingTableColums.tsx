@@ -2,21 +2,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-
 import { ColumnDef } from "@tanstack/react-table";
-
 
 import { DataTableRowActions } from "./booking_row_actions";
 
 // This type is used to define the shape of our data.
-type Technician = {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-  created_at: Date;
-};
+
 type ServiceDetail = {
   name: string;
   quantity: string;
@@ -27,6 +18,7 @@ type BookingDetail = {
   date: string; // Formatted as 'dd MMM yyyy'
   time: string;
   customer: string;
+  ramp: string | null;
   vehicle: {
     id: number | null;
     details: string;
@@ -58,6 +50,13 @@ export const columns: ColumnDef<BookingDetail>[] = [
     accessorKey: "time",
     header: "Time",
     cell: ({ row }) => <div>{row.getValue("time")}</div>,
+  },
+  {
+    accessorKey: "ramp",
+    header: "Ramp",
+    cell: ({ row }) => {
+      return <div> {row.getValue("ramp")}</div>;
+    },
   },
   {
     accessorKey: "customer",

@@ -8,7 +8,7 @@ import { getAllBookings, getBooking } from "@/app/actions/bookingActions";
 import { columns } from "@/app/(component)/Table/bookingTableColums";
 import { DataTable } from "@/app/(component)/Table/data-table";
 import BookingForm from "@/app/(component)/Bookings/booking_form";
-import useBookingStore from "@/app/store/booking";
+
 import { getTechnicians } from "@/app/actions/employeeActions";
 
 const Bookings = async () => {
@@ -22,7 +22,7 @@ const Bookings = async () => {
     date: format(booking.date, "dd MMM yyyy"),
     time: booking.time,
     customer:  booking.customer.name,
-    
+    ramp:booking.ramp,
     vehicle: {
       id: booking.vehicle? booking.vehicle.id:null,
       details: booking.vehicle? `${booking.vehicle.make} ${booking.vehicle.model} ${booking.vehicle.year}`:"No Vehicle associated",

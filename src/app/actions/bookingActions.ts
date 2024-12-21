@@ -1,6 +1,6 @@
 "use server";
 import { ActionResult, BookingSchema } from "@/types/type";
-import { format } from "date-fns";
+
 import { Booking } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -10,6 +10,7 @@ export async function createBooking(
   const {
     date,
     time,
+    ramp,
     customer_id,
     services_id_qty,
     vehicle_id,
@@ -24,6 +25,7 @@ export async function createBooking(
       data: {
         date: new Date(date),
         time: time,
+        ramp: ramp,
         customerid: customer_id,
         vehicle_id: Number(vehicle_id),
         status: status,
@@ -121,23 +123,21 @@ export async function updateBooking(
   }
 }
 
-export async function getBookedTimeSlotsByDateRange(startDate: Date, endDate: Date) {
+export async function getBookedTimeSlotsByDateRange(
+  startDate: Date,
+  endDate: Date,
+ 
+) {
   const bookings = await prisma.booking.findMany({
     where: {
-      date: {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
-      },
-    },
-    select: { date: true, time: true },
-  });
-  return bookings;
-}
+      AND: [
+        { date: { gte: new Date(startDate), lte: new Date(endDate) } },
 
-export async function getBookedTimeSlots(date: string) {
-  const bookings = await prisma.booking.findMany({
-    where: { date: new Date(date) },
-    select: { time: true },
+      
+      ],
+    },
+    select: { date: true, time: true, ramp: true },
   });
-  return bookings.map((booking) => booking.time);
+  console.log("Booked slots from DB:", bookings); 
+  return bookings;
 }

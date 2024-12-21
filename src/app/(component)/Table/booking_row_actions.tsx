@@ -24,7 +24,9 @@ import {
 import { Row } from "@tanstack/react-table";
 import { MoreHorizontal, SquarePen, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import EditBookingForm from "../Bookings/eidt_booking_form";
+import EditBookingForm from "../Bookings/edit_booking_form";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 
 interface DataTableRowActionsProps {
@@ -37,6 +39,8 @@ export const DataTableRowActions:React.FC<DataTableRowActionsProps> =({
 }) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  
+ 
 
   return (
     <>
@@ -51,6 +55,9 @@ export const DataTableRowActions:React.FC<DataTableRowActionsProps> =({
           <EditBookingForm booking_id = {booking_id} setIsOpen={setIsEditOpen}/>
         </DialogContent>
       </Dialog>
+
+
+
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

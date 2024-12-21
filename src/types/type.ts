@@ -45,6 +45,7 @@ export const BookingSchema = z.object({
   customer_id: z.string().min(1, "Please Select a customer"),
   vehicle_id: z.string().min(1, "Please Select a car"),
   type:z.string(),
+  ramp:z.string(),
   status: z
     .enum(["pending", "ongoing", "completed", "cancelled"])
     .default("pending"),
@@ -115,8 +116,7 @@ type Customer = {
   name: string;
   email: string;
   phone: string;
-  vehicles: Vehicle[];
-  bookings: Booking[];
+  
 };
 type Vehicle = {
   id: number;
@@ -124,22 +124,21 @@ type Vehicle = {
   model: string;
   year: string;
   customerId: string;
-  customer: Customer;
-  bookings: Booking[];
+
 };
 type ServiceIdQty = {
   id: string;
   bookingId: number;
   qty: string;
   serviceId: number;
-  booking: Booking;
-  service: Service;
+
 };
 
 export type Booking = {
   id: number;
   date: Date;
   time: string;
+  ramp:string|null,
   vehicle_id?: number | null;
   booking_type?: string | null;
   status: string;
@@ -156,6 +155,5 @@ type BookingTechnician = {
   id: number;
   bookingId: number;
   technicianId: string;
-  booking: Booking;
-  technician: User;
+ 
 };

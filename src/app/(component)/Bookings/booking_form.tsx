@@ -28,8 +28,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format, isSameDay } from "date-fns";
-import { CalendarIcon, Check, ChevronsUpDown, UserPlus } from "lucide-react";
+import { format, } from "date-fns";
+import { CalendarIcon, Check, ChevronsUpDown, } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 
 import {
@@ -42,31 +42,30 @@ import {
 } from "@/components/ui/command";
 import {
   createBooking,
-  getBookedTimeSlots,
   getBookedTimeSlotsByDateRange,
 } from "@/app/actions/bookingActions";
 import CustomerForm from "../Customer/CustomerForm";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-const timeSlots = [
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type Ramp = 1 | 2;
+
+// Modify the time slot type to include ramp information
+type TimeSlot = {
+  value: string;
+  label: string;
+};
+const timeSlots: TimeSlot[] = [
   { value: "08:00 AM", label: "08:00 AM" },
   { value: "08:30 AM", label: "08:30 AM" },
-  { value: "09:00 AM", label: "09:00 AM" },
-  { value: "09:30 AM", label: "09:30 AM" },
-  { value: "10:00 AM", label: "10:00 AM" },
-  { value: "10:30 AM", label: "10:30 AM" },
-  { value: "11:00 AM", label: "11:00 AM" },
-  { value: "11:30 AM", label: "11:30 AM" },
-  { value: "12:00 PM", label: "12:00 PM" },
-  { value: "12:30 PM", label: "12:30 PM" },
-  { value: "01:00 PM", label: "01:00 PM" },
-  { value: "01:30 PM", label: "01:30 PM" },
-  { value: "02:00 PM", label: "02:00 PM" },
-  { value: "02:30 PM", label: "02:30 PM" },
-  { value: "03:00 PM", label: "03:00 PM" },
-  { value: "03:30 PM", label: "03:30 PM" },
-  { value: "04:00 PM", label: "04:00 PM" },
-  { value: "04:30 PM", label: "04:30 PM" },
+
 ];
 interface Vehicle {
   id: number;
@@ -101,7 +100,7 @@ type BookingFormProps = {
   isAppointment: boolean;
   technicians: Technician[];
 };
-
+type BookedSlot = { date: Date; time: string; ramp: Ramp };
 const BookingForm: React.FC<BookingFormProps> = ({
   services,
   customers,
@@ -109,13 +108,16 @@ const BookingForm: React.FC<BookingFormProps> = ({
   isAppointment,
   technicians,
 }) => {
-  const [month, setMonth] = useState(new Date());
-  const [bookedSlots, setBookedSlots] = useState<
-    { date: Date; time: string }[]
-  >([]);
   const router = useRouter();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [month, setMonth] = useState(new Date());
+  const [date, setDate] = useState<Date>();
+  const [bookedSlots, setBookedSlots] = useState<
+    { date: Date; time: string; ramp: string | null }[]
+  >([]);
+  const [ramp, setRamp] = useState<string>("");
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const availableRamps = ["1", "2"];
   const form = useForm<BookingFormType>({
     resolver: zodResolver(BookingSchema),
     defaultValues: {
@@ -130,7 +132,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
       vehicle_id: "",
       services_id_qty: [],
       technician_ids: [],
-      type: isAppointment ? "Appointment" : "Drive Through",
+      type: isAppointment ? "Appointment" : "Drive-Thru",
     },
   });
 
@@ -141,45 +143,79 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
   useEffect(() => {
     if (isAppointment) {
-      const fetchBookedSlots = async () => {
-        const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
-        const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-        const booked = await getBookedTimeSlotsByDateRange(
-          startOfMonth,
-          endOfMonth
-        );
-        if (booked && booked.length > 0) {
-          setBookedSlots(booked);
-        } else {
-          setBookedSlots([]); // Important: Clear if no bookings
-        }
-      };
-  
-      fetchBookedSlots();
-    }
-    
-  }, [form.watch("date"),isAppointment]);
+      if (month) {
+        // Add ramp check
+        const fetchBookedSlots = async () => {
+          const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+          const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
 
+          try {
+            const booked = await getBookedTimeSlotsByDateRange(
+              startOfMonth, endOfMonth
+            ); // Pass ramp here
+            setBookedSlots(booked || []);
+          } catch (error) {
+            console.error("Error fetching booked slots:", error);
+            toast.error("Failed to load booked slots. Please try again later.");
+          }
+        };
+
+        fetchBookedSlots();
+      } else {
+        setBookedSlots([]);
+      }
+    }
+  }, [isAppointment,month, ramp, date]);
 
   useEffect(() => {
-    if (isAppointment){
+    if (isAppointment) {
       form.setValue("time", ""); // Reset time whenever date changes
     }
-    
-  }, [form.watch("date"),isAppointment]); // Depend on form.watch("date")
+  }, [isAppointment,month, ramp, date]); // Depend on form.watch("date")
 
+  const isTimeSlotDisabled = (timeSlot: string, dateToCheck: Date) => {
+    const startOfDay = new Date(dateToCheck);
+    startOfDay.setHours(0, 0, 0, 0);
   
-  const isTimeSlotBooked = (date: Date, time: string) => {
-    return bookedSlots.some(
-      (slot) => isSameDay(slot.date, date) && slot.time === time
-    );
+    const endOfDay = new Date(dateToCheck);
+    endOfDay.setHours(23, 59, 59, 999);
+  
+    return bookedSlots.some((slot) => {
+      const slotDate = new Date(slot.date);
+      return (
+        slot.time === timeSlot &&
+        slot.ramp === ramp &&
+        slotDate.getTime() >= startOfDay.getTime() &&
+        slotDate.getTime() <= endOfDay.getTime()
+      );
+    });
   };
 
-  const isDateDisabled = (date: Date) => {
-    return timeSlots.every((timeSlot) =>
-      isTimeSlotBooked(date, timeSlot.value)
-    );
+  const isDateDisabled = (dateToCheck: Date) => {
+    const startOfDay = new Date(dateToCheck);
+    startOfDay.setHours(0, 0, 0, 0);
+  
+    const endOfDay = new Date(dateToCheck);
+    endOfDay.setHours(23, 59, 59, 999);
+  
+    for (const currentRamp of availableRamps) {
+      const isRampAvailable = !bookedSlots.some((slot) => {
+        const slotDate = new Date(slot.date);
+        return (
+          slotDate.getTime() >= startOfDay.getTime() &&
+          slotDate.getTime() <= endOfDay.getTime() &&
+          slot.ramp === currentRamp // Only check for current ramp
+        );
+      });
+  
+      if (isRampAvailable) {
+        return false; // At least one ramp is available, date is NOT disabled
+      }
+    }
+  
+    return true; // All ramps are fully booked on this date, date IS disabled
   };
+
   async function onSubmit(data: BookingFormType) {
     const result = await createBooking(data);
     if (result?.status === "success") {
@@ -246,15 +282,18 @@ const BookingForm: React.FC<BookingFormProps> = ({
                               align="start"
                             >
                               <DayPicker
-                                captionLayout="dropdown"
+                            
+                               numberOfMonths={2}
                                 month={month}
-                                disabled={isDateDisabled} // Disable dates
+                                disabled={{ before: new Date() }}
+                                hidden={isDateDisabled} // Disable dates
                                 onMonthChange={setMonth}
                                 autoFocus
                                 mode="single"
                                 selected={field.value}
                                 onSelect={(date) => {
-                                  field.onChange(date); // Update form value
+                                  field.onChange(date)
+                                  setDate(date);; // Update form value
                                 }}
                               />
                             </PopoverContent>
@@ -264,7 +303,36 @@ const BookingForm: React.FC<BookingFormProps> = ({
                       )}
                     />
                   )}
+                  <FormField
+                    control={form.control}
+                    name="ramp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={(value) => {field.onChange(value); setRamp(value)}}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger
+                              className={cn(
+                                "w-[200px] justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              <SelectValue placeholder="Select a ramp or select N/A" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="1">Ramp 1</SelectItem>
+                            <SelectItem value="2">Ramp 2</SelectItem>
+                            <SelectItem value="0">Not applicable</SelectItem>
+                          </SelectContent>
+                        </Select>
 
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   {isAppointment && (
                     <FormField
                       control={form.control}
@@ -306,10 +374,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                                       <CommandItem
                                         value={slot.label}
                                         key={slot.value}
-                                        disabled={isTimeSlotBooked(
-                                          form.getValues("date"),
-                                          slot.value
-                                        )} // Disable booked slots
+                                        disabled={isTimeSlotDisabled(slot.value,form.getValues("date"))} // Disable booked slots
                                         onSelect={() =>
                                           form.setValue("time", slot.value)
                                         }

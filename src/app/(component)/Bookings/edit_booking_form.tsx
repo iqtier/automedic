@@ -86,7 +86,7 @@ const router = useRouter();
     get_technicians();
     get_booking();
   }, [booking_id]);
-  console.log(booking?.technicians);
+  console.log(booking?.services);
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
