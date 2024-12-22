@@ -132,6 +132,7 @@ type ServiceIdQty = {
   qty: string;
   serviceId: number;
 
+
 };
 
 export type Booking = {

@@ -65,6 +65,22 @@ type TimeSlot = {
 const timeSlots: TimeSlot[] = [
   { value: "08:00 AM", label: "08:00 AM" },
   { value: "08:30 AM", label: "08:30 AM" },
+  { value: "09:00 AM", label: "09:00 AM" },
+  { value: "09:30 AM", label: "09:30 AM" },
+  { value: "10:00 AM", label: "10:00 AM" },
+  { value: "10:30 AM", label: "10:30 AM" },
+  { value: "11:00 AM", label: "11:00 AM" },
+  { value: "11:30 AM", label: "11:30 AM" },
+  { value: "12:00 PM", label: "12:00 PM" },
+  { value: "12:30 PM", label: "12:30 PM" },
+  { value: "01:00 PM", label: "01:00 PM" },
+  { value: "01:30 PM", label: "01:30 PM" },
+  { value: "02:00 PM", label: "02:00 PM" },
+  { value: "02:30 PM", label: "02:30 PM" },
+  { value: "03:00 PM", label: "03:00 PM" },
+  { value: "03:30 PM", label: "03:30 PM" },
+  { value: "04:00 PM", label: "04:00 PM" },
+  { value: "04:30 PM", label: "04:30 PM" },
 
 ];
 interface Vehicle {
@@ -144,7 +160,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
   useEffect(() => {
     if (isAppointment) {
       if (month) {
-        // Add ramp check
+      
         const fetchBookedSlots = async () => {
           const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
           const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
@@ -152,7 +168,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           try {
             const booked = await getBookedTimeSlotsByDateRange(
               startOfMonth, endOfMonth
-            ); // Pass ramp here
+            ); 
             setBookedSlots(booked || []);
           } catch (error) {
             console.error("Error fetching booked slots:", error);

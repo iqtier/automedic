@@ -74,8 +74,12 @@ export async function getBooking(id: string) {
       id: parseInt(id),
     },
     include: {
-      services: true,
-      technicians: true,
+      services: { include: { service: true } },
+      technicians: {
+        include: {
+          technician: true,
+        },
+      },
       customer: true,
       vehicle: true,
     },
@@ -125,19 +129,14 @@ export async function updateBooking(
 
 export async function getBookedTimeSlotsByDateRange(
   startDate: Date,
-  endDate: Date,
- 
+  endDate: Date
 ) {
   const bookings = await prisma.booking.findMany({
     where: {
-      AND: [
-        { date: { gte: new Date(startDate), lte: new Date(endDate) } },
-
-      
-      ],
+      AND: [{ date: { gte: new Date(startDate), lte: new Date(endDate) } }],
     },
     select: { date: true, time: true, ramp: true },
   });
-  console.log("Booked slots from DB:", bookings); 
+
   return bookings;
 }

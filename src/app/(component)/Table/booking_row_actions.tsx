@@ -21,43 +21,35 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Row } from "@tanstack/react-table";
-import { MoreHorizontal, SquarePen, Trash2 } from "lucide-react";
+
+import { MoreHorizontal, SquarePen, Trash2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditBookingForm from "../Bookings/edit_booking_form";
-import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
-
+import { SquareArrowOutUpRight } from "lucide-react";
+import Link from "next/link";
 
 interface DataTableRowActionsProps {
-  booking_id:string
+  booking_id: string;
 }
 
-
-export const DataTableRowActions:React.FC<DataTableRowActionsProps> =({
-  booking_id
+export const DataTableRowActions: React.FC<DataTableRowActionsProps> = ({
+  booking_id,
 }) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  
  
-
   return (
     <>
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-[425px] w-full">
           <DialogHeader>
             <DialogTitle>Edit</DialogTitle>
-            
-              <DialogDescription>Edit Booking</DialogDescription>
-        
+
+            <DialogDescription>Edit Booking</DialogDescription>
           </DialogHeader>
-          <EditBookingForm booking_id = {booking_id} setIsOpen={setIsEditOpen}/>
+          <EditBookingForm booking_id={booking_id} setIsOpen={setIsEditOpen} />
         </DialogContent>
       </Dialog>
-
-
-
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -79,10 +71,27 @@ export const DataTableRowActions:React.FC<DataTableRowActionsProps> =({
                   "flex flex-row text-center items-center justify-center space-x-2"
                 )}
               >
-                <SquarePen/>
+                <SquarePen />
                 <span className="text-sm">Edit</span>
               </div>
             </button>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem className="group flex w-full items-center justify-between  text-left p-0 text-sm font-base text-neutral-500 ">
+            <Link
+              className="w-full justify-start flex rounded-md p-2 transition-all duration-75 hover:bg-neutral-100"
+              href={`/home/bookings/${booking_id}`}
+            >
+              <div
+                className={cn(
+                  "flex flex-row text-center items-center justify-center space-x-2"
+                )}
+              >
+                <SquareArrowOutUpRight />
+                <span className="text-sm">Details</span>
+              </div>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="group flex w-full items-center justify-between  text-left p-0 text-sm font-base text-neutral-500 ">
@@ -106,4 +115,4 @@ export const DataTableRowActions:React.FC<DataTableRowActionsProps> =({
       </DropdownMenu>
     </>
   );
-}
+};

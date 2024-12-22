@@ -1,15 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
-import React from 'react'
-import { useParams } from 'next/navigation'
 
-const  Page = () => {
-  const params = useParams<{ user: string }>()
+import React from 'react'
+
+import { getUserById } from '@/app/actions/authActions'
+
+const  Page = async ({params}:{params:Promise<{user:string}>}) => {
+  const userId = (await params).user
+  const user = await getUserById(userId) 
   return (
+   
     <div>
       
-      <p>user Id : {params.user}</p>
-     
+      <p>User name : {user?.name}</p>
+      <p>User email : {user?.email}</p>
+      <p>User email : {user?.role}</p>
     </div>
   )
 }

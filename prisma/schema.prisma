@@ -96,4 +96,59 @@ model Service {
   price        Float
   fields       ServiceFields[]
   ServiceIdQty ServiceIdQty[]
+  
+}
+
+model Part {
+  id                 Int                    @id @default(autoincrement())
+  partNumber         String                 @unique
+  name               String
+  description        String?
+  category           Category               @relation(fields: [categoryId], references: [id])
+  categoryId         Int
+  unitCost           Float
+  retailPrice        Float
+  quantityOnHand     Int                    @default(0)
+  location           String? // e.g., "Shelf A, Bin 3"
+  reorderPoint       Int?
+  supplier           Supplier               @relation(fields: [supplierId], references: [id])
+  supplierId         Int
+  compatibleVehicles Json? // Store vehicle compatibility info (make, model, year) as JSON
+  transactions       InventoryTransaction[]
+
+  
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  parts Part[]
+}
+
+model Supplier {
+  id        Int     @id @default(autoincrement())
+  name      String
+  contact   Contact @relation(fields: [contactId], references: [id])
+  contactId Int     @unique
+  parts     Part[]
+}
+
+model Contact {
+  id       Int       @id @default(autoincrement())
+  phone    String
+  email    String
+  address  String?
+  supplier Supplier?
+}
+
+model InventoryTransaction {
+  id              Int      @id @default(autoincrement())
+  date            DateTime @default(now())
+  type            String // e.g., "receipt", "sale", "adjustment"
+  partId          Int
+  part            Part     @relation(fields: [partId], references: [id])
+  quantity        Int
+  referenceNumber String? // Invoice/Work Order number
+  cost            Float? // Cost at the time of the transaction
+  notes           String?
 }

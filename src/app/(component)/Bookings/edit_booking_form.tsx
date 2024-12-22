@@ -23,7 +23,7 @@ import { getBooking, updateBooking } from "@/app/actions/bookingActions";
 import { Booking, User } from "@/types/type";
 
 import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown} from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -38,6 +38,8 @@ import {
   CommandItem,
   Command,
 } from "@/components/ui/command";
+import { Separator } from "@/components/ui/separator";
+
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
@@ -51,12 +53,15 @@ const bookingSchema = z.object({
 
 type BookingFormValues = z.infer<typeof bookingSchema>;
 
-const EditBookingForm: React.FC<{ booking_id: string,setIsOpen: Dispatch<SetStateAction<boolean>> }> = ({ booking_id,setIsOpen }) => {
+const EditBookingForm: React.FC<{
+  booking_id: string;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+}> = ({ booking_id, setIsOpen }) => {
   const [technicians, setTechnicians] = useState<User[] | null>(null);
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-const router = useRouter();
+  const router = useRouter();
   useEffect(() => {
     const get_technicians = async () => {
       try {
@@ -86,26 +91,23 @@ const router = useRouter();
     get_technicians();
     get_booking();
   }, [booking_id]);
-  console.log(booking?.services);
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
   });
 
-  
-
-    async function onSubmit(data: BookingFormValues) {
-      const result = await updateBooking(booking_id,data);
-      if (result?.status === "success") {
-        toast.success(`Appointment successfully added`);
-        router.refresh();
-        setIsOpen(false);
-        form.reset();
-      } else {
-        form.setError("root.serverError", { message: result?.error as string });
-        toast.error(`${result?.error}`);
-      }
+  async function onSubmit(data: BookingFormValues) {
+    const result = await updateBooking(booking_id, data);
+    if (result?.status === "success") {
+      toast.success(`Appointment successfully updated`);
+      router.refresh();
+      setIsOpen(false);
+      form.reset();
+    } else {
+      form.setError("root.serverError", { message: result?.error as string });
+      toast.error(`${result?.error}`);
     }
+  }
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -114,104 +116,108 @@ const router = useRouter();
     <div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue>
-                        {field.value
-                          ? field.value.toUpperCase()
-                          : "Select your status"}
-                      </SelectValue>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="ongoing">Ongoing</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
+          <div className="flex  flex-row gap-x-5">
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue>
+                          {field.value
+                            ? field.value.toUpperCase()
+                            : "Select your status"}
+                        </SelectValue>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="ongoing">Ongoing</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="payment_status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Payment Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue>
-                        {field.value
-                          ? field.value.toUpperCase()
-                          : "Select Payment Status"}
-                      </SelectValue>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="unpaid">Unpaid</SelectItem>
-                    <SelectItem value="charge">Charge</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="payment_status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment Status</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue>
+                          {field.value
+                            ? field.value.toUpperCase()
+                            : "Select Payment Status"}
+                        </SelectValue>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="unpaid">Unpaid</SelectItem>
+                      <SelectItem value="charge">Charge</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="payment_method"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Payment Method</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue>
-                        {field.value
-                          ? field.value.toUpperCase()
-                          : "Select Payment method"}
-                      </SelectValue>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="cash">Pending</SelectItem>
-                    <SelectItem value="debit">Debit</SelectItem>
-                    <SelectItem value="credit">Credit</SelectItem>
-                    <SelectItem value="interac">Interac</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="payment_method"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment Method</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue>
+                          {field.value
+                            ? field.value.toUpperCase()
+                            : "Select Payment method"}
+                        </SelectValue>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="debit">Debit</SelectItem>
+                      <SelectItem value="credit">Credit</SelectItem>
+                      <SelectItem value="interac">Interac</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+              
           <FormField
             control={form.control}
             name="technician_ids"
             render={({ field }) => (
               <FormItem className="flex flex-col">
+                <FormLabel>Technicians</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -284,7 +290,12 @@ const router = useRouter();
               </FormItem>
             )}
           />
-
+          <Separator />
+          <div>
+            Add parts, show by catagory and separte select box if parts comes
+            with service or its an add on with cost.
+          </div>
+          <Separator />
           <FormField
             control={form.control}
             name="note"
