@@ -24,7 +24,7 @@ import {
 
 import { MoreHorizontal, SquarePen, Trash2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import EditBookingForm from "../Bookings/edit_booking_form";
+import EditBookingForm from "./edit_booking_form";
 import { SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 

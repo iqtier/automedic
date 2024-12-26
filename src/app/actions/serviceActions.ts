@@ -55,8 +55,15 @@ export async function updateService(
 }
 
 export async function getAllServices() {
-  return await prisma.service.findMany({ include: { fields: true } });
+  try {
+    const services = await prisma.service.findMany({ include: { fields: true } });
+    return services;
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    throw error;
+  }
 }
+
 
 export async function deleteService(
   id: number

@@ -6,12 +6,13 @@ import { auth } from "@/lib/auth";
 import { getUserByEmail } from "@/app/actions/authActions";
 
 
-import { columns } from "@/app/(component)/Table/userTableColumns";
-import { DataTable } from "@/app/(component)/Table/data-table";
+import { columns } from "@/app/(component)/Employee/userTableColumns";
+
 
 
 import AddEmployeeForm from "@/app/(component)/Employee/add-employee-form";
 import { prisma } from "@/lib/prisma";
+import { EmployeeTable } from "@/app/(component)/Employee/employee-table";
 const Page = async () => {
   const session = await auth();
   const userEmail = session?.user?.email;
@@ -27,7 +28,7 @@ const Page = async () => {
 
       {isAdmin && <AddEmployeeForm />}
       <div className="container mx-auto py-10">
-        <DataTable
+        <EmployeeTable
           columns={columns}
           data={users?.map((user) => ({
             email: user.email,

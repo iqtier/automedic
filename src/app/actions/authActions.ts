@@ -62,6 +62,7 @@ export async function signInUser(data:z.infer<typeof LogInSchema>) : Promise<Act
 }
 
 export async function getUserByEmail(email: string){
+    console.log("calling user by email", email);
     return  await prisma.user.findUnique({where:{email}})
 }
 

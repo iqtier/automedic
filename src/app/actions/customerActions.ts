@@ -55,10 +55,16 @@ export async function updateCustomer(
     return { status: "error", error: error as string };
   }
 }
-
 export async function getAllCustomer() {
-  return await prisma.customer.findMany({ include: { vehicles : true } });
+  try {
+    const customers = await prisma.customer.findMany({ include: { vehicles: true } });
+    return customers;
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+    throw error;
+  }
 }
+
 
 export async function deleteCustomer(
   id: string

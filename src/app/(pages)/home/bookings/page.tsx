@@ -4,9 +4,9 @@ import { getAllServices } from "@/app/actions/serviceActions";
 
 import { getAllCustomer } from "@/app/actions/customerActions";
 
-import { getAllBookings, getBooking } from "@/app/actions/bookingActions";
-import { columns } from "@/app/(component)/Table/bookingTableColums";
-import { DataTable } from "@/app/(component)/Table/data-table";
+import { getAllBookings } from "@/app/actions/bookingActions";
+import { columns } from "@/app/(component)/Bookings/bookingTableColums";
+import { DataTable } from "@/app/(component)/Bookings/booking-table";
 import BookingForm from "@/app/(component)/Bookings/booking_form";
 
 import { getTechnicians } from "@/app/actions/employeeActions";
@@ -17,7 +17,7 @@ const Bookings = async () => {
   const bookings = await getAllBookings();
   const technicians = await getTechnicians();
 
-  const data = bookings.map((booking) => ({
+  const data = bookings?.map((booking) => ({
     bookingid: booking.id,
     date: format(booking.date, "dd MMM yyyy"),
     time: booking.time,
@@ -28,13 +28,13 @@ const Bookings = async () => {
       details: booking.vehicle? `${booking.vehicle.make} ${booking.vehicle.model} ${booking.vehicle.year}`:"No Vehicle associated",
     },
 
-    services: booking.services.map((sa) => ({
+    services: booking.services?.map((sa) => ({
       name: sa.service.name,
       quantity: sa.qty,
     })),
     status: booking.status,
     note: booking.note,
-    technicians: booking.technicians.map((t) => t.technician.name).join(", "),
+    technicians: booking.technicians?.map((t) => t.technician.name).join(", "),
     booking_type: booking.booking_type,
     payment_status: booking.payment_status,
     payment_method: booking.payment_method,

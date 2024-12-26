@@ -57,16 +57,22 @@ export async function createBooking(
 }
 
 export async function getAllBookings() {
-  const bookings = await prisma.booking.findMany({
-    include: {
-      customer: true,
-      vehicle: true,
-      services: { include: { service: true } },
-      technicians: { include: { technician: true } },
-    },
-  });
-  return bookings;
-} // Example usage
+  try {
+    const bookings = await prisma.booking.findMany({
+      include: {
+        customer: true,
+        vehicle: true,
+        services: { include: { service: true } },
+        technicians: { include: { technician: true } },
+      },
+    });
+    return bookings;
+  } catch (error) {
+    console.error('Error fetching bookings:', error);
+    throw error;
+  }
+}
+
 
 export async function getBooking(id: string) {
   const booking = await prisma.booking.findUnique({

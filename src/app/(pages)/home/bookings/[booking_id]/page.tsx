@@ -1,6 +1,6 @@
 import React from "react";
 import { getBooking } from "@/app/actions/bookingActions";
-import { cn } from "@/lib/utils";
+
 import {
   Card,
   CardHeader,
