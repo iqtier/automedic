@@ -81,7 +81,7 @@ const AddEmployeeForm = () => {
         <DialogHeader>
           <DialogTitle>Add Employee</DialogTitle>
           <DialogDescription>
-            Create emplouyee profile here. Click submit when youre done.
+            Create employee profile here. Click submit when youre done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

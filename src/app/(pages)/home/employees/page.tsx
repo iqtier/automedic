@@ -22,9 +22,7 @@ const Page = async () => {
 
   return (
     <div>
-      <div className="flex justify-center w-full items-center bg-blue-300 p-2 rounded-lg">
-        <p className="text-2xl font-bold">Employees</p>
-      </div>
+
 
       {isAdmin && <AddEmployeeForm />}
       <div className="container mx-auto py-10">

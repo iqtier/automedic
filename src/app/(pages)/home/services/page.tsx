@@ -15,9 +15,7 @@ const Page = async () => {
   const services = await getAllServices();
   return (
     <div className="m-5">
-      <div className="flex justify-center w-full items-center bg-blue-300 p-2 rounded-lg">
-        <p className="text-2xl font-bold">Services</p>
-      </div>
+   
 
       <ServicesAccordion services={services} isAdmin={isAdmin} />
     </div>

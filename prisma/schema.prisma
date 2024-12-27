@@ -96,12 +96,11 @@ model Service {
   price        Float
   fields       ServiceFields[]
   ServiceIdQty ServiceIdQty[]
-  
 }
 
 model Part {
   id                 Int                    @id @default(autoincrement())
-  partNumber         String                 @unique
+  sku                String                 @unique
   name               String
   description        String?
   category           Category               @relation(fields: [categoryId], references: [id])
@@ -115,13 +114,12 @@ model Part {
   supplierId         Int
   compatibleVehicles Json? // Store vehicle compatibility info (make, model, year) as JSON
   transactions       InventoryTransaction[]
-
-  
 }
 
 model Category {
   id    Int    @id @default(autoincrement())
   name  String @unique
+  description String
   parts Part[]
 }
 
