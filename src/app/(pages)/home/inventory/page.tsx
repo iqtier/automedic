@@ -7,14 +7,17 @@ import Reports from "@/app/(component)/Inventory/Reports";
 import AddNewCatagory from "@/app/(component)/Inventory/AddNewCatagory";
 import AddNewInventory from "@/app/(component)/Inventory/AddNewInventory";
 import AddNewSupplier from "@/app/(component)/Inventory/AddNewSupplier";
+import { getAllCategories, getAllSuppliers } from "@/app/actions/inventoryActions";
 
-const page = () => {
+const page = async () => {
+  const suppliers = await getAllSuppliers()
+  const categories = await getAllCategories()
   return (
     <div >
-      <div className="flex flex-1 gap-x-4">
-        <AddNewInventory />
-        <AddNewCatagory />
-        <AddNewSupplier />
+      <div className="  flex flex-1 gap-x-4">
+        <AddNewInventory suppliers = {suppliers} categories = {categories}/>
+        <AddNewCatagory fromAddNewItemForm={false} />
+        <AddNewSupplier fromAddNewItemForm={false} />
       </div>
       <div className="mt-4">
       <Tabs defaultValue="receiving" className="w-full">

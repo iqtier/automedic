@@ -44,8 +44,8 @@ export const BookingSchema = z.object({
   time: z.string({ required_error: "Please select a time slot." }),
   customer_id: z.string().min(1, "Please Select a customer"),
   vehicle_id: z.string().min(1, "Please Select a car"),
-  type:z.string(),
-  ramp:z.string(),
+  type: z.string(),
+  ramp: z.string(),
   status: z
     .enum(["pending", "ongoing", "completed", "cancelled"])
     .default("pending"),
@@ -68,13 +68,48 @@ export const CustomerSchema = z.object({
     .min(1, "Email Required")
     .email("Please Provide a valid email"),
   phone: z.string().min(1, "Phone Number Required"),
-  vehicles : z.array(
+  vehicles: z.array(
     z.object({
       make: z.string(),
       model: z.string(),
       year: z.string(),
     })
   ),
+});
+
+export const inventoryReceivingSchema = z.object({
+  inventory: z.string().min(1),
+  quantity: z.string().min(1),
+  cost: z.string().optional(),
+  supplier: z.string(),
+  reference_number: z.string(),
+});
+export const supplierSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().min(1),
+  email: z.string().optional(),
+  address: z.string().optional(),
+});
+
+export const inventorySchema = z.object({
+  name: z.string().min(1),
+  sku: z.string().optional(),
+  description: z.string(),
+  categoryId: z.number().min(1),
+  supplierId : z.number().optional(),
+  unit_cost: z.string().min(1),
+  retail_price: z.string().optional(),
+  measure_of_unit: z.string(),
+  reorder_point: z.string().min(1),
+  storage_location: z.string().min(1),
+  make: z.string().optional(),
+  model: z.string().optional(),
+  year: z.string().optional(),
+});
+
+export const categorySchema = z.object({
+  name: z.string().min(1),
+  description: z.string(),
 });
 
 export type CustomerType = z.infer<typeof CustomerSchema>;
@@ -116,7 +151,6 @@ type Customer = {
   name: string;
   email: string;
   phone: string;
-  
 };
 type Vehicle = {
   id: number;
@@ -124,22 +158,19 @@ type Vehicle = {
   model: string;
   year: string;
   customerId: string;
-
 };
 type ServiceIdQty = {
   id: string;
   bookingId: number;
   qty: string;
   serviceId: number;
-
-
 };
 
 export type Booking = {
   id: number;
   date: Date;
   time: string;
-  ramp:string|null,
+  ramp: string | null;
   vehicle_id?: number | null;
   booking_type?: string | null;
   status: string;
@@ -156,5 +187,16 @@ type BookingTechnician = {
   id: number;
   bookingId: number;
   technicianId: string;
- 
 };
+
+export type Supplier ={
+  id: number;
+  name: string;
+  contactId: number;
+
+}
+export type Category = {
+  id:number
+  name:string,
+  description:string
+}

@@ -6,7 +6,20 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
-
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -18,13 +31,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import React from "react";
 import {
   Dialog,
@@ -37,28 +44,25 @@ import {
 import { HousePlus, PackagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-const formSchema = z.object({
-  name: z.string().min(1),
-  sku: z.string().optional(),
-  description: z.string(),
-  category: z.string().min(1),
-  supplier: z.string().optional(),
-  unit_cost: z.string().min(1),
-  retail_price: z.string().optional(),
-  measure_of_unit: z.string(),
-  reorder_point: z.string().min(1),
-  storage_location: z.string().min(1),
-  make: z.string().optional(),
-  model: z.string().optional(),
-  year: z.string().optional(),
-});
+import AddNewCatagory from "./AddNewCatagory";
+import AddNewSupplier from "./AddNewSupplier";
+import { Category, inventorySchema, Supplier } from "@/types/type";
 
-const AddNewInventory = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+type AddNewCatagoryProps = {
+  suppliers: Supplier[];
+  categories: Category[];
+};
+
+const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
+  suppliers,
+  categories,
+}) => {
+  
+  const form = useForm<z.infer<typeof inventorySchema>>({
+    resolver: zodResolver(inventorySchema),
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: z.infer<typeof inventorySchema>) {
     try {
       console.log(values);
       toast(
@@ -74,12 +78,12 @@ const AddNewInventory = () => {
   return (
     <div>
       <Dialog>
-        <DialogTrigger>
-          <Button className="font-normal">
+        <DialogTrigger asChild>
+          <Button className="font-normal bg-cyan-600">
             <PackagePlus /> Add New Item
           </Button>
         </DialogTrigger>
-        <DialogContent className="h-full ">
+        <DialogContent className="h-4/5 ">
           <DialogHeader>
             <DialogTitle>Add New Item</DialogTitle>
             <DialogDescription>
@@ -90,7 +94,7 @@ const AddNewInventory = () => {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8 max-w-3xl mx-auto py-10"
+                className="space-y-4 max-w-3xl mx-auto py-5"
               >
                 <div className="grid grid-cols-12 gap-4">
                   <div className="col-span-6">
@@ -153,77 +157,154 @@ const AddNewInventory = () => {
                   )}
                 />
 
-                <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-6">
+                <div className="grid grid-cols-12 gap-2">
+                  <div className="col-span-5">
                     <FormField
                       control={form.control}
-                      name="category"
+                      name="categoryId"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col">
                           <FormLabel>Category</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="m@example.com">
-                                m@example.com
-                              </SelectItem>
-                              <SelectItem value="m@google.com">
-                                m@google.com
-                              </SelectItem>
-                              <SelectItem value="m@support.com">
-                                m@support.com
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className={cn(
+                                    " justify-between",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value
+                                    ? categories.find(
+                                        (category) =>
+                                          category.id === field.value
+                                      )?.name
+                                    : "Select Category"}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className=" p-0">
+                              <Command>
+                                <CommandInput placeholder="Search Category..." />
+                                <CommandList>
+                                  <CommandEmpty>
+                                    No category found.
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {categories.map((category) => (
+                                      <CommandItem
+                                        value={category.id.toString()}
+                                        key={category.id}
+                                        onSelect={() => {
+                                          form.setValue(
+                                            "categoryId",
+                                            category.id
+                                          );
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            category.id === field.value
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                        {category.name}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                           <FormDescription>
-                            Select Category of Inventory
+                            Select Category corresponding to your inventory
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-
-                  <div className="col-span-6">
+                  <div className="col-span-1 mt-6">
+                    <AddNewCatagory fromAddNewItemForm={true} />
+                  </div>
+                  <div className="col-span-5">
                     <FormField
                       control={form.control}
-                      name="supplier"
+                      name="supplierId"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col">
                           <FormLabel>Supplier</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Supplier" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="m@example.com">
-                                m@example.com
-                              </SelectItem>
-                              <SelectItem value="m@google.com">
-                                m@google.com
-                              </SelectItem>
-                              <SelectItem value="m@support.com">
-                                m@support.com
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>Select Supplier</FormDescription>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className={cn(
+                                    " justify-between",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value
+                                    ? suppliers.find(
+                                        (supplier) =>
+                                          supplier.id === field.value
+                                      )?.name
+                                    : "Select Supplier"}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className=" p-0">
+                              <Command>
+                                <CommandInput placeholder="Search supplier..." />
+                                <CommandList>
+                                  <CommandEmpty>
+                                    No supplier found.
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {suppliers.map((supplier) => (
+                                      <CommandItem
+                                        value={supplier.id.toString()}
+                                        key={supplier.id}
+                                        onSelect={() => {
+                                          form.setValue(
+                                            "supplierId",
+                                            supplier.id
+                                          );
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            supplier.id === field.value
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                        {supplier.name}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          <FormDescription>
+                            Select Supplier of your inventory
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  </div>
+                  <div className="col-span-1 mt-6">
+                    <AddNewSupplier fromAddNewItemForm={true} />
                   </div>
                 </div>
 

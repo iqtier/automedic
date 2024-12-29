@@ -98,7 +98,7 @@ model Service {
   ServiceIdQty ServiceIdQty[]
 }
 
-model Part {
+model Inventory {
   id                 Int                    @id @default(autoincrement())
   sku                String                 @unique
   name               String
@@ -117,18 +117,18 @@ model Part {
 }
 
 model Category {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
   description String
-  parts Part[]
+  inventory      Inventory[]
 }
 
 model Supplier {
-  id        Int     @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   name      String
-  contact   Contact @relation(fields: [contactId], references: [id])
-  contactId Int     @unique
-  parts     Part[]
+  contact   Contact     @relation(fields: [contactId], references: [id])
+  contactId Int         @unique
+  inventory    Inventory[]
 }
 
 model Contact {
@@ -140,11 +140,11 @@ model Contact {
 }
 
 model InventoryTransaction {
-  id              Int      @id @default(autoincrement())
-  date            DateTime @default(now())
+  id              Int       @id @default(autoincrement())
+  date            DateTime  @default(now())
   type            String // e.g., "receipt", "sale", "adjustment"
-  partId          Int
-  part            Part     @relation(fields: [partId], references: [id])
+  inventoryId     Int
+  part            Inventory @relation(fields: [inventoryId], references: [id])
   quantity        Int
   referenceNumber String? // Invoice/Work Order number
   cost            Float? // Cost at the time of the transaction

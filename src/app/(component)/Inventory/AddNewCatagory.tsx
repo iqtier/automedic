@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,28 +28,40 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "react-toastify";
+import { categorySchema } from "@/types/type";
+import { CreateCategory } from "@/app/actions/inventoryActions";
+import { useRouter } from "next/navigation";
 
-const formSchema = z.object({
-  name: z.string().min(1),
-  description: z.string(),
-});
-const AddNewCatagory = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues:{
-        name:"",
-        description:"",
-    }
+
+type CategoryFormProps = {
+  fromAddNewItemForm: boolean;
+};
+const AddNewCatagory: React.FC<CategoryFormProps> = ({
+  fromAddNewItemForm,
+}) => {
+  const router = useRouter();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+    const form = useForm<z.infer<typeof categorySchema>>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof categorySchema>) {
     try {
-      console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
+      const result = await CreateCategory(values);
+            if (result?.status === "success") {
+              toast.success(`Category successfully added`);
+              form.reset();
+              setIsDialogOpen(false);
+              router.refresh();
+            } else {
+              form.setError("root.serverError", { message: result?.error as string });
+              toast.error(`${result?.error}`);
+            }
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -58,10 +70,10 @@ const AddNewCatagory = () => {
 
   return (
     <div>
-      <Dialog>
-        <DialogTrigger>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
           <Button>
-            <BookmarkPlus /> Add Catagory
+            <BookmarkPlus /> {fromAddNewItemForm ? "" : "Add Catagory"}
           </Button>
         </DialogTrigger>
         <DialogContent>
