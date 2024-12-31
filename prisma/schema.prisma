@@ -33,12 +33,19 @@ model ServiceFields {
 }
 
 model Customer {
-  id       String    @id @default(cuid())
-  name     String
-  email    String    @unique
-  phone    String    @unique
-  vehicles Vehicle[]
-  bookings Booking[]
+  id                      String    @id @default(cuid())
+  name                    String
+  email                   String    @unique
+  phone                   String    @unique
+  taxExempt               Boolean   @default(false)
+  discounted              Boolean   @default(false)
+  discountRate            Float     @default(0)
+  discountType            String?
+  labourRateOverride      Float     @default(0)
+  inventoryMarkupOverride Int       @default(0)
+  isChargeAccount         Boolean   @default(false)
+  vehicles                Vehicle[]
+  bookings                Booking[]
 }
 
 model Vehicle {
@@ -100,7 +107,7 @@ model Service {
 
 model Inventory {
   id                 Int                    @id @default(autoincrement())
-  sku                String                 @unique
+  sku                String?                @unique
   name               String
   description        String?
   category           Category               @relation(fields: [categoryId], references: [id])
@@ -108,6 +115,7 @@ model Inventory {
   unitCost           Float
   retailPrice        Float
   quantityOnHand     Int                    @default(0)
+  measure_of_unit    String
   location           String? // e.g., "Shelf A, Bin 3"
   reorderPoint       Int?
   supplier           Supplier               @relation(fields: [supplierId], references: [id])
@@ -120,7 +128,7 @@ model Category {
   id          Int         @id @default(autoincrement())
   name        String      @unique
   description String
-  inventory      Inventory[]
+  inventory   Inventory[]
 }
 
 model Supplier {
@@ -128,7 +136,7 @@ model Supplier {
   name      String
   contact   Contact     @relation(fields: [contactId], references: [id])
   contactId Int         @unique
-  inventory    Inventory[]
+  inventory Inventory[]
 }
 
 model Contact {
@@ -144,7 +152,7 @@ model InventoryTransaction {
   date            DateTime  @default(now())
   type            String // e.g., "receipt", "sale", "adjustment"
   inventoryId     Int
-  part            Inventory @relation(fields: [inventoryId], references: [id])
+  inventory       Inventory @relation(fields: [inventoryId], references: [id])
   quantity        Int
   referenceNumber String? // Invoice/Work Order number
   cost            Float? // Cost at the time of the transaction

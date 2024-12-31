@@ -5,11 +5,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,29 +30,48 @@ import { CustomerSchema, CustomerType } from "@/types/type";
 import { createCustomer, updateCustomer } from "@/app/actions/customerActions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { number } from "zod";
 
 type Customer = CustomerType & { id: string };
-type CustomerFormProps = { isEdit: boolean; customerToEdit: Customer | null,fromBooking: boolean};
+type CustomerFormProps = {
+  isEdit: boolean;
+  customerToEdit: Customer | null;
+  fromBooking: boolean;
+};
 const CustomerForm: React.FC<CustomerFormProps> = ({
   isEdit,
   customerToEdit,
-  fromBooking
+  fromBooking,
 }) => {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const addForm = useForm<CustomerType>({
     resolver: zodResolver(CustomerSchema),
-    defaultValues:{
-      name:"",
+    defaultValues: {
+      name: "",
       email: "",
-      phone:""
-    }
+      phone: "",
+    },
   });
 
   const editForm = useForm<CustomerType>({
     resolver: zodResolver(CustomerSchema),
     defaultValues: {
+      name: customerToEdit?.name,
+      email: customerToEdit?.email,
+      phone: customerToEdit?.phone,
+      taxExempt: customerToEdit?.taxExempt,
+      discounted: customerToEdit?.discounted,
+      discountType: customerToEdit?.discountType,
+      discountRate: customerToEdit?.discountRate,
       ...customerToEdit,
     },
   });
@@ -60,6 +81,19 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     name: "vehicles",
   });
 
+  async function demo(data: CustomerType) {
+    try {
+      console.log(data);
+      toast(
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+        </pre>
+      );
+    } catch (error) {
+      console.error("Form submission error", error);
+      toast.error("Failed to submit the form. Please try again.");
+    }
+  }
   async function onSubmit(data: CustomerType) {
     let result;
     if (isEdit) {
@@ -85,7 +119,16 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Button className="" onClick={() => setIsDialogOpen(true)}>
-          {isEdit ?  "Edit" : fromBooking? <UserPlus />:"Add"}
+          {isEdit ? (
+            "Edit"
+          ) : fromBooking ? (
+            <UserPlus />
+          ) : (
+            <div className="flex flex-row gap-x-2  justify-center items-center">
+             
+              <UserPlus /> Add Cusotmer
+            </div>
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -103,45 +146,179 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             onSubmit={form.handleSubmit(onSubmit)}
             className="mt-5 space-y-3"
           >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            <div className="flex flex-row justify-between items-center gap-x-2 w-full">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Phone Number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="flex items-center justify-center gap-x-4">
+              <FormField
+                control={form.control}
+                name="taxExempt"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-x-4  justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel>Tax Exempt</FormLabel>
+                      <FormDescription>
+                        Is this customer is exempt form paying Tax?
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        aria-readonly
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="isChargeAccount"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-x-4  justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel>Charge Account</FormLabel>
+                      <FormDescription>
+                        Is this customer has a charge account?
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        aria-readonly
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="rounded-lg border">
+              <FormField
+                control={form.control}
+                name="discounted"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between  p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel>Apply Discount</FormLabel>
+                      <FormDescription>
+                        Is this customer is get any discount?
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        aria-readonly
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              {form.watch("discounted") && (
+                <>
+                  <div className="flex w-full gap-x-2 p-2">
+                    <FormField
+                      control={form.control}
+                      name="discountType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Discount Type</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            required={form.watch("discounted")}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select discount type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="flat_amount">
+                                Falt Amount
+                              </SelectItem>
+                              <SelectItem value="percentage">
+                                Percentage
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="discountRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Discount Value</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Discount Value"
+                              type="number"
+                              {...field}
+                              onChange={(e) => {
+                                const parsedValue = parseFloat(e.target.value);
+                                form.setValue(
+                                  field.name,
+                                  isNaN(parsedValue) ? 0 : parsedValue
+                                );
+                              }}
+                              required={form.watch("discounted")}
+                            />
+                          </FormControl>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Phone Number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            </div>
+
             {fields.map((field, index) => (
               <div
                 key={field.id}

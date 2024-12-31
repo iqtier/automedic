@@ -7,11 +7,15 @@ import Reports from "@/app/(component)/Inventory/Reports";
 import AddNewCatagory from "@/app/(component)/Inventory/AddNewCatagory";
 import AddNewInventory from "@/app/(component)/Inventory/AddNewInventory";
 import AddNewSupplier from "@/app/(component)/Inventory/AddNewSupplier";
-import { getAllCategories, getAllSuppliers } from "@/app/actions/inventoryActions";
+import { getAllCategories, getAllInventory, getAllSuppliers } from "@/app/actions/inventoryActions";
+import { DataTable } from "@/app/(component)/Inventory/inventory_table";
+import { colums } from "@/app/(component)/Inventory/inventory_table_colums";
 
 const page = async () => {
   const suppliers = await getAllSuppliers()
   const categories = await getAllCategories()
+  const inventories = await getAllInventory()
+  console.log(JSON.stringify(inventories))
   return (
     <div >
       <div className="  flex flex-1 gap-x-4">
@@ -20,7 +24,7 @@ const page = async () => {
         <AddNewSupplier fromAddNewItemForm={false} />
       </div>
       <div className="mt-4">
-      <Tabs defaultValue="receiving" className="w-full">
+      <Tabs defaultValue="inventoryList" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="inventoryList">Inventory List</TabsTrigger>
           <TabsTrigger value="receiving">Reciving</TabsTrigger>
@@ -28,7 +32,7 @@ const page = async () => {
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
         <TabsContent value="inventoryList">
-          <InventoryListTable />
+          <DataTable columns={colums} data={inventories}/>
         </TabsContent>
         <TabsContent value="receiving">
           <Receiving />

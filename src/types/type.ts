@@ -68,6 +68,13 @@ export const CustomerSchema = z.object({
     .min(1, "Email Required")
     .email("Please Provide a valid email"),
   phone: z.string().min(1, "Phone Number Required"),
+  taxExempt: z.boolean().default(false),
+  discounted: z.boolean().default(false),
+  discountRate: z.number().default(0),
+  discountType: z.string().optional(),
+  labourRateOverride: z.number().default(0),
+  inventoryMarkupOverride: z.number().default(0),
+  isChargeAccount: z.boolean().default(false),
   vehicles: z.array(
     z.object({
       make: z.string(),
@@ -96,9 +103,9 @@ export const inventorySchema = z.object({
   sku: z.string().optional(),
   description: z.string(),
   categoryId: z.number().min(1),
-  supplierId : z.number().optional(),
+  supplierId: z.number().min(1),
   unit_cost: z.string().min(1),
-  retail_price: z.string().optional(),
+  retail_price: z.string().min(1),
   measure_of_unit: z.string(),
   reorder_point: z.string().min(1),
   storage_location: z.string().min(1),
@@ -189,14 +196,13 @@ type BookingTechnician = {
   technicianId: string;
 };
 
-export type Supplier ={
+export type Supplier = {
   id: number;
   name: string;
   contactId: number;
-
-}
+};
 export type Category = {
-  id:number
-  name:string,
-  description:string
-}
+  id: number;
+  name: string;
+  description: string;
+};

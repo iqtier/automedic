@@ -14,6 +14,10 @@ export async function createCustomer(
         name: data.name,
         email: data.email,
         phone: data.phone,
+        taxExempt: data.taxExempt,
+        discounted:data.discounted,
+        discountType:data.discountType,
+        discountRate:data.discountRate,
         vehicles: {
           create: data.vehicles.map((vehicle) => ({
             make:vehicle.make,
@@ -40,6 +44,11 @@ export async function updateCustomer(
       data: {
         name: data.name,
         email: data.email,
+        phone: data.phone,
+        isChargeAccount: data.isChargeAccount,
+        discounted:data.discounted,
+        discountRate:data.discounted? data.discountRate:0,
+        discountType:data.discounted ? data.discountType : null,
         vehicles: {
           deleteMany: {},
           create: data.vehicles.map((vehicle) => ({

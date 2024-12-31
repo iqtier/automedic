@@ -47,6 +47,8 @@ import { toast } from "react-toastify";
 import AddNewCatagory from "./AddNewCatagory";
 import AddNewSupplier from "./AddNewSupplier";
 import { Category, inventorySchema, Supplier } from "@/types/type";
+import { CreateInventory } from "@/app/actions/inventoryActions";
+import { useRouter } from "next/navigation";
 
 type AddNewCatagoryProps = {
   suppliers: Supplier[];
@@ -57,27 +59,32 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
   suppliers,
   categories,
 }) => {
-  
+   const router = useRouter();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
   const form = useForm<z.infer<typeof inventorySchema>>({
     resolver: zodResolver(inventorySchema),
   });
 
-  function onSubmit(values: z.infer<typeof inventorySchema>) {
+  async function onSubmit(values: z.infer<typeof inventorySchema>) {
     try {
-      console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
+      const result = await CreateInventory(values);
+       if (result?.status === "success") {
+              toast.success(`Supplier successfully added`);
+              form.reset();
+              setIsDialogOpen(false);
+              router.refresh();
+            } else {
+              form.setError("root.serverError", { message: result?.error as string });
+              toast.error(`${result?.error}`);
+            }
     } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
+     
+      toast.error("Failed to submit the form. Please try again." + error as string);
     }
   }
   return (
     <div>
-      <Dialog>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Button className="font-normal bg-cyan-600">
             <PackagePlus /> Add New Item
@@ -136,26 +143,31 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                   </div>
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Description"
-                          className="resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Write Description of your Inventory
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-12 gap-4">
+                  <div className="col-span-4"></div>
+                  <div className="col-span-12">
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Description"
+                              className="resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Write Description of your Inventory
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-12 gap-2">
                   <div className="col-span-5">
@@ -396,7 +408,7 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                           </FormControl>
                           <FormDescription>
                             Enter the amount when you want reminder for
-                            reordering{" "}
+                            reordering.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -427,7 +439,9 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                     />
                   </div>
                 </div>
-
+                <p className="flex justify-center font-bold text-lg">
+                  Enter compatible vehicle for your inventory
+                </p>
                 <div className="grid grid-cols-12 gap-4">
                   <div className="col-span-4">
                     <FormField
