@@ -7,19 +7,19 @@ import Reports from "@/app/(component)/Inventory/Reports";
 import AddNewCatagory from "@/app/(component)/Inventory/AddNewCatagory";
 import AddNewInventory from "@/app/(component)/Inventory/AddNewInventory";
 import AddNewSupplier from "@/app/(component)/Inventory/AddNewSupplier";
-import { getAllCategories, getAllInventory, getAllSuppliers } from "@/app/actions/inventoryActions";
+import { getAllCategories,  getAllSuppliers } from "@/app/actions/inventoryActions";
 import { DataTable } from "@/app/(component)/Inventory/inventory_table";
 import { colums } from "@/app/(component)/Inventory/inventory_table_colums";
 
 const page = async () => {
   const suppliers = await getAllSuppliers()
   const categories = await getAllCategories()
-  const inventories = await getAllInventory()
-  console.log(JSON.stringify(inventories))
+  //const inventories = await getAllInventory()
+
   return (
     <div >
       <div className="  flex flex-1 gap-x-4">
-        <AddNewInventory suppliers = {suppliers} categories = {categories}/>
+        <AddNewInventory categories = {categories}/>
         <AddNewCatagory fromAddNewItemForm={false} />
         <AddNewSupplier fromAddNewItemForm={false} />
       </div>
@@ -32,7 +32,10 @@ const page = async () => {
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
         <TabsContent value="inventoryList">
-          <DataTable columns={colums} data={inventories}/>
+          this is Inventory list
+          {
+          //<DataTable columns={colums} data={inventories}/>
+          }
         </TabsContent>
         <TabsContent value="receiving">
           <Receiving />

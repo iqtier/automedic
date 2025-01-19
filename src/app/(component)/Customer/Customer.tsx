@@ -5,10 +5,9 @@ import { CustomerType } from "@/types/type";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger  } from "@/components/ui/accordion";
 
 
-import ServiceForm from "../Services/service-form";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { deleteService } from "@/app/actions/serviceActions";
+
 import { deleteCustomer } from "@/app/actions/customerActions";
 import { toast } from "react-toastify";
 

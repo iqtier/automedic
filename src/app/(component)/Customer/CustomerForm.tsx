@@ -37,7 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { number } from "zod";
+
 
 type Customer = CustomerType & { id: string };
 type CustomerFormProps = {
@@ -265,7 +265,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           <FormLabel>Discount Type</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            defaultValue={field.value ?? undefined}
                             required={form.watch("discounted")}
                           >
                             <FormControl>

@@ -32,12 +32,28 @@ import { Check, ChevronsUpDown } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 
-
-import React from "react";
+import React, { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { inventoryReceivingSchema } from "@/types/type";
+import { useState } from "react";
+import { getInventoryNameAndId } from "@/app/actions/inventoryActions";
 
 const InventoryReceivingForm = () => {
+  const [inventories, setInventories] = useState<
+    { id: number; name: string }[] | null
+  >(null);
+  useEffect(() => {
+    const inventoryNameAndId = async () => {
+      try {
+        const inventory = await getInventoryNameAndId();
+        setInventories(inventory);
+      } catch (error) {
+        throw error;
+      }
+    };
+    inventoryNameAndId();
+  }, []);
+
   const languages = [
     {
       label: "English",
@@ -101,137 +117,136 @@ const InventoryReceivingForm = () => {
         >
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-6">
-            <FormField
-            control={form.control}
-            name="inventory"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Inventory</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          " justify-between",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value
-                          ? languages.find(
-                              (language) => language.value === field.value
-                            )?.label
-                          : "Select Inventory"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className=" p-0">
-                    <Command>
-                      <CommandInput placeholder="Search language..." />
-                      <CommandList>
-                        <CommandEmpty>No language found.</CommandEmpty>
-                        <CommandGroup>
-                          {languages.map((language) => (
-                            <CommandItem
-                              value={language.label}
-                              key={language.value}
-                              onSelect={() => {
-                                form.setValue("inventory", language.value);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  language.value === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {language.label}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormDescription>
-                  Select Inventory that you are receiving
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="inventory"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Inventory</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              " justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? inventories?.find(
+                                  (inventory) => inventory.id.toString() === field.value
+                                )?.name
+                              : "Select Inventory"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className=" p-0">
+                        <Command>
+                          <CommandInput placeholder="Search language..." />
+                          <CommandList>
+                            <CommandEmpty>No language found.</CommandEmpty>
+                            <CommandGroup>
+                              {inventories?.map((inventory) => (
+                                <CommandItem
+                                  value={inventory.name}
+                                  key={inventory.id}
+                                  onSelect={() => {
+                                    form.setValue("inventory", inventory.id.toString());
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      inventory.id.toString() === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {inventory.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>
+                      Select Inventory that you are receiving
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             <div className="col-span-6">
-            <FormField
-            control={form.control}
-            name="supplier"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Supplier</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          " justify-between",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value
-                          ? languages.find(
-                              (language) => language.value === field.value
-                            )?.label
-                          : "Select Supplier"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className=" p-0">
-                    <Command>
-                      <CommandInput placeholder="Search supplier..." />
-                      <CommandList>
-                        <CommandEmpty>No supplier found.</CommandEmpty>
-                        <CommandGroup>
-                          {languages.map((language) => (
-                            <CommandItem
-                              value={language.label}
-                              key={language.value}
-                              onSelect={() => {
-                                form.setValue("supplier", language.value);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  language.value === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {language.label}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormDescription>
-                  Select Inventory that you are receiving
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="supplier"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Supplier</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              " justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? languages.find(
+                                  (language) => language.value === field.value
+                                )?.label
+                              : "Select Supplier"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className=" p-0">
+                        <Command>
+                          <CommandInput placeholder="Search supplier..." />
+                          <CommandList>
+                            <CommandEmpty>No supplier found.</CommandEmpty>
+                            <CommandGroup>
+                              {languages.map((language) => (
+                                <CommandItem
+                                  value={language.label}
+                                  key={language.value}
+                                  onSelect={() => {
+                                    form.setValue("supplier", language.value);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      language.value === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {language.label}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>
+                      Select Inventory that you are receiving
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </div>
-          
 
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-6">
@@ -272,8 +287,6 @@ const InventoryReceivingForm = () => {
               />
             </div>
           </div>
-
-          
 
           <FormField
             control={form.control}

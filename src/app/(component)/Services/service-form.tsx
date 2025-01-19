@@ -176,10 +176,12 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
             >
               Add Field
             </Button>
-            <Button className="w-full font-bold" type="submit">
-              {isEdit ? "Update " : "ADD "}
-            </Button>
-            <SheetFooter></SheetFooter>
+
+            <SheetFooter>
+              <Button className="w-full font-bold" type="submit">
+                {isEdit ? "Update " : "ADD "}
+              </Button>
+            </SheetFooter>
           </form>
         </Form>
       </SheetContent>

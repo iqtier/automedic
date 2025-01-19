@@ -71,9 +71,8 @@ export const CustomerSchema = z.object({
   taxExempt: z.boolean().default(false),
   discounted: z.boolean().default(false),
   discountRate: z.number().default(0),
-  discountType: z.string().optional(),
-  labourRateOverride: z.number().default(0),
-  inventoryMarkupOverride: z.number().default(0),
+  discountType: z.union([z.string(), z.null()]).default(null),
+
   isChargeAccount: z.boolean().default(false),
   vehicles: z.array(
     z.object({
@@ -90,6 +89,7 @@ export const inventoryReceivingSchema = z.object({
   cost: z.string().optional(),
   supplier: z.string(),
   reference_number: z.string(),
+  notes: z.string().optional(),
 });
 export const supplierSchema = z.object({
   name: z.string().min(1),
@@ -101,22 +101,32 @@ export const supplierSchema = z.object({
 export const inventorySchema = z.object({
   name: z.string().min(1),
   sku: z.string().optional(),
-  description: z.string(),
+  brand:z.string().optional(),
   categoryId: z.number().min(1),
-  supplierId: z.number().min(1),
+  fields: z.array(
+    z.object({
+      name: z.string().min(1),
+      value: z.string().min(1),
+    })
+  ),
+  quantityOnHand:z.string().min(1),
   unit_cost: z.string().min(1),
   retail_price: z.string().min(1),
   measure_of_unit: z.string(),
   reorder_point: z.string().min(1),
   storage_location: z.string().min(1),
-  make: z.string().optional(),
-  model: z.string().optional(),
-  year: z.string().optional(),
+  compatibleVehicles:z.string().optional()
 });
 
 export const categorySchema = z.object({
   name: z.string().min(1),
   description: z.string(),
+  fields: z.array(
+    z.object({
+      name: z.string(),
+    })
+  ),
+  compatibleVehicles: z.boolean().default(false),
 });
 
 export type CustomerType = z.infer<typeof CustomerSchema>;
@@ -205,4 +215,6 @@ export type Category = {
   id: number;
   name: string;
   description: string;
+  fields:string[]
+  compatibleVehicles: boolean;
 };

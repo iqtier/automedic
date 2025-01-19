@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
@@ -37,51 +37,83 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { HousePlus, PackagePlus } from "lucide-react";
+import { PackagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import AddNewCatagory from "./AddNewCatagory";
-import AddNewSupplier from "./AddNewSupplier";
+
 import { Category, inventorySchema, Supplier } from "@/types/type";
-import { CreateInventory } from "@/app/actions/inventoryActions";
+
 import { useRouter } from "next/navigation";
 
-type AddNewCatagoryProps = {
-  suppliers: Supplier[];
+type AddNewInventoryProps = {
   categories: Category[];
 };
 
-const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
-  suppliers,
-  categories,
-}) => {
-   const router = useRouter();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+const AddNewInventory: React.FC<AddNewInventoryProps> = ({ categories }) => {
+  const router = useRouter();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const form = useForm<z.infer<typeof inventorySchema>>({
     resolver: zodResolver(inventorySchema),
+    defaultValues: {
+      fields: [], // Initialize fields as an empty array
+    },
   });
+  const { control, watch, handleSubmit, setValue, register, getValues } = form;
+  const { fields, append, remove, replace } = useFieldArray({
+    control,
+    name: "fields",
+  });
+  const watchedCategoryId = form.watch("categoryId");
+  const selectedCategory = categories.find(
+    (cat) => cat.id === watchedCategoryId
+  );
 
   async function onSubmit(values: z.infer<typeof inventorySchema>) {
     try {
-      const result = await CreateInventory(values);
-       if (result?.status === "success") {
-              toast.success(`Supplier successfully added`);
-              form.reset();
-              setIsDialogOpen(false);
-              router.refresh();
-            } else {
-              form.setError("root.serverError", { message: result?.error as string });
-              toast.error(`${result?.error}`);
-            }
+      console.log(values);
+      toast(
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
+        </pre>
+      );
+      form.reset();
+      setIsDialogOpen(false);
+      router.refresh();
+      /*const result = await CreateInventory(values);
+      if (result?.status === "success") {
+        toast.success(`Supplier successfully added`);
+        form.reset();
+        setIsDialogOpen(false);
+        router.refresh();
+      } else {
+        form.setError("root.serverError", { message: result?.error as string });
+        toast.error(`${result?.error}`);
+      }*/
     } catch (error) {
-     
-      toast.error("Failed to submit the form. Please try again." + error as string);
+      toast.error(
+        ("Failed to submit the form. Please try again." + error) as string
+      );
     }
   }
+
+  useEffect(() => {
+    if (selectedCategory) {
+      replace(
+        selectedCategory.fields.map((fieldName) => ({
+          name: fieldName,
+          value: "",
+        }))
+      );
+    } else {
+      replace([]);
+    }
+  }, [selectedCategory, replace]);
   return (
     <div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -98,70 +130,56 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="rounded-md border p-2">
-            <Form {...form}>
+            <FormProvider {...form}>
               <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(onSubmit)}
                 className="space-y-4 max-w-3xl mx-auto py-5"
               >
-                <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-6">
+                <div className="grid grid-cols-12 gap-2">
+                  <div className="col-span-4">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Name</FormLabel>
+                          <FormLabel>Inventory Name </FormLabel>
                           <FormControl>
                             <Input placeholder="Name" type="text" {...field} />
                           </FormControl>
-                          <FormDescription>
-                            Enter Your inventory name
-                          </FormDescription>
+                          <FormDescription></FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
 
-                  <div className="col-span-6">
+                  <div className="col-span-4">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="sku"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>SKU</FormLabel>
+                          <FormLabel>Inventory SKU </FormLabel>
                           <FormControl>
                             <Input placeholder="SKU" type="text" {...field} />
                           </FormControl>
-                          <FormDescription>
-                            Enter stock keeping unit number of parts
-                          </FormDescription>
+                          <FormDescription></FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                </div>
-
-                <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-4"></div>
-                  <div className="col-span-12">
+                  <div className="col-span-4">
                     <FormField
-                      control={form.control}
-                      name="description"
+                      control={control}
+                      name="brand"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Description</FormLabel>
+                          <FormLabel>Inventory Brand</FormLabel>
                           <FormControl>
-                            <Textarea
-                              placeholder="Description"
-                              className="resize-none"
-                              {...field}
-                            />
+                            <Input placeholder="Brand" type="text" {...field} />
                           </FormControl>
-                          <FormDescription>
-                            Write Description of your Inventory
-                          </FormDescription>
+                          <FormDescription></FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -170,13 +188,13 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                 </div>
 
                 <div className="grid grid-cols-12 gap-2">
-                  <div className="col-span-5">
+                  <div className="col-span-11">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="categoryId"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Category</FormLabel>
+                          <FormLabel>Inventory Category </FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
@@ -208,7 +226,7 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                                   <CommandGroup>
                                     {categories.map((category) => (
                                       <CommandItem
-                                        value={category.id.toString()}
+                                        value={category.name}
                                         key={category.id}
                                         onSelect={() => {
                                           form.setValue(
@@ -233,97 +251,54 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                               </Command>
                             </PopoverContent>
                           </Popover>
-                          <FormDescription>
-                            Select Category corresponding to your inventory
-                          </FormDescription>
+                          <FormDescription></FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  <div className="col-span-1 mt-6">
+                  <div className="col-span-1 mt-5">
                     <AddNewCatagory fromAddNewItemForm={true} />
                   </div>
-                  <div className="col-span-5">
-                    <FormField
-                      control={form.control}
-                      name="supplierId"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Supplier</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  className={cn(
-                                    " justify-between",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value
-                                    ? suppliers.find(
-                                        (supplier) =>
-                                          supplier.id === field.value
-                                      )?.name
-                                    : "Select Supplier"}
-                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className=" p-0">
-                              <Command>
-                                <CommandInput placeholder="Search supplier..." />
-                                <CommandList>
-                                  <CommandEmpty>
-                                    No supplier found.
-                                  </CommandEmpty>
-                                  <CommandGroup>
-                                    {suppliers.map((supplier) => (
-                                      <CommandItem
-                                        value={supplier.id.toString()}
-                                        key={supplier.id}
-                                        onSelect={() => {
-                                          form.setValue(
-                                            "supplierId",
-                                            supplier.id
-                                          );
-                                        }}
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            supplier.id === field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                        {supplier.name}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                          <FormDescription>
-                            Select Supplier of your inventory
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="col-span-1 mt-6">
-                    <AddNewSupplier fromAddNewItemForm={true} />
-                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-4">
+                  {" "}
+                  {/* Container for dynamic fields */}
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4"
+                    >
+                      {/* Responsive width */}
+                      <FormField
+                        control={control}
+                        name={`fields.${index}.value`}
+                        render={({ field: inputField }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {getValues(`fields.${index}.name`)}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={getValues(`fields.${index}.name`)}
+                                type="text"
+                                {...inputField}
+                              />
+                            </FormControl>
+                            <FormDescription></FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  ))}
                 </div>
 
                 <div className="grid grid-cols-12 gap-4">
                   <div className="col-span-4">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="unit_cost"
                       render={({ field }) => (
                         <FormItem>
@@ -335,9 +310,7 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            Enter cost of your inventory (per unit)
-                          </FormDescription>
+                          <FormDescription></FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -346,7 +319,7 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
 
                   <div className="col-span-4">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="retail_price"
                       render={({ field }) => (
                         <FormItem>
@@ -358,9 +331,7 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            Retail Price of your Inventory
-                          </FormDescription>
+                          <FormDescription></FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -369,7 +340,7 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
 
                   <div className="col-span-4">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="measure_of_unit"
                       render={({ field }) => (
                         <FormItem>
@@ -381,9 +352,7 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            Enter the measure of unit of inventory
-                          </FormDescription>
+                          <FormDescription></FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -394,7 +363,7 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                 <div className="grid grid-cols-12 gap-4">
                   <div className="col-span-6">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="reorder_point"
                       render={({ field }) => (
                         <FormItem>
@@ -406,10 +375,7 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            Enter the amount when you want reminder for
-                            reordering.
-                          </FormDescription>
+                          <FormDescription></FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -418,7 +384,7 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
 
                   <div className="col-span-6">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="storage_location"
                       render={({ field }) => (
                         <FormItem>
@@ -430,75 +396,28 @@ const AddNewInventory: React.FC<AddNewCatagoryProps> = ({
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            Enter storage location of your inventory
-                          </FormDescription>
+                          <FormDescription></FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
                 </div>
-                <p className="flex justify-center font-bold text-lg">
+                {
+                  selectedCategory?.compatibleVehicles && 
+                  <>
+                   <p className="flex justify-center font-bold text-lg">
                   Enter compatible vehicle for your inventory
                 </p>
-                <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-4">
-                    <FormField
-                      control={form.control}
-                      name="make"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Make</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Make" type="" {...field} />
-                          </FormControl>
-                          <FormDescription>Enter vehicle make</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                <div ></div>
+                  </>
+                }
+               
 
-                  <div className="col-span-4">
-                    <FormField
-                      control={form.control}
-                      name="model"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Model</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Model" type="text" {...field} />
-                          </FormControl>
-                          <FormDescription>Enter Model</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="col-span-4">
-                    <FormField
-                      control={form.control}
-                      name="year"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Year</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Year" type="text" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            Enter Year of Vehicle
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-                <Button type="submit">Submit</Button>
+               <DialogFooter><Button className="w-full" type="submit">Add Inventory</Button></DialogFooter>
+                
               </form>
-            </Form>
+            </FormProvider>
           </ScrollArea>
         </DialogContent>
       </Dialog>

@@ -11,7 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  //directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -106,37 +106,48 @@ model Service {
 }
 
 model Inventory {
-  id                 Int                    @id @default(autoincrement())
-  sku                String?                @unique
-  name               String
-  description        String?
-  category           Category               @relation(fields: [categoryId], references: [id])
-  categoryId         Int
-  unitCost           Float
-  retailPrice        Float
-  quantityOnHand     Int                    @default(0)
-  measure_of_unit    String
-  location           String? // e.g., "Shelf A, Bin 3"
-  reorderPoint       Int?
-  supplier           Supplier               @relation(fields: [supplierId], references: [id])
-  supplierId         Int
+  id              Int      @id @default(autoincrement())
+  sku             String?  @unique
+  name            String
+  description     String?
+  category        Category @relation(fields: [categoryId], references: [id])
+  categoryId      Int
+  unitCost        Float
+  retailPrice     Float
+  quantityOnHand  Int      @default(0)
+  measure_of_unit String
+  location        String? // e.g., "Shelf A, Bin 3"
+  reorderPoint    Int?
+
   compatibleVehicles Json? // Store vehicle compatibility info (make, model, year) as JSON
   transactions       InventoryTransaction[]
+
+  InventoryFields InventoryFields[]
+}
+
+model InventoryFields {
+  id          Int       @id @default(autoincrement())
+  name        String
+  value       String
+  inventoryId Int
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
 }
 
 model Category {
-  id          Int         @id @default(autoincrement())
-  name        String      @unique
-  description String
-  inventory   Inventory[]
+  id                 Int         @id @default(autoincrement())
+  name               String      @unique
+  description        String
+  fields             String[]
+  compatibleVehicles Boolean     @default(false)
+  inventory          Inventory[]
 }
 
 model Supplier {
-  id        Int         @id @default(autoincrement())
-  name      String
-  contact   Contact     @relation(fields: [contactId], references: [id])
-  contactId Int         @unique
-  inventory Inventory[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  contact              Contact                @relation(fields: [contactId], references: [id])
+  contactId            Int                    @unique
+  InventoryTransaction InventoryTransaction[]
 }
 
 model Contact {
@@ -150,6 +161,8 @@ model Contact {
 model InventoryTransaction {
   id              Int       @id @default(autoincrement())
   date            DateTime  @default(now())
+  supplier        Supplier  @relation(fields: [supplierId], references: [id])
+  supplierId      Int
   type            String // e.g., "receipt", "sale", "adjustment"
   inventoryId     Int
   inventory       Inventory @relation(fields: [inventoryId], references: [id])
