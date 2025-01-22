@@ -23,9 +23,14 @@ import {
 } from "@/components/ui/sidebar";
 import SideBarItem from "./SideBarItem";
 
+
 // This is sample data.
 const items = [
-
+  {
+    title: "Dashboard",
+    url: "/home/dashboard",
+    icon:  Activity ,
+  },
   {
     title: "Bookings",
     url: "/home/bookings",
@@ -75,6 +80,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
+                
                 <SideBarItem key={item.url} item={item}/>
               ))}
             </SidebarMenu>

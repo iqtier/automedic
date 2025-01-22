@@ -1,10 +1,10 @@
 import React from 'react'
 import Dashboard from './dashboard/page'
-import Bookings from './bookings/page'
+import { redirect } from 'next/navigation'
 
 const Home = () => {
   return (
-    <Bookings/>
+    redirect('/home/dashboard')
   )
 }
 

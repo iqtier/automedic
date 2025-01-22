@@ -109,19 +109,17 @@ model Inventory {
   id              Int      @id @default(autoincrement())
   sku             String?  @unique
   name            String
-  description     String?
+  brand           String?
   category        Category @relation(fields: [categoryId], references: [id])
   categoryId      Int
+  quantityOnHand  Int      @default(0)
   unitCost        Float
   retailPrice     Float
-  quantityOnHand  Int      @default(0)
   measure_of_unit String
-  location        String? // e.g., "Shelf A, Bin 3"
   reorderPoint    Int?
-
-  compatibleVehicles Json? // Store vehicle compatibility info (make, model, year) as JSON
+  location        String? // e.g., "Shelf A, Bin 3"
+  compatibleVehicles String // Store vehicle compatibility info (make, model, year) as JSON
   transactions       InventoryTransaction[]
-
   InventoryFields InventoryFields[]
 }
 

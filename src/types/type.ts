@@ -100,22 +100,22 @@ export const supplierSchema = z.object({
 
 export const inventorySchema = z.object({
   name: z.string().min(1),
-  sku: z.string().optional(),
-  brand:z.string().optional(),
+  sku: z.string().default("Not Provided"),
+  brand:z.string().default("Not Provided"),
   categoryId: z.number().min(1),
+  quantityOnHand:z.string().default("0"),
+  unit_cost: z.string().min(1),
+  retail_price: z.string().min(1),
+  measure_of_unit: z.string(),
+  reorder_point: z.string().min(1),
+  storage_location: z.string().min(1),
+  compatibleVehicles:z.string().default("Not Applicable"),
   fields: z.array(
     z.object({
       name: z.string().min(1),
       value: z.string().min(1),
     })
   ),
-  quantityOnHand:z.string().min(1),
-  unit_cost: z.string().min(1),
-  retail_price: z.string().min(1),
-  measure_of_unit: z.string(),
-  reorder_point: z.string().min(1),
-  storage_location: z.string().min(1),
-  compatibleVehicles:z.string().optional()
 });
 
 export const categorySchema = z.object({

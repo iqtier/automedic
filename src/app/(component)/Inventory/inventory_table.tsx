@@ -53,7 +53,6 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -72,9 +71,9 @@ export function DataTable<TData, TValue>({
     <div className="flex items-center mb-1">
       <Input
         placeholder="Search..."
-        value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+        value={(table.getColumn('item')?.getFilterValue() as string) ?? ''}
         onChange={(event) =>
-          table.getColumn('name')?.setFilterValue(event.target.value)
+          table.getColumn('item')?.setFilterValue(event.target.value)
         }
         className="max-w-sm"
       />

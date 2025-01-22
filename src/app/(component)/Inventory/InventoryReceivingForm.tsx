@@ -36,76 +36,59 @@ import React, { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { inventoryReceivingSchema } from "@/types/type";
 import { useState } from "react";
-import { getInventoryNameAndId } from "@/app/actions/inventoryActions";
+import {
+  getInventoryNameAndId,
+  getSupplierNameAndId,
+  ReceiveInventory,
+} from "@/app/actions/inventoryActions";
+import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
 
 const InventoryReceivingForm = () => {
+  const router = useRouter();
   const [inventories, setInventories] = useState<
     { id: number; name: string }[] | null
   >(null);
+  const [suppliers, setSuppliers] = useState<
+    { id: number; name: string }[] | null
+  >(null);
   useEffect(() => {
-    const inventoryNameAndId = async () => {
+    const getInventoriesAndSuppliers = async () => {
       try {
         const inventory = await getInventoryNameAndId();
         setInventories(inventory);
+        const suppliers = await getSupplierNameAndId();
+        setSuppliers(suppliers);
       } catch (error) {
         throw error;
       }
     };
-    inventoryNameAndId();
+    getInventoriesAndSuppliers();
   }, []);
 
-  const languages = [
-    {
-      label: "English",
-      value: "en",
-    },
-    {
-      label: "French",
-      value: "fr",
-    },
-    {
-      label: "German",
-      value: "de",
-    },
-    {
-      label: "Spanish",
-      value: "es",
-    },
-    {
-      label: "Portuguese",
-      value: "pt",
-    },
-    {
-      label: "Russian",
-      value: "ru",
-    },
-    {
-      label: "Japanese",
-      value: "ja",
-    },
-    {
-      label: "Korean",
-      value: "ko",
-    },
-    {
-      label: "Chinese",
-      value: "zh",
-    },
-  ] as const;
   const form = useForm<z.infer<typeof inventoryReceivingSchema>>({
     resolver: zodResolver(inventoryReceivingSchema),
+    defaultValues:{
+      quantity:"",
+      cost:"",
+      reference_number:""
+    },
   });
-  function onSubmit(values: z.infer<typeof inventoryReceivingSchema>) {
+  async function onSubmit(data: z.infer<typeof inventoryReceivingSchema>) {
     try {
-      console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
+      const result = await ReceiveInventory(data);
+      if (result?.status === "success") {
+        toast.success("Inventory successfully received");
+        form.reset();
+        router.refresh();
+      } else {
+        form.setError("root.serverError", { message: result?.error as string });
+        toast.error(`${result?.error}`);
+      }
     } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
+      toast.error(
+        ("Failed to submit the form. Please try again." + error) as string
+      );
     }
   }
   return (
@@ -136,7 +119,8 @@ const InventoryReceivingForm = () => {
                           >
                             {field.value
                               ? inventories?.find(
-                                  (inventory) => inventory.id.toString() === field.value
+                                  (inventory) =>
+                                    inventory.id.toString() === field.value
                                 )?.name
                               : "Select Inventory"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -145,16 +129,19 @@ const InventoryReceivingForm = () => {
                       </PopoverTrigger>
                       <PopoverContent className=" p-0">
                         <Command>
-                          <CommandInput placeholder="Search language..." />
+                          <CommandInput placeholder="Search Inventory..." />
                           <CommandList>
-                            <CommandEmpty>No language found.</CommandEmpty>
+                            <CommandEmpty>No Inventory found.</CommandEmpty>
                             <CommandGroup>
                               {inventories?.map((inventory) => (
                                 <CommandItem
                                   value={inventory.name}
                                   key={inventory.id}
                                   onSelect={() => {
-                                    form.setValue("inventory", inventory.id.toString());
+                                    form.setValue(
+                                      "inventory",
+                                      inventory.id.toString()
+                                    );
                                   }}
                                 >
                                   <Check
@@ -200,9 +187,10 @@ const InventoryReceivingForm = () => {
                             )}
                           >
                             {field.value
-                              ? languages.find(
-                                  (language) => language.value === field.value
-                                )?.label
+                              ? suppliers?.find(
+                                  (supplier) =>
+                                    supplier.id.toString() === field.value
+                                )?.name
                               : "Select Supplier"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -214,23 +202,26 @@ const InventoryReceivingForm = () => {
                           <CommandList>
                             <CommandEmpty>No supplier found.</CommandEmpty>
                             <CommandGroup>
-                              {languages.map((language) => (
+                              {suppliers?.map((supplier) => (
                                 <CommandItem
-                                  value={language.label}
-                                  key={language.value}
+                                  value={supplier.name}
+                                  key={supplier.id}
                                   onSelect={() => {
-                                    form.setValue("supplier", language.value);
+                                    form.setValue(
+                                      "supplier",
+                                      supplier.id.toString()
+                                    );
                                   }}
                                 >
                                   <Check
                                     className={cn(
                                       "mr-2 h-4 w-4",
-                                      language.value === field.value
+                                      supplier.id.toString() === field.value
                                         ? "opacity-100"
                                         : "opacity-0"
                                     )}
                                   />
-                                  {language.label}
+                                  {supplier.name}
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -249,7 +240,7 @@ const InventoryReceivingForm = () => {
           </div>
 
           <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-6">
+            <div className="col-span-4">
               <FormField
                 control={form.control}
                 name="quantity"
@@ -257,7 +248,7 @@ const InventoryReceivingForm = () => {
                   <FormItem>
                     <FormLabel>Quantity</FormLabel>
                     <FormControl>
-                      <Input placeholder="Quantity" type="number" {...field} />
+                      <Input placeholder="Quantity" {...field} />
                     </FormControl>
                     <FormDescription>
                       Enter quantity you are receiving
@@ -268,7 +259,7 @@ const InventoryReceivingForm = () => {
               />
             </div>
 
-            <div className="col-span-6">
+            <div className="col-span-4">
               <FormField
                 control={form.control}
                 name="cost"
@@ -276,10 +267,28 @@ const InventoryReceivingForm = () => {
                   <FormItem>
                     <FormLabel>Cost</FormLabel>
                     <FormControl>
-                      <Input placeholder="Cost" type="number" {...field} />
+                      <Input placeholder="Cost" {...field} />
                     </FormControl>
                     <FormDescription>
                       Cost per unit (if different than previous cost)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-4">
+              <FormField
+                control={form.control}
+                name="reference_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reference Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Reference number" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Enter Reference number of Invoice number
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -290,25 +299,25 @@ const InventoryReceivingForm = () => {
 
           <FormField
             control={form.control}
-            name="reference_number"
+            name="notes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Reference Number</FormLabel>
+                <FormLabel>Note</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Reference number"
-                    type="text"
-                    {...field}
-                  />
+                  <Textarea placeholder="Note" {...field} />
                 </FormControl>
                 <FormDescription>
-                  Enter Reference number of Invoice number
+                  Enter any notes about the transaction
                 </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit">Submit</Button>
+          <div className="flex justify-center items-center">
+            <Button type="submit" className="w-2/3">
+              Receive Inventory
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

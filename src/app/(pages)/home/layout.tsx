@@ -12,7 +12,7 @@ import {
 import NavBar from "@/app/(component)/Navbar/NavBar";
 
 const HomeLayout = async ({ children }: { children: React.ReactNode }) => {
-  const cookieStore = await cookies();
+ 
 
   return (
     <SidebarProvider>
