@@ -60,21 +60,22 @@ model Vehicle {
 }
 
 model Booking {
-  id             Int                 @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   date           DateTime
   time           String
   ramp           String?
   vehicle_id     Int?
   booking_type   String?
-  status         String              @default("pending")
-  note           String              @default("")
-  payment_status String              @default("unpaid")
-  payment_method String              @default("cash")
+  status         String   @default("pending")
+  note           String   @default("")
+  payment_status String   @default("unpaid")
+  payment_method String   @default("cash")
   customerid     String
-  services       ServiceIdQty[]
-  technicians    BookingTechnician[]
-  vehicle        Vehicle?            @relation(fields: [vehicle_id], references: [id], onDelete: SetNull)
-  customer       Customer            @relation(fields: [customerid], references: [id], onDelete: Cascade)
+  services    ServiceIdQty[]
+  technicians BookingTechnician[]
+  vehicle     Vehicle?            @relation(fields: [vehicle_id], references: [id], onDelete: SetNull)
+  customer    Customer            @relation(fields: [customerid], references: [id], onDelete: Cascade)
+  UsedInventory UsedInventory[]
 }
 
 model BookingTechnician {
@@ -106,21 +107,22 @@ model Service {
 }
 
 model Inventory {
-  id              Int      @id @default(autoincrement())
-  sku             String?  @unique
-  name            String
-  brand           String?
-  category        Category @relation(fields: [categoryId], references: [id])
-  categoryId      Int
-  quantityOnHand  Int      @default(0)
-  unitCost        Float
-  retailPrice     Float
-  measure_of_unit String
-  reorderPoint    Int?
-  location        String? // e.g., "Shelf A, Bin 3"
+  id                 Int                    @id @default(autoincrement())
+  sku                String?                @unique
+  name               String
+  brand              String?
+  category           Category               @relation(fields: [categoryId], references: [id])
+  categoryId         Int
+  quantityOnHand     Int                    @default(0)
+  unitCost           Float
+  retailPrice        Float
+  measure_of_unit    String
+  reorderPoint       Int?
+  location           String? // e.g., "Shelf A, Bin 3"
   compatibleVehicles String // Store vehicle compatibility info (make, model, year) as JSON
   transactions       InventoryTransaction[]
-  InventoryFields InventoryFields[]
+  InventoryFields    InventoryFields[]
+  UsedInventory      UsedInventory[]
 }
 
 model InventoryFields {
@@ -128,7 +130,7 @@ model InventoryFields {
   name        String
   value       String
   inventoryId Int
-  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
 }
 
 model Category {
@@ -163,9 +165,20 @@ model InventoryTransaction {
   supplierId      Int
   type            String // e.g., "receipt", "sale", "adjustment"
   inventoryId     Int
-  inventory       Inventory @relation(fields: [inventoryId], references: [id])
+  inventory       Inventory @relation(fields: [inventoryId], references: [id],onDelete: Cascade)
   quantity        Int
   referenceNumber String? // Invoice/Work Order number
   cost            Float? // Cost at the time of the transaction
   notes           String?
+}
+
+model UsedInventory {
+  id              Int       @id @default(autoincrement())
+  inventoryId     Int
+  inventory       Inventory @relation(fields: [inventoryId], references: [id])
+  bookingId       Int
+  booking         Booking   @relation(fields: [bookingId], references: [id])
+  quantity        Int
+  cost            Float
+  transactionType String
 }

@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
@@ -101,23 +100,69 @@ export const columns: ColumnDef<BookingDetail>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => <div>{row.getValue("status")}</div>,
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      const isCompleted = status === "completed";
+      const isOnGoing = status === "ongoing";
+      const isCancelled = status === "cancelled";
+
+      return (
+        <div
+          className={`p-1 flex justify-center rounded-sm ${
+            isCompleted
+              ? "bg-green-300"
+              : isOnGoing
+              ? "bg-orange-300"
+              : isCancelled
+              ? "bg-red-300"
+              : "bg-blue-300"
+          } `}
+        >
+          {status.toUpperCase()}
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "note",
-    header: "Note",
-    cell: ({ row }) => <div>{row.getValue("note")}</div>,
+    accessorKey: "payment_status",
+    header: "Payment Status",
+    cell: ({ row }) => {
+      const payment_status = row.getValue("payment_status") as string;
+      const isPaid = payment_status === "paid";
+      const isCharge = payment_status === "charge";
+      const isUnpaid = payment_status === "unpaid";
+      return (
+        <div
+          className={`p-1 flex justify-center rounded-sm ${
+            isPaid
+              ? "bg-green-300"
+              : isCharge
+              ? "bg-orange-300"
+              : isUnpaid
+              ? "bg-red-300"
+              : "bg-blue-300"
+          } `}
+        >
+          {payment_status.toUpperCase()}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "payment_method",
+    header: "Payment Method",
+    cell: ({ row }) => {
+      const payment_method = row.getValue("payment_method") as string;
+
+      return <div className="p-1 flex justify-center rounded-sm">{payment_method.toUpperCase()}</div>;
+    },
   },
   {
     accessorKey: "technicians",
     header: "Technicians",
     cell: ({ row }) => <div>{row.getValue("technicians")}</div>,
   },
-  {
-    accessorKey: "payment_status",
-    header: "Payment Status",
-    cell: ({ row }) => <div>{row.getValue("payment_status")}</div>,
-  },
+
   {
     accessorKey: "booking_type",
     header: "Booking Type",
@@ -126,8 +171,8 @@ export const columns: ColumnDef<BookingDetail>[] = [
 
       return (
         <div
-          className={`px-2 py-1 text-white rounded-lg ${
-            isAppointment ? " bg-blue-500" : "bg-green-500"
+          className={`p-2 flex justify-center text-white rounded-sm ${
+            isAppointment ? " bg-blue-800" : "bg-green-800"
           }`}
         >
           {row.getValue("booking_type")}
@@ -135,11 +180,7 @@ export const columns: ColumnDef<BookingDetail>[] = [
       );
     },
   },
-  {
-    accessorKey: "payment_method",
-    header: "Payment Method",
-    cell: ({ row }) => <div>{row.getValue("payment_method")}</div>,
-  },
+
   {
     id: "actions",
     cell: ({ row }) => {

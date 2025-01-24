@@ -1,11 +1,29 @@
-import React from 'react'
-
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 const UpcomingJobs = () => {
   return (
-    <div>
-      
+    <div className="w-2/3">
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-semibold text-2xl">Upcoming Appointments</CardTitle>
+          <CardDescription>Card Description</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p>Date time - vehicle -services -customer</p>
+        </CardContent>
+        <CardFooter>
+          <p>Card Footer</p>
+        </CardFooter>
+      </Card>
     </div>
-  )
-}
+  );
+};
 
-export default UpcomingJobs
+export default UpcomingJobs;
