@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AddEmployeeForm from "@/app/(component)/Employee/add-employee-form";
 import { prisma } from "@/lib/prisma";
 import { EmployeeTable } from "@/app/(component)/Employee/employee-table";
+import { ClockInForm } from "@/app/(component)/Employee/clockInOut";
 const Page = async () => {
  
   const session = await auth();
@@ -24,9 +25,9 @@ const Page = async () => {
     <div>
       {isAdmin && <AddEmployeeForm />}
 
-      <Tabs className="w-full mt-2">
+      <Tabs defaultValue="Clock IN/Out" className="w-full mt-2">
         <TabsList
-          defaultValue="Clock IN/Out"
+          
           className="grid w-full grid-cols-3"
         >
           <TabsTrigger value="Clock IN/Out">Clock IN/Out</TabsTrigger>
@@ -35,7 +36,7 @@ const Page = async () => {
         </TabsList>
         <TabsContent value="Clock IN/Out">
           
-
+        <ClockInForm/>
         </TabsContent>
         <TabsContent value="Schedule">
           <div>Schedule</div>

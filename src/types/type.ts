@@ -72,7 +72,6 @@ export const CustomerSchema = z.object({
   discounted: z.boolean().default(false),
   discountRate: z.number().default(0),
   discountType: z.union([z.string(), z.null()]).default(null),
-
   isChargeAccount: z.boolean().default(false),
   vehicles: z.array(
     z.object({

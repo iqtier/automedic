@@ -144,11 +144,7 @@ const EditBookingForm: React.FC<{
   });
 
   async function onSubmit(data: BookingFormValues) {
-    toast(
-      <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-        <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-      </pre>
-    );
+    
    
     const result = await updateBooking(booking_id, data);
     if (result?.status === "success") {

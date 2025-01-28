@@ -9,6 +9,23 @@ import { AuthError } from 'next-auth';
 import { ActionResult } from '@/types/type';
 import { z } from 'zod';
 
+async function generateUniquePin(): Promise<string> {
+    let pin: string = '';
+    let isPinUnique = false;
+    
+    while (!isPinUnique) {
+        pin = String(Math.floor(1000 + Math.random() * 9000)); // Generates a 4-digit number
+      
+        const existingUserWithPin = await prisma.user.findUnique({
+          where: { pin },
+        });
+        
+        if (!existingUserWithPin) {
+          isPinUnique = true;
+        }
+    }
+    return pin;
+  }
 
 export async function registerUser(data: z.infer<typeof UserSchema>): Promise<ActionResult<User>> {
         try {
@@ -22,12 +39,14 @@ export async function registerUser(data: z.infer<typeof UserSchema>): Promise<Ac
             if (existingUser) {
                 return {status: 'error', error: "User Already exist" }
             }
+            const pin = await generateUniquePin()
             const user = await prisma.user.create({
                 data: {
                   name: username,
                   email,
                   password: hashedPassword,
-                  role
+                  role,
+                  pin,
                 
                 },
               });

@@ -20,8 +20,20 @@ model User {
   email      String              @unique
   password   String
   role       String
+  pin        String?             @unique
   created_at DateTime            @default(now())
   bookings   BookingTechnician[]
+  ClockInOut ClockInOut[]
+}
+
+model ClockInOut {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  clockIn     DateTime
+  clockOut    DateTime?
+  hoursWorked Float?
+  createdAt   DateTime  @default(now())
 }
 
 model ServiceFields {
@@ -49,14 +61,13 @@ model Customer {
 }
 
 model Vehicle {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   make       String
   model      String
   year       String
   customerId String
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-
-  bookings Booking[]
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Booking    Booking[]
 }
 
 model Booking {
@@ -173,12 +184,12 @@ model InventoryTransaction {
 }
 
 model UsedInventory {
-  id              Int       @id @default(autoincrement())
-  inventoryId     Int
-  inventory       Inventory @relation(fields: [inventoryId], references: [id])
-  bookingId       Int
-  booking         Booking   @relation(fields: [bookingId], references: [id])
-  quantity        Int
-  transactionType String
+  id                  Int       @id @default(autoincrement())
+  inventoryId         Int
+  inventory           Inventory @relation(fields: [inventoryId], references: [id])
+  bookingId           Int
+  booking             Booking   @relation(fields: [bookingId], references: [id])
+  quantity            Int
+  transactionType     String
   includedWithService Boolean
 }

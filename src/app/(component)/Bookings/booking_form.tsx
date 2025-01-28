@@ -299,7 +299,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                             >
                               <DayPicker
                             className="rounded-md border p-2"
-                               numberOfMonths={2}
+                              
                                 month={month}
                                 disabled={{ before: new Date() }}
                                 hidden={isDateDisabled} // Disable dates

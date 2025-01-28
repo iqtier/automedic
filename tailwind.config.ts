@@ -8,7 +8,7 @@ export default {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@heroui/theme/dist/components/(button|tabs|ripple|spinner).js"
+    "./node_modules/@heroui/theme/dist/components/(button|input-otp|tabs|ripple|spinner|form).js"
   ],
   theme: {
   	extend: {
@@ -70,6 +70,10 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		keyframes: {
+			"caret-blink": {
+				"0%,70%,100%": { opacity: "1" },
+				"20%,50%": { opacity: "0" },
+			  },
   			'accordion-down': {
   				from: {
   					height: '0'
@@ -89,7 +93,8 @@ export default {
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+			"caret-blink": "caret-blink 1.25s ease-out infinite"
   		}
   	}
   },
