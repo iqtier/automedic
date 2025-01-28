@@ -73,7 +73,7 @@ const AddEmployeeForm = () => {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
+        <Button className="m-2" onClick={() => setIsDialogOpen(true)}>
           <UserPlus /> Add Eployee
         </Button>
       </DialogTrigger>

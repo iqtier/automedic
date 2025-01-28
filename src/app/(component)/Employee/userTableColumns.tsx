@@ -99,10 +99,10 @@ export const columns: ColumnDef<Employee>[] = [
           </TooltipProvider>
 
           <AlertDialog>
-            <AlertDialogTrigger>
+            <AlertDialogTrigger >
               <TooltipProvider>
                 <Tooltip>
-                  <TooltipTrigger asChild>
+                  <TooltipTrigger >
                     <Button variant={"ghost"} size="icon">
                       <Trash2 color="red" />
                     </Button>
@@ -122,7 +122,7 @@ export const columns: ColumnDef<Employee>[] = [
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel >Cancel</AlertDialogCancel>
+                <AlertDialogCancel  >Cancel</AlertDialogCancel>
                 <AlertDialogAction className={cn(buttonVariants({ variant: "destructive" }))}  onClick={handleDelete}>
                   Continue
                 </AlertDialogAction>

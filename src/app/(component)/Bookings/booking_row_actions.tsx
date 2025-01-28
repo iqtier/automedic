@@ -41,7 +41,7 @@ export const DataTableRowActions: React.FC<DataTableRowActionsProps> = ({
   return (
     <>
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[425px] w-full">
+        <DialogContent className="">
           <DialogHeader>
             <DialogTitle>Edit</DialogTitle>
 

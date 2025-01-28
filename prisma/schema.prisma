@@ -11,7 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  //directUrl = env("DIRECT_URL")
+  
 }
 
 model User {
@@ -60,22 +60,22 @@ model Vehicle {
 }
 
 model Booking {
-  id             Int      @id @default(autoincrement())
+  id             Int                 @id @default(autoincrement())
   date           DateTime
   time           String
   ramp           String?
   vehicle_id     Int?
   booking_type   String?
-  status         String   @default("pending")
-  note           String   @default("")
-  payment_status String   @default("unpaid")
-  payment_method String   @default("cash")
+  status         String              @default("pending")
+  note           String              @default("")
+  payment_status String              @default("unpaid")
+  payment_method String              @default("cash")
   customerid     String
-  services    ServiceIdQty[]
-  technicians BookingTechnician[]
-  vehicle     Vehicle?            @relation(fields: [vehicle_id], references: [id], onDelete: SetNull)
-  customer    Customer            @relation(fields: [customerid], references: [id], onDelete: Cascade)
-  UsedInventory UsedInventory[]
+  services       ServiceIdQty[]
+  technicians    BookingTechnician[]
+  vehicle        Vehicle?            @relation(fields: [vehicle_id], references: [id], onDelete: SetNull)
+  customer       Customer            @relation(fields: [customerid], references: [id], onDelete: Cascade)
+  UsedInventory  UsedInventory[]
 }
 
 model BookingTechnician {
@@ -165,7 +165,7 @@ model InventoryTransaction {
   supplierId      Int
   type            String // e.g., "receipt", "sale", "adjustment"
   inventoryId     Int
-  inventory       Inventory @relation(fields: [inventoryId], references: [id],onDelete: Cascade)
+  inventory       Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
   quantity        Int
   referenceNumber String? // Invoice/Work Order number
   cost            Float? // Cost at the time of the transaction
@@ -179,6 +179,6 @@ model UsedInventory {
   bookingId       Int
   booking         Booking   @relation(fields: [bookingId], references: [id])
   quantity        Int
-  cost            Float
   transactionType String
+  includedWithService Boolean
 }

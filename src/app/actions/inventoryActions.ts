@@ -17,7 +17,17 @@ import { z } from "zod";
 
 export async function getAllCategories() {
   try {
-    const allCategories = await prisma.category.findMany();
+    const allCategories = await prisma.category.findMany(
+      {
+        include:{
+          inventory:{
+            include:{
+              InventoryFields:true
+            }
+          }
+        }
+      }
+    );
     return allCategories;
   } catch (error) {
     console.error("Error fetching services:", error);

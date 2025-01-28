@@ -68,11 +68,10 @@ export async function getAllBookings() {
     });
     return bookings;
   } catch (error) {
-    console.error('Error fetching bookings:', error);
+    console.error("Error fetching bookings:", error);
     throw error;
   }
 }
-
 
 export async function getBooking(id: string) {
   const booking = await prisma.booking.findUnique({
@@ -88,6 +87,7 @@ export async function getBooking(id: string) {
       },
       customer: true,
       vehicle: true,
+      UsedInventory: true,
     },
   });
   return booking;
@@ -101,9 +101,14 @@ export async function updateBooking(
     payment_status: string;
     payment_method: string;
     technician_ids?: string[];
+    inventories?: {
+      id: string;
+      qty: string;
+      included: boolean;
+    }[];
   }
 ): Promise<ActionResult<Booking>> {
-  const { status, note, payment_status, payment_method, technician_ids } = data;
+  const { status, note, payment_status, payment_method, technician_ids, inventories } = data;
   try {
     const booking = await prisma.booking.update({
       where: { id: parseInt(id) },
@@ -118,14 +123,32 @@ export async function updateBooking(
             technician: { connect: { id: technicianId } },
           })),
         },
+        UsedInventory: {
+          deleteMany: {},
+          create: inventories?.map((inventory) => ({
+            quantity: parseInt(inventory.qty),
+            includedWithService: inventory.included,
+            inventory: { connect: { id: parseInt(inventory.id) } },
+            transactionType: "booking",
+          })),
+        },
       },
-      include: {
-        services: true,
-        technicians: true,
-        customer: true,
-        vehicle: true,
-      },
+     
     });
+    if (status === "completed" && inventories) {
+      await Promise.all(inventories.map(async (inventory) => {
+          const parsedQuantity = parseInt(inventory.qty, 10);
+
+            await prisma.inventory.update({
+            where: { id: parseInt(inventory.id) },
+             data: {
+              quantityOnHand: {
+                 decrement: parsedQuantity,
+               },
+             },
+              });
+      }));
+  }
     return { status: "success", data: booking };
   } catch (error) {
     console.error("Error updating booking:", error);
