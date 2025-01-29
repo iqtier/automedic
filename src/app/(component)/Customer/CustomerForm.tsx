@@ -59,6 +59,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       name: "",
       email: "",
       phone: "",
+      taxExempt: false,
+      discounted: false,  
+      discountType: "", 
+      discountRate: 0,
+      vehicles: [],
     },
   });
 

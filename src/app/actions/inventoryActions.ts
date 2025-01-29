@@ -226,7 +226,7 @@ export async function ReceiveInventory(
       data: {
         inventoryId: parseInt(inventory),
         supplierId: parseInt(supplier),
-        type: "Received",
+        type: "receipt",
         quantity: parseInt(quantity),
         referenceNumber: reference_number,
         cost: cost ? parseInt(cost) : undefined,

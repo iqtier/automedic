@@ -54,7 +54,9 @@ export const columns: ColumnDef<BookingDetail>[] = [
     accessorKey: "ramp",
     header: "Ramp",
     cell: ({ row }) => {
-      return <div> {row.getValue("ramp")}</div>;
+      const ramp = row.getValue("ramp") as string;
+      const isNA = ramp === "0" 
+      return <div> {isNA ? "N/A" :ramp}</div>;
     },
   },
   {
