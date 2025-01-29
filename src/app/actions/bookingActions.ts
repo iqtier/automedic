@@ -62,7 +62,7 @@ export async function getAllBookings() {
       include: {
         customer: true,
         vehicle: true,
-        services: { include: { service: true } },
+        services: { include: { service: {include:{fields:true}} } },
         technicians: { include: { technician: true } },
       },
     });

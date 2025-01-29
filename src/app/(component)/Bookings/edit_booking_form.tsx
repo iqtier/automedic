@@ -3,7 +3,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Progress } from "@/components/ui/progress";
+
 
 import {
   Form,
@@ -24,7 +24,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { getTechnicians } from "@/app/actions/employeeActions";
 import { getBooking, updateBooking } from "@/app/actions/bookingActions";
-import { Booking, User } from "@/types/type";
+import { User } from "@/types/type";
 
 import { Button } from "@/components/ui/button";
 import { Check, ChevronsUpDown, Trash2 } from "lucide-react";

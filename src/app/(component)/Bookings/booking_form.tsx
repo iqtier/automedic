@@ -116,7 +116,7 @@ type BookingFormProps = {
   isAppointment: boolean;
   technicians: Technician[];
 };
-type BookedSlot = { date: Date; time: string; ramp: Ramp };
+
 const BookingForm: React.FC<BookingFormProps> = ({
   services,
   customers,

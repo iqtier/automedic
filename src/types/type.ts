@@ -75,11 +75,11 @@ export const CustomerSchema = z.object({
   isChargeAccount: z.boolean().default(false),
   vehicles: z.array(
     z.object({
-      make: z.string(),
-      model: z.string(),
-      year: z.string(),
+      make: z.string().min(1,"Make Required"),
+      model: z.string().min(1,"Model Required"),
+      year: z.string().min(1,"Year Required"),
     })
-  ),
+  ).optional(),
 });
 
 export const inventoryReceivingSchema = z.object({
@@ -180,6 +180,7 @@ type ServiceIdQty = {
   bookingId: number;
   qty: string;
   serviceId: number;
+  service: Service;
 };
 
 export type Booking = {
