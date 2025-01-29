@@ -24,7 +24,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useState, useEffect, useCallback } from "react";
-import { ClockIn, ClockOut, getCurrentClockedInUsers } from "@/app/actions/employeeActions";
+import {
+  ClockIn,
+  ClockOut,
+  getCurrentClockedInUsers,
+} from "@/app/actions/employeeActions";
 import { form } from "@heroui/theme";
 import { useRouter } from "next/navigation";
 
@@ -54,14 +58,14 @@ export function ClockInForm() {
     return () => clearInterval(intervalId);
   }, []);
 
-   const fetchCurrentUsers = useCallback(async () => {
-        const users = await getCurrentClockedInUsers();
-        setCurrentUsers(users);
-    }, []);
+  const fetchCurrentUsers = useCallback(async () => {
+    const users = await getCurrentClockedInUsers();
+    setCurrentUsers(users);
+  }, []);
 
-    useEffect(() => {
-      fetchCurrentUsers();
-    }, [fetchCurrentUsers]);
+  useEffect(() => {
+    fetchCurrentUsers();
+  }, [fetchCurrentUsers]);
 
   const formatTime = (date: Date): string => {
     return date.toLocaleTimeString([], {
@@ -91,9 +95,11 @@ export function ClockInForm() {
       toast.success("Employee Clocked In successfully");
       router.refresh();
       clockInform.reset();
-        fetchCurrentUsers(); // Update users
+      fetchCurrentUsers(); // Update users
     } else {
-      clockInform.setError("root.serverError", { message: result.error as string });
+      clockInform.setError("root.serverError", {
+        message: result.error as string,
+      });
       toast.error(`${result.error}`);
     }
   }
@@ -104,9 +110,11 @@ export function ClockInForm() {
       toast.success("Employee Clocked Out successfully");
       router.refresh();
       clockOutform.reset();
-        fetchCurrentUsers(); // Update users
+      fetchCurrentUsers(); // Update users
     } else {
-      clockOutform.setError("root.serverError", { message: result.error as string });
+      clockOutform.setError("root.serverError", {
+        message: result.error as string,
+      });
       toast.error(`${result.error}`);
     }
   }
@@ -121,13 +129,13 @@ export function ClockInForm() {
     return `${hours}h ${minutes}m ${seconds}s`;
   };
 
-     const formatShiftTime = (date: Date): string =>{
-       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-     }
+  const formatShiftTime = (date: Date): string => {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
 
   return (
     <div className="flex flex-wrap gap-4">
-      <Card className="bg-green-50">
+      <Card className="bg-green-50 dark:bg-cyan-950">
         <CardHeader>
           <CardTitle>Clock In</CardTitle>
           <CardDescription>Enter Your Employee Id to clock In</CardDescription>
@@ -173,10 +181,12 @@ export function ClockInForm() {
         <CardFooter></CardFooter>
       </Card>
 
-      <Card className="bg-purple-50">
+      <Card className="bg-purple-50 dark:bg-purple-950">
         <CardHeader>
           <CardTitle>Clock Out</CardTitle>
-          <CardDescription>Enter Your Employee Id to clock out </CardDescription>
+          <CardDescription>
+            Enter Your Employee Id to clock out{" "}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...clockOutform}>
@@ -219,7 +229,7 @@ export function ClockInForm() {
         <CardFooter></CardFooter>
       </Card>
 
-       <Card className="bg-blue-50 flex-grow">
+      <Card className="bg-blue-50  flex-grow dark:bg-blue-950">
         <CardHeader>
           <CardTitle>Current Employees</CardTitle>
           <CardDescription>
@@ -229,7 +239,7 @@ export function ClockInForm() {
         <CardContent>
           <div>
             {currentUsers.length === 0 ? (
-              <p className="text-center text-lg font-medium text-gray-700">
+              <p className="text-center text-lg font-medium ">
                 No employees currently clocked in.
               </p>
             ) : (
@@ -237,25 +247,31 @@ export function ClockInForm() {
                 {currentUsers.map((user) => (
                   <li
                     key={user.name}
-                    className="bg-white rounded-lg shadow py-2 px-4 flex items-center justify-between hover:shadow-md transition-shadow duration-200"
+                    className="bg-white dark:bg-zinc-800 rounded-lg shadow py-2 px-4 flex items-center justify-between hover:shadow-md transition-shadow duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-600">
+                      <div className="w-10 h-10 rounded-full bg-blue-200 dark:bg-blue-700 flex items-center justify-center text-blue-600 dark:text-blue-200">
                         {user.name[0].toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-800">{user.name}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-semibold ">{user.name}</p>
+                        <p className="text-sm ">
                           Role: <span className="font-medium">{user.role}</span>
                         </p>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                    <p className="text-sm text-gray-700 font-medium">
-                       Started: <span className="font-bold">{formatShiftTime(user.startTime)}</span>
-                    </p>
-                      <p className="text-sm text-gray-700 font-medium">
-                       Working For: <span className="font-bold">{calculateDuration(user.startTime)}</span>
+                      <p className="text-sm  font-medium">
+                        Started:{" "}
+                        <span className="font-bold">
+                          {formatShiftTime(user.startTime)}
+                        </span>
+                      </p>
+                      <p className="text-sm  font-medium">
+                        Working For:{" "}
+                        <span className="font-bold">
+                          {calculateDuration(user.startTime)}
+                        </span>
                       </p>
                     </div>
                   </li>
