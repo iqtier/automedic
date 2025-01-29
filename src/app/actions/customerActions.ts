@@ -19,7 +19,7 @@ export async function createCustomer(
         discountType:data.discountType,
         discountRate:data.discountRate,
         vehicles: {
-          create: data.vehicles.map((vehicle) => ({
+          create: data.vehicles?.map((vehicle) => ({
             make:vehicle.make,
             model: vehicle.model,
             year: vehicle.year,
@@ -51,7 +51,7 @@ export async function updateCustomer(
         discountType:data.discounted ? data.discountType : null,
         vehicles: {
           deleteMany: {},
-          create: data.vehicles.map((vehicle) => ({
+          create: data.vehicles?.map((vehicle) => ({
             make: vehicle.make,
             model:vehicle.model,
             year:vehicle.year
