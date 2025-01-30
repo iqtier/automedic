@@ -1,13 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
-import { useForm } from "react-hook-form";
-import { registerUser } from "@/app/actions/authActions";
+import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { Mail, Lock, User, Chrome  } from "lucide-react";
+import { registerUser } from "@/app/actions/authActions";
+import { UserSchema } from "@/types/type";
+import { useTransition } from 'react';
+
 import {
   Select,
   SelectContent,
@@ -31,15 +33,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "react-toastify";
-
-import FormInput from "../FormInput/form-input";
-import { UserSchema } from "@/types/type";
-
-
-
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import { useForm } from "react-hook-form";
 
 export function SignUpForm() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<z.infer<typeof UserSchema>>({
     resolver: zodResolver(UserSchema),
     defaultValues: {
@@ -50,93 +51,143 @@ export function SignUpForm() {
     },
   });
 
-  const router = useRouter();
-  async function onSubmit(values:z.infer<typeof UserSchema>) {
-    const result = await registerUser(values);
 
-    if (typeof result === "string") {
-      toast.error(result);
-      return;
-    }
-    if (result.status === "success") {
-      toast.success("User registration successful");
-      router.push("/sign-in");
-    } else {
-      form.setError("root.serverError", { message: result.error as string });
-      toast.error(`${result.error}`);
-    }
+  async function onSubmit(values: z.infer<typeof UserSchema>) {
+   startTransition(async () => {
+        const result = await registerUser(values);
+        if (typeof result === "string") {
+          toast.error(result);
+          return;
+        }
+        if (result.status === "success") {
+          toast.success("User registration successful");
+          router.push("/sign-in");
+        } else {
+          form.setError("root.serverError", { message: result.error as string });
+          toast.error(`${result.error}`);
+        }
+    });
+
   }
 
   return (
-    <Card className="mx-auto max-w-sm  dark:bg-gray-700 shadow-2xl ring-2 ring-purple-500 ring-offset-4 ring-offset-slate-50 dark:ring-offset-slate-900   ">
-      <CardHeader>
-        <CardTitle className="text-2xl">Register </CardTitle>
-        <CardDescription>
-          Enter your information to Create an account
+    <Card className="mx-auto max-w-md shadow-2xl dark:bg-gray-800 dark:border-gray-700 dark:ring-offset-slate-900 animate-in fade-in slide-in-from-bottom-10">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+          Register
+        </CardTitle>
+        <CardDescription className="text-gray-500 dark:text-gray-400">
+          Enter your information to create an account.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="grid gap-4">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
-            <FormInput
-              form={form}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
               name="username"
-              label="Username"
-              placeholder="Enter your username"
-              ispassword={false}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                  <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    Username
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your username"
+                      {...field}
+                     className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </FormControl>
+                   <FormMessage />
+                </FormItem>
+              )}
             />
-            <FormInput
-              form={form}
+            <FormField
+              control={form.control}
               name="email"
-              label="Email"
-              placeholder="Enter your email"
-              ispassword={false}
+              render={({ field }) => (
+                <FormItem>
+                 <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    Email
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your email"
+                      type="email"
+                      {...field}
+                     className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <FormInput
-              form={form}
+            <FormField
+              control={form.control}
               name="password"
-              label="Password"
-              placeholder="Enter your password"
-              ispassword={true}
+              render={({ field }) => (
+                <FormItem>
+                 <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                   <Lock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    Password
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your password"
+                      type="password"
+                      {...field}
+                      className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </FormControl>
+                   <FormMessage />
+                </FormItem>
+              )}
             />
             <FormField
               control={form.control}
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                    <FormLabel className="text-sm font-medium text-gray-900 dark:text-white">
+                      Role
+                    </FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger
+                       className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        >
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="dark:bg-gray-700 dark:text-white dark:border-gray-600">
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="technician">Technician</SelectItem>
                     </SelectContent>
                   </Select>
-
-                  <FormMessage />
+                 <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="w-full">
-              Register
+            <Button type="submit" className="w-full relative">
+            {isPending ? <span className="absolute inset-0 flex items-center justify-center">
+              <Spinner/>
+                </span> : "Register"}
             </Button>
           </form>
         </Form>
 
-        <div className="mt-4 text-center text-sm">
-          <Button variant="outline" className="w-full mb-3">
-            Login with Google
+        <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+          <Button variant="outline" className="w-full mb-3  text-gray-900 dark:text-gray-400 dark:border-gray-600 flex items-center justify-center gap-2">
+           <Chrome className="h-4 w-4"/> Login with Google
           </Button>
           Already have an account?{" "}
-          <Link href="/sign-in" className="underline">
+          <Link href="/sign-in" className="underline text-blue-500 dark:text-blue-400">
             Sign In
           </Link>
         </div>

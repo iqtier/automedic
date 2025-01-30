@@ -14,29 +14,26 @@ import { prisma } from "@/lib/prisma";
 import { EmployeeTable } from "@/app/(component)/Employee/employee-table";
 import { ClockInForm } from "@/app/(component)/Employee/clockInOut";
 const Page = async () => {
- 
   const session = await auth();
+
   const userEmail = session?.user?.email;
+
   const user = await getUserByEmail(userEmail as string);
   const isAdmin = user?.role === "admin";
   const users = await prisma.user?.findMany();
-  
+
   return (
     <div>
       {isAdmin && <AddEmployeeForm />}
 
       <Tabs defaultValue="Clock IN/Out" className="w-full mt-2">
-        <TabsList
-          
-          className="grid w-full grid-cols-3"
-        >
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="Clock IN/Out">Clock IN/Out</TabsTrigger>
           <TabsTrigger value="Schedule">Schedule</TabsTrigger>
           <TabsTrigger value="List">List</TabsTrigger>
         </TabsList>
         <TabsContent value="Clock IN/Out">
-          
-        <ClockInForm/>
+          <ClockInForm />
         </TabsContent>
         <TabsContent value="Schedule">
           <div>Schedule</div>
@@ -49,7 +46,7 @@ const Page = async () => {
                 email: user.email,
                 password: user.password,
                 role: user.role,
-                username: user.name, 
+                username: user.name,
               }))}
             />
           </div>

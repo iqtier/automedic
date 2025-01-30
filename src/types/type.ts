@@ -162,7 +162,7 @@ type ServiceFields = {
   name: string;
   value: string;
 };
-type Customer = {
+export type Customer = {
   id: string;
   name: string;
   email: string;
@@ -204,6 +204,7 @@ type BookingTechnician = {
   id: number;
   bookingId: number;
   technicianId: string;
+  technician: User;
 };
 
 export type Supplier = {

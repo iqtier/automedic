@@ -34,7 +34,7 @@ import { Input } from "@/components/ui/input";
 
 import React, { useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { inventoryReceivingSchema } from "@/types/type";
+import { inventoryReceivingSchema, User } from "@/types/type";
 import { useState } from "react";
 import {
   getInventoryNameAndId,
@@ -43,8 +43,12 @@ import {
 } from "@/app/actions/inventoryActions";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const InventoryReceivingForm = () => {
+  const { data: session } = useSession();
+  const user = session?.user as User;
+  const isUserAdmin = user?.role === "admin";
   const router = useRouter();
   const [inventories, setInventories] = useState<
     { id: number; name: string }[] | null
@@ -68,10 +72,10 @@ const InventoryReceivingForm = () => {
 
   const form = useForm<z.infer<typeof inventoryReceivingSchema>>({
     resolver: zodResolver(inventoryReceivingSchema),
-    defaultValues:{
-      quantity:"",
-      cost:"",
-      reference_number:""
+    defaultValues: {
+      quantity: "",
+      cost: "",
+      reference_number: "",
     },
   });
   async function onSubmit(data: z.infer<typeof inventoryReceivingSchema>) {
@@ -314,7 +318,7 @@ const InventoryReceivingForm = () => {
             )}
           />
           <div className="flex justify-center items-center">
-            <Button type="submit" className="w-2/3">
+            <Button disabled={!isUserAdmin} type="submit" className="w-2/3">
               Receive Inventory
             </Button>
           </div>

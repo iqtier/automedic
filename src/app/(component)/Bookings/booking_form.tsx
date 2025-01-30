@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { z } from "zod";
 import { Service, BookingSchema, CustomerType } from "@/types/type";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import {
@@ -28,10 +29,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format, } from "date-fns";
-import { CalendarIcon, Check, ChevronsUpDown, } from "lucide-react";
+import { format } from "date-fns";
+import { CalendarIcon, Check, ChevronsUpDown, Clock } from "lucide-react";
 import { DayPicker } from "react-day-picker";
-
+import { useTransition } from "react";
 import {
   Command,
   CommandEmpty,
@@ -54,10 +55,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 
-type Ramp = 1 | 2;
-
-// Modify the time slot type to include ramp information
+type Ramp = 1 | 2 | 0;
 type TimeSlot = {
   value: string;
   label: string;
@@ -81,7 +81,6 @@ const timeSlots: TimeSlot[] = [
   { value: "03:30 PM", label: "03:30 PM" },
   { value: "04:00 PM", label: "04:00 PM" },
   { value: "04:30 PM", label: "04:30 PM" },
-
 ];
 interface Vehicle {
   id: number;
@@ -125,15 +124,15 @@ const BookingForm: React.FC<BookingFormProps> = ({
   technicians,
 }) => {
   const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+
   const [month, setMonth] = useState(new Date());
   const [date, setDate] = useState<Date>();
   const [bookedSlots, setBookedSlots] = useState<
     { date: Date; time: string; ramp: string | null }[]
   >([]);
-  const [ramp, setRamp] = useState<string>("");
-
+    const [ramp, setRamp] = useState<Ramp>(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const availableRamps = ["1", "2"];
   const form = useForm<BookingFormType>({
     resolver: zodResolver(BookingSchema),
     defaultValues: {
@@ -157,37 +156,33 @@ const BookingForm: React.FC<BookingFormProps> = ({
     name: "services_id_qty",
   });
 
+    const fetchBookedSlots = useCallback(async () => {
+        if (isAppointment && month) {
+            const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+            const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+            try {
+                const booked = await getBookedTimeSlotsByDateRange(
+                    startOfMonth, endOfMonth
+                );
+                setBookedSlots(booked || []);
+            } catch (error) {
+                console.error("Error fetching booked slots:", error);
+                toast.error("Failed to load booked slots. Please try again later.");
+            }
+        }else{
+            setBookedSlots([])
+        }
+    },[isAppointment,month]);
+
+  useEffect(() => {
+      fetchBookedSlots();
+  }, [fetchBookedSlots, ramp, date]);
+
   useEffect(() => {
     if (isAppointment) {
-      if (month) {
-      
-        const fetchBookedSlots = async () => {
-          const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
-          const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-
-          try {
-            const booked = await getBookedTimeSlotsByDateRange(
-              startOfMonth, endOfMonth
-            ); 
-            setBookedSlots(booked || []);
-          } catch (error) {
-            console.error("Error fetching booked slots:", error);
-            toast.error("Failed to load booked slots. Please try again later.");
-          }
-        };
-
-        fetchBookedSlots();
-      } else {
-        setBookedSlots([]);
-      }
+      form.setValue("time", "");
     }
   }, [isAppointment,month, ramp, date]);
-
-  useEffect(() => {
-    if (isAppointment) {
-      form.setValue("time", ""); // Reset time whenever date changes
-    }
-  }, [isAppointment,month, ramp, date]); // Depend on form.watch("date")
 
   const isTimeSlotDisabled = (timeSlot: string, dateToCheck: Date) => {
     const startOfDay = new Date(dateToCheck);
@@ -200,116 +195,121 @@ const BookingForm: React.FC<BookingFormProps> = ({
       const slotDate = new Date(slot.date);
       return (
         slot.time === timeSlot &&
-        slot.ramp === ramp &&
+        slot.ramp === ramp.toString() &&
         slotDate.getTime() >= startOfDay.getTime() &&
         slotDate.getTime() <= endOfDay.getTime()
       );
     });
   };
 
-  const isDateDisabled = (dateToCheck: Date) => {
-    const startOfDay = new Date(dateToCheck);
-    startOfDay.setHours(0, 0, 0, 0);
-  
-    const endOfDay = new Date(dateToCheck);
-    endOfDay.setHours(23, 59, 59, 999);
-  
-    for (const currentRamp of availableRamps) {
-      const isRampAvailable = !bookedSlots.some((slot) => {
-        const slotDate = new Date(slot.date);
-        return (
-          slotDate.getTime() >= startOfDay.getTime() &&
-          slotDate.getTime() <= endOfDay.getTime() &&
-          slot.ramp === currentRamp // Only check for current ramp
-        );
-      });
-  
-      if (isRampAvailable) {
-        return false; // At least one ramp is available, date is NOT disabled
-      }
-    }
-  
-    return true; // All ramps are fully booked on this date, date IS disabled
-  };
+    const isDateDisabled = (dateToCheck: Date) => {
+        const startOfDay = new Date(dateToCheck);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(dateToCheck);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        for (const currentRamp of [0,1,2]) {
+            const isRampAvailable = !bookedSlots.some((slot) => {
+                const slotDate = new Date(slot.date);
+                return (
+                    slotDate.getTime() >= startOfDay.getTime() &&
+                    slotDate.getTime() <= endOfDay.getTime() &&
+                    slot.ramp === currentRamp.toString()
+                );
+            });
+
+            if (isRampAvailable) {
+                return false;
+            }
+        }
+        return true;
+    };
+
 
   async function onSubmit(data: BookingFormType) {
-    const result = await createBooking(data);
-    if (result?.status === "success") {
-      toast.success(`Appointment successfully added`);
-      router.refresh();
-      setIsDialogOpen(false);
-      form.reset();
-    } else {
-      form.setError("root.serverError", { message: result?.error as string });
-      toast.error(`${result?.error}`);
-    }
+    startTransition( async () => {
+      const result = await createBooking(data);
+        if (result?.status === "success") {
+          toast.success(`Appointment successfully added`);
+          router.refresh();
+          setIsDialogOpen(false);
+          form.reset();
+        } else {
+          form.setError("root.serverError", { message: result?.error as string });
+          toast.error(`${result?.error}`);
+      }
+    });
   }
-
+    const availableRamps = ["1", "2","0"];
   return (
-    <div>
+    <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger
           asChild
-          className={`px-8 py-4  text-white font-bold rounded-lg ${
+          className={`px-8 py-4  text-white font-bold rounded-lg transition-all duration-200 ${
             isAppointment
               ? " hover:bg-blue-700 bg-blue-500"
               : " bg-green-500 hover:bg-green-700"
           }`}
         >
-          <Button>{isAppointment ? "Appointment" : "Drive Through"}</Button>
+         <Button  className="relative">
+              {isPending? <span className="absolute inset-0 flex justify-center items-center">
+                  <Spinner/>
+                </span>
+                : (isAppointment ? "Appointment" : "Drive Through")}
+            </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-white animate-in fade-in slide-in-from-bottom-10">
           <DialogHeader>
-            <DialogTitle className="mb-5">
+            <DialogTitle className="mb-5 text-gray-900 dark:text-white">
               {isAppointment ? "Appointment" : "Drive Through"}
             </DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-              <div className="flex flex-col gap-y-5 ">
-                <div className="flex flex-row gap-x-3">
-                  {isAppointment && (
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-[240px] pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP")
-                                  ) : (
-                                    <span>Pick a date</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
+              <div className="flex flex-wrap  gap-4 ">
+                {isAppointment && (
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col  flex-1 min-w-[150px]">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full  pl-3 text-left font-normal text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
                             <PopoverContent
-                              className="w-auto p-0"
+                              className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                               align="start"
                             >
                               <DayPicker
                             className="rounded-md border p-2"
-                              
                                 month={month}
                                 disabled={{ before: new Date() }}
-                                hidden={isDateDisabled} // Disable dates
+                                hidden={isDateDisabled}
                                 onMonthChange={setMonth}
                                 autoFocus
                                 mode="single"
                                 selected={field.value}
                                 onSelect={(date) => {
                                   field.onChange(date)
-                                  setDate(date);; // Update form value
+                                  setDate(date);
                                 }}
                               />
                             </PopoverContent>
@@ -323,26 +323,26 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     control={form.control}
                     name="ramp"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex-1 min-w-[150px]">
                         <Select
-                          onValueChange={(value) => {field.onChange(value); setRamp(value)}}
+                          onValueChange={(value) => {field.onChange(value); setRamp(parseInt(value) as Ramp )}}
                           defaultValue={field.value}
                         >
                           <FormControl>
                             <SelectTrigger
-                              className={cn(
-                                "w-[200px] justify-between",
+                               className={cn(
+                                "w-full  text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
                                 !field.value && "text-muted-foreground"
                               )}
                             >
                               <SelectValue placeholder="Select a ramp or select N/A" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="1">Ramp 1</SelectItem>
-                            <SelectItem value="2">Ramp 2</SelectItem>
+                            <SelectContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                              <SelectItem value="1">Ramp 1</SelectItem>
+                              <SelectItem value="2">Ramp 2</SelectItem>
                             <SelectItem value="0">Not applicable</SelectItem>
-                          </SelectContent>
+                            </SelectContent>
                         </Select>
 
                         <FormMessage />
@@ -354,15 +354,15 @@ const BookingForm: React.FC<BookingFormProps> = ({
                       control={form.control}
                       name="time"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col">
+                        <FormItem className="flex flex-col flex-1 min-w-[150px]">
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
                                 <Button
                                   variant="outline"
                                   role="combobox"
-                                  className={cn(
-                                    "w-[200px] justify-between",
+                                   className={cn(
+                                    "w-full  text-left font-normal text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
                                     !field.value && "text-muted-foreground"
                                   )}
                                 >
@@ -371,11 +371,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
                                         (slot) => slot.value === field.value
                                       )?.label
                                     : "Select time slot"}
-                                  <ChevronsUpDown className="opacity-50" />
+                                   <Clock className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[200px] p-0">
+                            <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                               <Command>
                                 <CommandInput
                                   placeholder="Search time slot..."
@@ -390,7 +390,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                                       <CommandItem
                                         value={slot.label}
                                         key={slot.value}
-                                        disabled={isTimeSlotDisabled(slot.value,form.getValues("date"))} // Disable booked slots
+                                        disabled={isTimeSlotDisabled(slot.value,form.getValues("date"))}
                                         onSelect={() =>
                                           form.setValue("time", slot.value)
                                         }
@@ -421,7 +421,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     control={form.control}
                     name="customer_id"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col">
+                      <FormItem className="flex flex-col flex-1 min-w-[150px]">
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -429,7 +429,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                                 variant="outline"
                                 role="combobox"
                                 className={cn(
-                                  "w-[200px] justify-between",
+                                  "w-full  text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
                                   !field.value && "text-muted-foreground"
                                 )}
                               >
@@ -443,7 +443,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                          <PopoverContent className="w-[200px] p-0">
+                          <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                             <Command>
                               <CommandInput
                                 placeholder="Search customer..."
@@ -461,7 +461,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                                           "customer_id",
                                           customer.id.toString()
                                         );
-                                        form.setValue("vehicle_id", ""); // Reset vehicle selection when customer changes
+                                        form.setValue("vehicle_id", "");
                                       }}
                                     >
                                       {customer.name}
@@ -480,67 +480,66 @@ const BookingForm: React.FC<BookingFormProps> = ({
                             </Command>
                           </PopoverContent>
                         </Popover>
-
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="vehicle_id"
-                    render={({ field }) => (
-                      <FormItem className="">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                className={cn(
-                                  "w-[200px] justify-between",
+                    <FormField
+                      control={form.control}
+                      name="vehicle_id"
+                      render={({ field }) => (
+                        <FormItem className="flex-1 min-w-[150px]">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                   className={cn(
+                                  "w-full  text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
                                   !field.value && "text-muted-foreground"
                                 )}
-                                disabled={!form.watch("customer_id")} // Disable if no customer is selected
-                              >
-                                {field.value
-                                  ? customers
-                                      .find(
-                                        (customer) =>
-                                          customer.id ===
-                                          form.watch("customer_id")
-                                      )
-                                      ?.vehicles.find(
-                                        (vehicle) =>
-                                          vehicle.id.toString() === field.value
-                                      )?.make +
-                                    " " +
-                                    customers
-                                      .find(
-                                        (customer) =>
-                                          customer.id ===
-                                          form.watch("customer_id")
-                                      )
-                                      ?.vehicles.find(
-                                        (vehicle) =>
-                                          vehicle.id.toString() === field.value
-                                      )?.model +
-                                    " " +
-                                    customers
-                                      .find(
-                                        (customer) =>
-                                          customer.id ===
-                                          form.watch("customer_id")
-                                      )
-                                      ?.vehicles.find(
-                                        (vehicle) =>
-                                          vehicle.id.toString() === field.value
-                                      )?.year
+                                  disabled={!form.watch("customer_id")}
+                                >
+                                  {field.value
+                                    ? customers
+                                        .find(
+                                          (customer) =>
+                                            customer.id ===
+                                            form.watch("customer_id")
+                                        )
+                                        ?.vehicles.find(
+                                          (vehicle) =>
+                                            vehicle.id.toString() === field.value
+                                        )?.make +
+                                      " " +
+                                      customers
+                                        .find(
+                                          (customer) =>
+                                            customer.id ===
+                                            form.watch("customer_id")
+                                        )
+                                        ?.vehicles.find(
+                                          (vehicle) =>
+                                            vehicle.id.toString() === field.value
+                                        )?.model +
+                                      " " +
+                                      customers
+                                        .find(
+                                          (customer) =>
+                                            customer.id ===
+                                            form.watch("customer_id")
+                                        )
+                                        ?.vehicles.find(
+                                          (vehicle) =>
+                                            vehicle.id.toString() === field.value
+                                        )?.year
                                   : "Select vehicle"}
                                 <ChevronsUpDown className="opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                          <PopoverContent className="w-[200px] p-0">
+                          <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                             <Command>
                               <CommandInput
                                 placeholder="Search vehicle..."
@@ -597,8 +596,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                       </FormItem>
                     )}
                   />
-
-                  <CustomerForm
+                 <CustomerForm
                     isEdit={false}
                     customerToEdit={null}
                     fromBooking={true}
@@ -615,8 +613,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
                             <Button
                               variant="outline"
                               role="combobox"
-                              className={cn(
-                                "w-[200px] justify-between",
+                               className={cn(
+                                "w-full text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
                                 !field.value || field.value.length === 0
                                   ? "text-muted-foreground"
                                   : ""
@@ -636,7 +634,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[200px] p-0">
+                       <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                           <Command>
                             <CommandInput
                               placeholder="Search technicians..."
@@ -692,14 +690,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     </FormItem>
                   )}
                 />
-
                 {fields.map((item, index) => (
-                  <div key={item.id} className="flex flex-row gap-x-2">
+                  <div key={item.id} className="flex flex-wrap items-center gap-x-2">
                     <FormField
                       control={form.control}
                       name={`services_id_qty.${index}.id`}
                       render={({ field }) => (
-                        <FormItem className="flex flex-col">
+                        <FormItem className="flex flex-col flex-1 min-w-[150px]">
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
@@ -707,7 +704,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                                   variant="outline"
                                   role="combobox"
                                   className={cn(
-                                    "w-[200px] justify-between",
+                                    "w-full text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
                                     !field.value && "text-muted-foreground"
                                   )}
                                 >
@@ -721,7 +718,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[200px] p-0">
+                            <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                               <Command>
                                 <CommandInput
                                   placeholder="Search service..."
@@ -767,12 +764,12 @@ const BookingForm: React.FC<BookingFormProps> = ({
                       control={form.control}
                       name={`services_id_qty.${index}.qty`}
                       render={({ field }) => (
-                        <FormItem className="">
+                        <FormItem  className="flex-1 min-w-[100px]">
                           <FormControl>
                             <Input
+                            className=" text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
                               placeholder="Enter quantity"
                               {...field}
-                              className="w-[200px]"
                             />
                           </FormControl>
                           <FormMessage />
@@ -789,26 +786,30 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     </Button>
                   </div>
                 ))}
-              </div>
+             
 
               <Button
                 type="button"
                 onClick={() => append({ id: "", qty: "" })}
-                className="mt-2 bg-cyan-500 hover:bg-cyan-600"
+                className="mt-2 bg-cyan-500 hover:bg-cyan-600 relative"
               >
-                Add Service
+                 {isPending ? <span className="absolute inset-0 flex items-center justify-center">
+                  <Spinner/>
+                </span> : "Add Service"}
               </Button>
 
               <DialogFooter>
-                <Button type="submit" className="w-full font-bold">
-                  Submit
+               <Button type="submit" className="w-full font-bold relative">
+                   {isPending ? <span className="absolute inset-0 flex items-center justify-center">
+                  <Spinner/>
+                </span> : "Submit"}
                 </Button>
               </DialogFooter>
             </form>
           </Form>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };
 

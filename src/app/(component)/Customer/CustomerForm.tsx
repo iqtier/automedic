@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,7 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Trash2, UserPlus } from "lucide-react";
+import { Plus, Trash2, UserPlus } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { CustomerSchema, CustomerType } from "@/types/type";
@@ -37,7 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { Spinner } from "@/components/ui/spinner";
 
 type Customer = CustomerType & { id: string };
 type CustomerFormProps = {
@@ -51,6 +51,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   fromBooking,
 }) => {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const addForm = useForm<CustomerType>({
@@ -60,8 +61,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       email: "",
       phone: "",
       taxExempt: false,
-      discounted: false,  
-      discountType: "", 
+      discounted: false,
+      discountType: "",
       discountRate: 0,
       vehicles: [],
     },
@@ -86,7 +87,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     name: "vehicles",
   });
 
-  
   async function onSubmit(data: CustomerType) {
     let result;
     if (isEdit) {
@@ -111,20 +111,23 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="" onClick={() => setIsDialogOpen(true)}>
+        <Button
+          className="text-white"
+          variant="default"
+          onClick={() => setIsDialogOpen(true)}
+        >
           {isEdit ? (
             "Edit"
           ) : fromBooking ? (
             <UserPlus />
           ) : (
             <div className="flex flex-row gap-x-2  justify-center items-center">
-             
               <UserPlus /> Add Cusotmer
             </div>
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-white animate-in fade-in slide-in-from-bottom-10">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Customer" : "Add Customer"}</DialogTitle>
           <DialogDescription>
@@ -147,7 +150,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Name" {...field} />
+                      <Input
+                        placeholder="Name"
+                        {...field}
+                        className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -160,7 +167,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="Email" {...field} />
+                      <Input
+                        placeholder="Email"
+                        {...field}
+                        className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -171,9 +182,13 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>Phone</FormLabel>
                     <FormControl>
-                      <Input placeholder="Phone Number" {...field} />
+                      <Input
+                        placeholder="Phone Number"
+                        {...field}
+                        className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -185,7 +200,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 control={form.control}
                 name="taxExempt"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center gap-x-4  justify-between rounded-lg border p-4">
+                  <FormItem className="flex flex-row items-center gap-x-4 dark:border-gray-700 justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel>Tax Exempt</FormLabel>
                       <FormDescription>
@@ -197,6 +212,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         aria-readonly
+                        className=" text-gray-900 dark:text-gray-400  bg-gray-200 dark:bg-gray-600"
                       />
                     </FormControl>
                   </FormItem>
@@ -206,7 +222,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 control={form.control}
                 name="isChargeAccount"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center gap-x-4  justify-between rounded-lg border p-4">
+                  <FormItem className="flex flex-row items-center gap-x-4 dark:border-gray-700 justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel>Charge Account</FormLabel>
                       <FormDescription>
@@ -218,6 +234,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         aria-readonly
+                        className=" text-gray-900 dark:text-gray-400  bg-gray-200 dark:bg-gray-600"
                       />
                     </FormControl>
                   </FormItem>
@@ -230,7 +247,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 control={form.control}
                 name="discounted"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between  p-4">
+                  <FormItem className="flex flex-row items-center justify-between dark:border-gray-700 rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel>Apply Discount</FormLabel>
                       <FormDescription>
@@ -242,6 +259,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         aria-readonly
+                        className=" text-gray-900 dark:text-gray-400  bg-gray-200 dark:bg-gray-600"
                       />
                     </FormControl>
                   </FormItem>
@@ -249,12 +267,12 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
               />
               {form.watch("discounted") && (
                 <>
-                  <div className="flex w-full gap-x-2 p-2">
+                  <div className="flex flex-wrap gap-x-2 p-2">
                     <FormField
                       control={form.control}
                       name="discountType"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex-1 min-w-[150px]">
                           <FormLabel>Discount Type</FormLabel>
                           <Select
                             onValueChange={field.onChange}
@@ -262,11 +280,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                             required={form.watch("discounted")}
                           >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600">
                                 <SelectValue placeholder="Select discount type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="dark:bg-gray-900 dark:border-gray-200 dark:text-white">
                               <SelectItem value="flat_amount">
                                 Falt Amount
                               </SelectItem>
@@ -285,7 +303,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                       control={form.control}
                       name="discountRate"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex-1 min-w-[150px]">
                           <FormLabel>Discount Value</FormLabel>
                           <FormControl>
                             <Input
@@ -300,6 +318,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                 );
                               }}
                               required={form.watch("discounted")}
+                              className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
                             />
                           </FormControl>
 
@@ -311,20 +330,26 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 </>
               )}
             </div>
-
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              Vehicles
+            </h3>
             {fields.map((field, index) => (
               <div
                 key={field.id}
-                className="flex flex-row justify-center items-center gap-x-2 w-full"
+                className="flex flex-wrap justify-center items-center gap-x-2 "
               >
                 <FormField
                   control={form.control}
                   name={`vehicles.${index}.make`}
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex-1 min-w-[150px]">
                       <FormLabel>Make</FormLabel>
                       <FormControl>
-                        <Input placeholder="Make" {...field} />
+                        <Input
+                          placeholder="Make"
+                          {...field}
+                          className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -334,10 +359,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                   control={form.control}
                   name={`vehicles.${index}.model`}
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex-1 min-w-[150px]">
                       <FormLabel>Model</FormLabel>
                       <FormControl>
-                        <Input placeholder="Model" {...field} />
+                        <Input placeholder="Model" {...field} className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -347,10 +372,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                   control={form.control}
                   name={`vehicles.${index}.year`}
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex-1 min-w-[150px]">
                       <FormLabel>Year</FormLabel>
                       <FormControl>
-                        <Input placeholder="Year" {...field} />
+                        <Input placeholder="Year" {...field} className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -371,12 +396,16 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
               type="button"
               onClick={() => append({ make: "", model: "", year: "" })}
             >
-              Add Car
+              <div className="flex items-center gap-2">
+                             <Plus className="h-4 w-4"/> Add Vehicle
+                       </div>
             </Button>
 
             <DialogFooter>
-              <Button className="w-full font-bold" type="submit">
-                {isEdit ? "Update " : "ADD "}
+              <Button className="w-full relative" type="submit">
+              {isPending ?  <span className="absolute inset-0 flex items-center justify-center">
+                  <Spinner/>
+                  </span> : (isEdit ? "Update" : "ADD")}
               </Button>
             </DialogFooter>
           </form>

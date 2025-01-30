@@ -1,11 +1,9 @@
-
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-
 import { DataTableRowActions } from "./booking_row_actions";
-
-// This type is used to define the shape of our data.
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 type ServiceDetail = {
   name: string;
@@ -14,18 +12,18 @@ type ServiceDetail = {
 
 type BookingDetail = {
   bookingid: number;
-  date: string; // Formatted as 'dd MMM yyyy'
+  date: string;
   time: string;
   customer: string;
   ramp: string | null;
   vehicle: {
     id: number | null;
     details: string;
-  }; // Formatted as 'make model year' or 'No vehicle associated'
+  };
   services: ServiceDetail[];
   status: string;
   note: string;
-  technicians: string; // Concatenated technician names
+  technicians: string;
   payment_status: string;
   payment_method: string;
   booking_type: string | null;
@@ -34,62 +32,105 @@ type BookingDetail = {
 export const columns: ColumnDef<BookingDetail>[] = [
   {
     accessorKey: "bookingid",
-    header: "ID",
-    cell: ({ row }) => {
-      return <div>{row.getValue("bookingid")}</div>;
-    },
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        ID
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="text-gray-900 dark:text-gray-400 text-sm">
+        {row.getValue("bookingid")}
+      </div>
+    ),
   },
-
   {
     accessorKey: "date",
-    header: "Date",
-    cell: ({ row }) => <div>{row.getValue("date")}</div>,
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Date
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="text-gray-900 dark:text-gray-400 text-sm">
+        {row.getValue("date")}
+      </div>
+    ),
   },
   {
     accessorKey: "time",
-    header: "Time",
-    cell: ({ row }) => <div>{row.getValue("time")}</div>,
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Time
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="text-gray-900 dark:text-gray-400 text-sm">
+        {row.getValue("time")}
+      </div>
+    ),
   },
   {
     accessorKey: "ramp",
-    header: "Ramp",
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Ramp
+      </div>
+    ),
     cell: ({ row }) => {
       const ramp = row.getValue("ramp") as string;
-      const isNA = ramp === "0" 
-      return <div> {isNA ? "N/A" :ramp}</div>;
+      const isNA = ramp === "0";
+      return (
+        <div className="text-gray-900 dark:text-gray-400 text-sm">
+          {" "}
+          {isNA ? "N/A" : ramp}
+        </div>
+      );
     },
   },
   {
     accessorKey: "customer",
-    header: () => <div>Customer</div>,
-    cell: ({ row }) => {
-      const customer = row.getValue("customer");
-      return <div className="">{customer as string}</div>;
-    },
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Customer
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="text-gray-900 dark:text-gray-400 text-sm">
+        {row.getValue("customer") as string}
+      </div>
+    ),
   },
   {
     accessorKey: "vehicle",
-    header: () => <div>Vehicle</div>,
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Vehicle
+      </div>
+    ),
     cell: ({ row }) => {
-      const { id, details } = row.getValue("vehicle") as {
+      const { details } = row.getValue("vehicle") as {
         id: number;
         details: string;
       };
-
       return (
-        <div className="">
-          {row.getValue("vehicle") ? details : "No Vehicle associated"}
+        <div className="text-gray-900 dark:text-gray-400 text-sm">
+          {" "}
+          {details}
         </div>
       );
     },
   },
   {
     accessorKey: "services",
-    header: "Services",
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Services
+      </div>
+    ),
     cell: ({ row }) => {
       const services = row.getValue("services") as ServiceDetail[];
       return (
-        <div>
+        <div className="text-gray-900 dark:text-gray-400 text-sm">
           {services.map((service) => (
             <div key={service.name}>
               {service.name} - {service.quantity}
@@ -101,88 +142,111 @@ export const columns: ColumnDef<BookingDetail>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Status
+      </div>
+    ),
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
       const isCompleted = status === "completed";
       const isOnGoing = status === "ongoing";
       const isCancelled = status === "cancelled";
-
       return (
-        <div
-          className={`p-1 flex justify-center rounded-sm ${
-            isCompleted
-              ? "bg-green-300"
-              : isOnGoing
-              ? "bg-orange-300"
-              : isCancelled
-              ? "bg-red-300"
-              : "bg-blue-300"
-          } `}
+        <Badge
+          className={cn(
+            "uppercase text-xs font-bold text-white",
+            isCompleted && "bg-green-500 dark:bg-green-700",
+            isOnGoing && "bg-orange-500 dark:bg-orange-700",
+            isCancelled && "bg-red-500 dark:bg-red-700",
+            !isCompleted &&
+              !isOnGoing &&
+              !isCancelled &&
+              "bg-blue-500 dark:bg-blue-700"
+          )}
         >
-          {status.toUpperCase()}
-        </div>
+          {status}
+        </Badge>
       );
     },
   },
   {
     accessorKey: "payment_status",
-    header: "Payment Status",
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Payment Status
+      </div>
+    ),
     cell: ({ row }) => {
       const payment_status = row.getValue("payment_status") as string;
       const isPaid = payment_status === "paid";
       const isCharge = payment_status === "charge";
       const isUnpaid = payment_status === "unpaid";
       return (
-        <div
-          className={`p-1 flex justify-center rounded-sm ${
-            isPaid
-              ? "bg-green-300"
-              : isCharge
-              ? "bg-orange-300"
-              : isUnpaid
-              ? "bg-red-300"
-              : "bg-blue-300"
-          } `}
+        <Badge
+          className={cn(
+            "uppercase text-xs font-bold text-white",
+            isPaid && "bg-green-500 dark:bg-green-700",
+            isCharge && "bg-orange-500 dark:bg-orange-700",
+            isUnpaid && "bg-red-500 dark:bg-red-700",
+            !isPaid && !isCharge && !isUnpaid && "bg-blue-500 dark:bg-blue-700"
+          )}
         >
-          {payment_status.toUpperCase()}
-        </div>
+          {payment_status}
+        </Badge>
       );
     },
   },
   {
     accessorKey: "payment_method",
-    header: "Payment Method",
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Payment Method
+      </div>
+    ),
     cell: ({ row }) => {
       const payment_method = row.getValue("payment_method") as string;
-
-      return <div className="p-1 flex justify-center rounded-sm">{payment_method.toUpperCase()}</div>;
-    },
-  },
-  {
-    accessorKey: "technicians",
-    header: "Technicians",
-    cell: ({ row }) => <div>{row.getValue("technicians")}</div>,
-  },
-
-  {
-    accessorKey: "booking_type",
-    header: "Booking Type",
-    cell: ({ row }) => {
-      const isAppointment = row.getValue("booking_type") === "Appointment";
-
       return (
-        <div
-          className={`p-2 flex justify-center text-white rounded-sm ${
-            isAppointment ? " bg-blue-800" : "bg-green-800"
-          }`}
-        >
-          {row.getValue("booking_type")}
+        <div className="p-1 flex justify-center rounded-sm text-gray-900 dark:text-gray-400 text-sm">
+          {payment_method.toUpperCase()}
         </div>
       );
     },
   },
-
+  {
+    accessorKey: "technicians",
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Technicians
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="text-gray-900 dark:text-gray-400 text-sm">
+        {row.getValue("technicians")}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "booking_type",
+    header: () => (
+      <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">
+        Booking Type
+      </div>
+    ),
+    cell: ({ row }) => {
+      const isAppointment = row.getValue("booking_type") === "Appointment";
+      return (
+        <Badge
+          className={cn(
+            "uppercase text-xs font-bold text-white",
+            isAppointment ? " bg-blue-800" : "bg-green-800"
+          )}
+        >
+          {row.getValue("booking_type")}
+        </Badge>
+      );
+    },
+  },
   {
     id: "actions",
     cell: ({ row }) => {

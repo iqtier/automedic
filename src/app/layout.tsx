@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./globals.css";
-
+import { SessionProvider } from "next-auth/react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 export const metadata: Metadata = {
@@ -24,7 +24,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Providers>{children}</Providers>
+          <Providers>
+            <SessionProvider>{children}</SessionProvider>
+          </Providers>
         </ThemeProvider>
         <ToastContainer theme="colored" />
       </body>

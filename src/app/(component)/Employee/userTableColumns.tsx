@@ -25,9 +25,9 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { deleteEmployee } from "@/app/actions/employeeActions";
 import { toast } from "react-toastify";
-
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import { Employee } from "@/types/type";
+import { Employee, User } from "@/types/type";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -58,7 +58,14 @@ export const columns: ColumnDef<Employee>[] = [
     cell: ({ row }) => {
       const router = useRouter();
       const email = row.getValue("email");
+      const { data: session } = useSession()
+      const user = session?.user as User;
+      const isUserAdmin = user?.role === "admin";
       const handleDelete = async () => {
+        if(session?.user?.email === email ) {
+          toast.error("You cannot delete your own account.");
+          return;
+        }
         try {
           const result = await deleteEmployee(email as string); // Ensure this function exists and works as expected
           if (result.status === "success") {
@@ -99,12 +106,12 @@ export const columns: ColumnDef<Employee>[] = [
           </TooltipProvider>
 
           <AlertDialog>
-            <AlertDialogTrigger >
+            <AlertDialogTrigger disabled={!isUserAdmin}> 
               <TooltipProvider>
                 <Tooltip>
-                  <TooltipTrigger >
-                    <Button variant={"ghost"} size="icon">
-                      <Trash2 color="red" />
+                  <TooltipTrigger disabled={!isUserAdmin} >
+                    <Button disabled={!isUserAdmin} variant={"ghost"}  size="icon">
+                      <Trash2 color="red " />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="bg-red-700">

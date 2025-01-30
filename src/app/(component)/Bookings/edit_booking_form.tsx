@@ -1,10 +1,11 @@
+"use client";
+
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-
+import { useTransition } from 'react';
 import {
   Form,
   FormControl,
@@ -27,7 +28,7 @@ import { getBooking, updateBooking } from "@/app/actions/bookingActions";
 import { User } from "@/types/type";
 
 import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown, Trash2 } from "lucide-react";
+import { Check, ChevronsUpDown, Trash2 , Plus} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -43,7 +44,7 @@ import {
   Command,
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
-
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "react-toastify";
 
 import { getInventoryNameAndId } from "@/app/actions/inventoryActions";
@@ -80,6 +81,7 @@ const EditBookingForm: React.FC<{
   const [inventories, setInventories] = useState<Inventory[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+    const [isPending, startTransition] = useTransition();
   const router = useRouter();
   useEffect(() => {
     const get_technicians = async () => {
@@ -144,24 +146,24 @@ const EditBookingForm: React.FC<{
   });
 
   async function onSubmit(data: BookingFormValues) {
-    
-   
-    const result = await updateBooking(booking_id, data);
-    if (result?.status === "success") {
-      toast.success(`Appointment successfully updated`);
-      router.refresh();
-      setIsOpen(false);
-      form.reset();
-    } else {
-      form.setError("root.serverError", { message: result?.error as string });
-      toast.error(`${result?.error}`);
-    }
+      startTransition(async() => {
+          const result = await updateBooking(booking_id, data);
+          if (result?.status === "success") {
+              toast.success(`Appointment successfully updated`);
+              router.refresh();
+              setIsOpen(false);
+              form.reset();
+          } else {
+              form.setError("root.serverError", { message: result?.error as string });
+              toast.error(`${result?.error}`);
+          }
+    })
   }
   console.log(form.getValues());
   if (loading)
     return (
-      <div>
-        Loading....
+        <div className="flex items-center justify-center h-40">
+           <Spinner/>
       </div>
     );
   if (error) return <div>Error: {error}</div>;
@@ -170,20 +172,22 @@ const EditBookingForm: React.FC<{
     <div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-2">
-          <div className="grid grid-cols-12 gap-2">
-            <div className="col-span-4">
+          <div className="grid  sm:grid-cols-12 gap-2">
+            <div className="sm:col-span-4">
               <FormField
                 control={form.control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel className="text-gray-900 dark:text-white">Status</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger
+                           className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                        >
                           <SelectValue>
                             {field.value
                               ? field.value.toUpperCase()
@@ -191,7 +195,7 @@ const EditBookingForm: React.FC<{
                           </SelectValue>
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="ongoing">Ongoing</SelectItem>
                         <SelectItem value="completed">Completed</SelectItem>
@@ -204,19 +208,21 @@ const EditBookingForm: React.FC<{
                 )}
               />
             </div>
-            <div className="col-span-4">
+            <div className="sm:col-span-4">
               <FormField
                 control={form.control}
                 name="payment_status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Payment Status</FormLabel>
+                    <FormLabel  className="text-gray-900 dark:text-white">Payment Status</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger
+                             className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                        >
                           <SelectValue>
                             {field.value
                               ? field.value.toUpperCase()
@@ -224,11 +230,11 @@ const EditBookingForm: React.FC<{
                           </SelectValue>
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="paid">Paid</SelectItem>
                         <SelectItem value="unpaid">Unpaid</SelectItem>
-                        <SelectItem value="charge">Charge</SelectItem>
+                       <SelectItem value="charge">Charge</SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -237,19 +243,21 @@ const EditBookingForm: React.FC<{
                 )}
               />
             </div>
-            <div className="col-span-4">
+            <div className="sm:col-span-4">
               <FormField
                 control={form.control}
                 name="payment_method"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Payment Method</FormLabel>
+                    <FormLabel className="text-gray-900 dark:text-white">Payment Method</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger
+                           className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                        >
                           <SelectValue>
                             {field.value
                               ? field.value.toUpperCase()
@@ -257,12 +265,12 @@ const EditBookingForm: React.FC<{
                           </SelectValue>
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                       <SelectContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                         <SelectItem value="cash">Cash</SelectItem>
                         <SelectItem value="debit">Debit</SelectItem>
                         <SelectItem value="credit">Credit</SelectItem>
                         <SelectItem value="interac">Interac</SelectItem>
-                      </SelectContent>
+                        </SelectContent>
                     </Select>
 
                     <FormMessage />
@@ -272,14 +280,14 @@ const EditBookingForm: React.FC<{
             </div>
           </div>
 
-          <div className="grid grid-cols-12 gap-2">
-            <div className="col-span-6">
+          <div className="grid  sm:grid-cols-12 gap-2">
+            <div className="sm:col-span-6">
               <FormField
                 control={form.control}
                 name="technician_ids"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel className="text-lg font-semibold">
+                    <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white">
                       Technicians
                     </FormLabel>
                     <Popover>
@@ -289,7 +297,7 @@ const EditBookingForm: React.FC<{
                             variant="outline"
                             role="combobox"
                             className={cn(
-                              "w-[200px] justify-between",
+                              "w-full justify-between text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
                               !field.value || field.value.length === 0
                                 ? "text-muted-foreground"
                                 : ""
@@ -307,7 +315,7 @@ const EditBookingForm: React.FC<{
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
+                       <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                         <Command>
                           <CommandInput
                             placeholder="Search technicians..."
@@ -361,141 +369,141 @@ const EditBookingForm: React.FC<{
 
           <Separator />
           <div className="flex flex-col gap-y-2">
-            <h2 className="text-lg font-semibold">Inventories</h2>
-            {fields.map((field, index) => (
-              <div
-                key={field.id}
-                className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-1"
-              >
-                <FormField
-                  control={form.control}
-                  name={`inventories.${index}.id`}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col mt-3">
-                      <FormLabel>Inventory</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              className={cn(
-                                " justify-between",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value
-                                ? inventories?.find(
-                                    (inventory) =>
-                                      inventory.id.toString() === field.value
-                                  )?.name
-                                : "Select Inventory"}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className=" p-0">
-                          <Command>
-                            <CommandInput placeholder="Search Inventory..." />
-                            <CommandList>
-                              <CommandEmpty>No Inventory found.</CommandEmpty>
-                              <CommandGroup>
-                                {inventories?.map((inventory) => (
-                                  <CommandItem
-                                    value={inventory.name}
-                                    key={inventory.id}
-                                    onSelect={() => {
-                                      form.setValue(
-                                        `inventories.${index}.id`,
-                                        inventory.id.toString()
-                                      );
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        inventory.id.toString() === field.value
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                    {inventory.name}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`inventories.${index}.qty`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Quantity</FormLabel>
+        <h2 className="text-lg font-semibold">Inventories</h2>
+        {fields.map((field, index) => (
+          <div
+            key={field.id}
+            className="flex flex-wrap items-center space-x-3 space-y-0 rounded-md border dark:border-gray-700 p-1"
+          >
+            <FormField
+              control={form.control}
+              name={`inventories.${index}.id`}
+              render={({ field }) => (
+                <FormItem className="flex flex-col mt-3">
+                  <FormLabel>Inventory</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
                       <FormControl>
-                        <Input placeholder="Quantity" {...field} />
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            " justify-between text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value
+                            ? inventories?.find(
+                                (inventory) =>
+                                  inventory.id.toString() === field.value
+                              )?.name
+                            : "Select Inventory"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
                       </FormControl>
-                      <FormMessage />
+                    </PopoverTrigger>
+                    <PopoverContent className=" p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                      <Command>
+                        <CommandInput placeholder="Search Inventory..." />
+                        <CommandList>
+                          <CommandEmpty>No Inventory found.</CommandEmpty>
+                          <CommandGroup>
+                            {inventories?.map((inventory) => (
+                              <CommandItem
+                                value={inventory.name}
+                                key={inventory.id}
+                                onSelect={() => {
+                                  form.setValue(
+                                    `inventories.${index}.id`,
+                                    inventory.id.toString()
+                                  );
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    inventory.id.toString() === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {inventory.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`inventories.${index}.qty`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Quantity" {...field} className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex flex-row place-items-baseline space-x-1 ">
+              <FormField
+                control={form.control}
+                name={`inventories.${index}.included`}
+                render={({ field }) => {
+                  console.log("field.value:", field.value);
+                  return (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 ">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value === true}
+                          onCheckedChange={(checked) =>
+                            field.onChange(checked)
+                          }
+                        />
+                      </FormControl>
+                      <FormLabel>Included in service</FormLabel>
                     </FormItem>
-                  )}
-                />
-                <div className="flex flex-row place-items-baseline space-x-1 ">
-                  <FormField
-                    control={form.control}
-                    name={`inventories.${index}.included`}
-                    render={({ field }) => {
-                      console.log("field.value:", field.value);
-                      return (
-                        <FormItem className="flex flex-row items-center space-x-3 space-y-0 ">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value === true}
-                              onCheckedChange={(checked) =>
-                                field.onChange(checked)
-                              }
-                            />
-                          </FormControl>
-                          <FormLabel>Included in service</FormLabel>
-                        </FormItem>
-                      );
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    className="mt-8"
-                    onClick={() => remove(index)}
-                  >
-                    <Trash2 className="" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-            <Button
-              type="button"
-              onClick={() => append({ id: "", qty: "", included: false })}
-            >
-              Add Inventory
-            </Button>
+                  );
+                }}
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                className="mt-8"
+                onClick={() => remove(index)}
+              >
+                <Trash2 className="" />
+              </Button>
+            </div>
           </div>
+        ))}
+        <Button
+          type="button"
+          onClick={() => append({ id: "", qty: "", included: false })}
+        >
+          Add Inventory
+        </Button>
+      </div>
           <Separator />
           <FormField
             control={form.control}
             name="note"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Note</FormLabel>
+                <FormLabel className="text-gray-900 dark:text-white">Note</FormLabel>
 
                 <FormControl>
                   <Textarea
                     placeholder="Notes"
-                    className="resize-none"
+                    className="resize-none  text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
                     {...field}
                   />
                 </FormControl>
@@ -505,7 +513,11 @@ const EditBookingForm: React.FC<{
             )}
           />
 
-          <Button type="submit">Submit</Button>
+          <Button type="submit" className="relative">
+               {isPending ? <span className="absolute inset-0 flex items-center justify-center">
+                  <Spinner/>
+                </span> : "Submit"}
+          </Button>
         </form>
       </Form>
     </div>

@@ -63,7 +63,7 @@ export async function getAllBookings() {
         customer: true,
         vehicle: true,
         services: { include: { service: {include:{fields:true}} } },
-        technicians: { include: { technician: true } },
+        technicians: { include: { technician:true } },
       },
     });
     return bookings;
@@ -109,6 +109,8 @@ export async function updateBooking(
   }
 ): Promise<ActionResult<Booking>> {
   const { status, note, payment_status, payment_method, technician_ids, inventories } = data;
+  console.log("data", data);
+  console.log("id", id)
   try {
     const booking = await prisma.booking.update({
       where: { id: parseInt(id) },

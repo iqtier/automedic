@@ -1,3 +1,5 @@
+"use client";
+
 import {
     FormControl,
     FormField,
@@ -27,18 +29,16 @@ interface InputProps {
         name={name}
         render={({ field }) => (
           <FormItem>
-            <div>
-              <FormLabel>{label}</FormLabel>
-              <FormControl>
-                <Input
-                  className={cn("border-2 border-slate-300 hover:border-slate-400")}
-                  placeholder={placeholder}
-                  {...field}
-                  type={ispassword?"password":""}
-                />
-              </FormControl>
-              <FormMessage />
-            </div>
+           <FormLabel className="text-sm font-medium text-gray-900 dark:text-white">{label}</FormLabel>
+            <FormControl>
+              <Input
+               className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                placeholder={placeholder}
+                {...field}
+                type={ispassword ? "password" : "text"} // Use "text" for non-password inputs
+              />
+            </FormControl>
+             <FormMessage />
           </FormItem>
         )}
       />

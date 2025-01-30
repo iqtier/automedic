@@ -4,9 +4,9 @@ import { prisma } from "./prisma";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { getUserByEmail } from "@/app/actions/authActions";
+import { User } from "@/types/type";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
-
   providers: [
     Credentials({
       credentials: {
@@ -15,32 +15,53 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       authorize: async (credentials) => {
         let user = null;
-        user = await getUserByEmail(credentials.email as string);
-        console.log(user);
-        if (
-          !user ||
-          !(await compare(credentials.password as string, user.password))
-        ) {
+
+        try {
+          user = await getUserByEmail(credentials?.email as string);
+          if (
+            !user ||
+            !(await compare(credentials?.password as string, user.password))
+          ) {
+            return null;
+          }
+            return user;
+
+        } catch (error) {
+          console.error("Authentication error", error);
           return null;
         }
-
-        return user;
       },
     }),
   ],
   session: { strategy: "jwt" },
   callbacks: {
-    async jwt({ token,}) {
+      async jwt({ token, user}) {
+          if(user) {
+                const typedUser = user as User
+                return {
+                  ...token,
+                    name: typedUser.name,
+                    email: typedUser.email,
+                    role: typedUser.role,
+                    id: typedUser.id,
 
-      return token;
-    },
-    async session({ session, token }) {
-      if (token.sub && session.user) {
-        session.user.id = token.sub;
-    
-      }
-    
-      return session;
-    },
+                 };
+          }
+          return token;
+      },
+      async session({ session, token }) {
+            if (token && session.user) {
+                    //Here is the changed line
+                      const typedUser = session.user as unknown as {id:string,name:string, email:string, role: string }
+                      typedUser.id = token.id as string;
+                       typedUser.name = token.name as string;
+                       typedUser.email = token.email as string;
+                       typedUser.role = token.role as string;
+
+
+              }
+
+        return session;
+      },
   },
 });

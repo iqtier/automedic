@@ -14,8 +14,13 @@ import {
 import { DataTable } from "@/app/(component)/Inventory/inventory_table";
 import { colums } from "@/app/(component)/Inventory/inventory_table_colums";
 import InventoryReceivingForm from "@/app/(component)/Inventory/InventoryReceivingForm";
+import { auth } from "@/lib/auth";
+import { User } from "@/types/type";
 
 const page = async () => {
+  const session = await auth();
+  const user = session?.user as User;
+  const isUserAdmin = user?.role === "admin";
   const categories = await getAllCategories();
   const inventories = await getAllInventory();
   const tabeldata = inventories?.map((item) => ({
@@ -34,11 +39,11 @@ const page = async () => {
 
   return (
     <div>
-      <div className="  flex flex-1 gap-x-4">
+      {isUserAdmin && <div className="  flex flex-1 gap-x-4">
         <AddNewInventory categories={categories} />
         <AddNewCatagory fromAddNewItemForm={false} />
         <AddNewSupplier fromAddNewItemForm={false} />
-      </div>
+      </div>}
       <div className="mt-4">
         <Tabs defaultValue="inventoryList" className="w-full">
           <TabsList className="grid w-full grid-cols-4">

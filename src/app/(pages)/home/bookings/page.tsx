@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { format } from "date-fns";
 import { getAllServices } from "@/app/actions/serviceActions";
 
@@ -10,6 +10,7 @@ import { DataTable } from "@/app/(component)/Bookings/booking-table";
 import BookingForm from "@/app/(component)/Bookings/booking_form";
 
 import { getTechnicians } from "@/app/actions/employeeActions";
+import { Spinner } from "@/components/ui/spinner";
 
 const Bookings = async () => {
   const services = await getAllServices();
@@ -21,11 +22,13 @@ const Bookings = async () => {
     bookingid: booking.id,
     date: format(booking.date, "dd MMM yyyy"),
     time: booking.time,
-    customer:  booking.customer.name,
-    ramp:booking.ramp,
+    customer: booking.customer.name,
+    ramp: booking.ramp,
     vehicle: {
-      id: booking.vehicle? booking.vehicle.id:null,
-      details: booking.vehicle? `${booking.vehicle.make} ${booking.vehicle.model} ${booking.vehicle.year}`:"No Vehicle associated",
+      id: booking.vehicle ? booking.vehicle.id : null,
+      details: booking.vehicle
+        ? `${booking.vehicle.make} ${booking.vehicle.model} ${booking.vehicle.year}`
+        : "No Vehicle associated",
     },
 
     services: booking.services?.map((sa) => ({
@@ -41,8 +44,8 @@ const Bookings = async () => {
   }));
 
   return (
-    <div className="flex flex-col gap-y-4 ">
-      <div className="flex items-center  space-x-4">
+    <div className="flex flex-col gap-y-4 animate-in fade-in slide-in-from-bottom-10">
+      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4">
         <BookingForm
           services={services}
           customers={customers}
@@ -58,10 +61,15 @@ const Bookings = async () => {
           technicians={technicians}
         />
       </div>
-      <div>
-      <DataTable columns={columns} data={data} />
-      </div>
-      
+      <Suspense
+        fallback={
+          <div className="flex justify-center items-center">
+            <Spinner />
+          </div>
+        }
+      >
+        <DataTable columns={columns} data={data || []} />
+      </Suspense>
     </div>
   );
 };
