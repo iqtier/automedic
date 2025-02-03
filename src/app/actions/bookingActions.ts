@@ -60,7 +60,7 @@ export async function getAllBookings() {
   try {
     const bookings = await prisma.booking.findMany({
       include: {
-        customer: true,
+        customer: {include:{vehicles:true}},
         vehicle: true,
         services: { include: { service: {include:{fields:true}} } },
         technicians: { include: { technician:true } },

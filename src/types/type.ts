@@ -39,9 +39,9 @@ export const ServiceSchema = z.object({
 
 export const BookingSchema = z.object({
   date: z.date({
-    required_error: "A date of birth is required.",
+    required_error: "A date of Appointment is required.",
   }),
-  time: z.string({ required_error: "Please select a time slot." }),
+  time: z.string().min(1, "Please select a time slot." ),
   customer_id: z.string().min(1, "Please Select a customer"),
   vehicle_id: z.string().min(1, "Please Select a car"),
   type: z.string(),
@@ -167,6 +167,7 @@ export type Customer = {
   name: string;
   email: string;
   phone: string;
+  vehicles: Vehicle[];
 };
 type Vehicle = {
   id: number;
@@ -219,3 +220,13 @@ export type Category = {
   fields:string[]
   compatibleVehicles: boolean;
 };
+
+export const EmployeeScheduleSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  date: z.date({
+    required_error: "A date is required.",
+  }),
+  status: z.enum(["on", "off", "sick", "vacation", "available for on call"]),
+});
+
+export type EmployeeScheduleType = z.infer<typeof EmployeeScheduleSchema>;

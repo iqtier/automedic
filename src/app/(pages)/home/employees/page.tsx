@@ -13,6 +13,8 @@ import AddEmployeeForm from "@/app/(component)/Employee/add-employee-form";
 import { prisma } from "@/lib/prisma";
 import { EmployeeTable } from "@/app/(component)/Employee/employee-table";
 import { ClockInForm } from "@/app/(component)/Employee/clockInOut";
+
+import { ScheduleTable } from "@/app/(component)/Employee/Schedule/ScheduleTable";
 const Page = async () => {
   const session = await auth();
 
@@ -36,7 +38,7 @@ const Page = async () => {
           <ClockInForm />
         </TabsContent>
         <TabsContent value="Schedule">
-          <div>Schedule</div>
+        <ScheduleTable/>
         </TabsContent>
         <TabsContent value="List">
           <div className="mt-4">

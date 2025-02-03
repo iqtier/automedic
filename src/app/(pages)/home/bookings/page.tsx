@@ -11,14 +11,17 @@ import BookingForm from "@/app/(component)/Bookings/booking_form";
 
 import { getTechnicians } from "@/app/actions/employeeActions";
 import { Spinner } from "@/components/ui/spinner";
+import { Booking, Customer, Service, User } from "@/types/type";
 
 const Bookings = async () => {
-  const services = await getAllServices();
-  const customers = await getAllCustomer();
-  const bookings = await getAllBookings();
-  const technicians = await getTechnicians();
+  const [services, customers, bookings, technicians] = await Promise.all([
+    getAllServices() as Promise<Service[]>,
+    getAllCustomer() as Promise<Customer[]>,
+    getAllBookings() as Promise<Booking[]>,
+    getTechnicians() as Promise<User[]>,
+   ]);
 
-  const data = bookings?.map((booking) => ({
+   const data = bookings?.map((booking) => ({
     bookingid: booking.id,
     date: format(booking.date, "dd MMM yyyy"),
     time: booking.time,
@@ -30,7 +33,7 @@ const Bookings = async () => {
         ? `${booking.vehicle.make} ${booking.vehicle.model} ${booking.vehicle.year}`
         : "No Vehicle associated",
     },
-
+  
     services: booking.services?.map((sa) => ({
       name: sa.service.name,
       quantity: sa.qty,
@@ -38,10 +41,11 @@ const Bookings = async () => {
     status: booking.status,
     note: booking.note,
     technicians: booking.technicians?.map((t) => t.technician.name).join(", "),
-    booking_type: booking.booking_type,
+    booking_type: booking.booking_type ?? null, // Ensure it's never undefined
     payment_status: booking.payment_status,
     payment_method: booking.payment_method,
   }));
+  
 
   return (
     <div className="flex flex-col gap-y-4 animate-in fade-in slide-in-from-bottom-10">

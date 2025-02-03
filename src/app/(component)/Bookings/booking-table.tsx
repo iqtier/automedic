@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 import {
   ColumnFiltersState,
@@ -35,8 +35,8 @@ import {
 import { ChevronDown } from 'lucide-react';
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
 }
 
 export function DataTable<TData, TValue>({
@@ -47,13 +47,13 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -69,6 +69,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full">
+      {/* Search and Column Visibility Controls */}
       <div className="flex items-center mb-1">
         <Input
           placeholder="Search..."
@@ -88,67 +89,60 @@ export function DataTable<TData, TValue>({
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
+              .map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      
-        <div className="rounded-md border">
-          <Table className="relative">
+
+      {/* Scrollable Table Container */}
+      <div className="rounded-md border overflow-x-auto relative">
+        <ScrollArea className="w-full">
+          <Table className="w-full">
+            {/* Table Header */}
             <TableHeader className="sticky top-0 z-10 bg-white dark:bg-gray-800">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead
-                        key={header.id}
-                        className="bg-gray-100 text-left text-sm font-medium text-gray-900 dark:bg-gray-800 dark:text-gray-200"
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className={`bg-gray-100 text-left text-sm font-medium text-gray-900 dark:bg-gray-800 dark:text-gray-200 ${
+                        header.column.id === 'actions' ? 'sticky right-0 bg-white dark:bg-gray-800 z-20 shadow-left' : ''
+                      }`}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
                 </TableRow>
               ))}
             </TableHeader>
 
-            
+            {/* Table Body */}
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-               
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
+                  <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
-                        className={`text-sm text-gray-700 dark:text-gray-300 ${cell.column.id === 'action' ? 'sticky right-0 bg-white dark:bg-gray-800' : ''}`}
+                        className={`text-sm text-gray-700 dark:text-gray-300 ${
+                          cell.column.id === 'actions' ? 'sticky right-0 bg-white dark:bg-gray-800 z-10 shadow-left' : ''
+                        }`}
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
                   </TableRow>
-                
                 ))
               ) : (
                 <TableRow>
@@ -158,10 +152,11 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               )}
             </TableBody>
-         
           </Table>
-        </div>
-   
+        </ScrollArea>
+      </div>
+
+      {/* Pagination Controls */}
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"

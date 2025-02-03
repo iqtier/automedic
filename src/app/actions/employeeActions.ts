@@ -4,8 +4,9 @@
 import { prisma } from "@/lib/prisma";
 import { ActionResult } from "@/types/type";
 import { User } from "@prisma/client";
-import { start } from "repl";
-
+import { EmployeeScheduleSchema } from "@/types/type";
+import { z } from "zod";
+import { format, isSameDay } from "date-fns";
 export async function deleteEmployee(
   email: string
 ): Promise<ActionResult<User>> {
@@ -29,19 +30,18 @@ export async function ClockIn(pin: string): Promise<ActionResult<User>> {
   }
 
   try {
-
     const lastClockInRecord = await prisma.clockInOut.findFirst({
       where: {
-        userId:employee.id,
+        userId: employee.id,
         clockOut: null,
       },
       orderBy: {
-          clockIn: 'desc'
-      }
+        clockIn: "desc",
+      },
     });
 
-    if(lastClockInRecord){
-        return {status: 'error', error: "Employee is currently clocked in"}
+    if (lastClockInRecord) {
+      return { status: "error", error: "Employee is currently clocked in" };
     }
     await prisma.clockInOut.create({
       data: {
@@ -67,31 +67,34 @@ export async function ClockOut(pin: string): Promise<ActionResult<User>> {
   try {
     const lastClockInRecord = await prisma.clockInOut.findFirst({
       where: {
-        userId:employee.id,
+        userId: employee.id,
         clockOut: null,
       },
       orderBy: {
-          clockIn: 'desc'
-      }
+        clockIn: "desc",
+      },
     });
 
-    if(!lastClockInRecord){
-        return {status: 'error', error: "No current clock-in to clock out from"}
+    if (!lastClockInRecord) {
+      return {
+        status: "error",
+        error: "No current clock-in to clock out from",
+      };
     }
 
     const clockInTime = lastClockInRecord.clockIn.getTime();
     const clockOutTime = new Date().getTime();
     const diffInMilliseconds = clockOutTime - clockInTime;
-    const hoursWorked = diffInMilliseconds / (1000 * 60 * 60); 
+    const hoursWorked = diffInMilliseconds / (1000 * 60 * 60);
 
     await prisma.clockInOut.update({
-        where:{id:lastClockInRecord.id},
-        data: {
-            clockOut: new Date(),
-            hoursWorked
-        }
-    })
- 
+      where: { id: lastClockInRecord.id },
+      data: {
+        clockOut: new Date(),
+        hoursWorked,
+      },
+    });
+
     return { status: "success", data: employee };
   } catch (error) {
     return { status: "error", error: error as string };
@@ -114,15 +117,68 @@ export async function getCurrentClockedInUsers() {
     });
 
     const modifiedUsers = currentUsers.map((user) => ({
-        name: user.user.name,
-        role:user.user.role,
-        startTime: user.clockIn,
-        clockOut: user.clockOut
-      
-      }))
-    return modifiedUsers ;
+      name: user.user.name,
+      role: user.user.role,
+      startTime: user.clockIn,
+      clockOut: user.clockOut,
+    }));
+    return modifiedUsers;
   } catch (error) {
     console.log(error);
     return [];
   }
+}
+
+export async function updateSchedule(
+  userId: string,
+  date: string,
+  status: string
+) {
+  try {
+    const newDate = new Date(date).toISOString();
+    await prisma.employeeSchedule.upsert({
+      where: {
+        userId_date: {
+          userId: userId,
+          date: new Date(newDate),
+        },
+      },
+      update: {
+        status: status,
+      },
+      create: {
+        userId: userId,
+        date: new Date(newDate),
+        status: status,
+      },
+    });
+    return { status: "success" };
+  } catch (error) {
+    return { status: "error", error };
+  }
+}
+export async function fetchScheduleData(weekDays: Date[]) {
+
+  
+
+  const scheduleData = await prisma.employeeSchedule.findMany({
+    where: {
+      date: {
+        gte: weekDays[0],
+        lte: weekDays[weekDays.length - 1],
+      },
+    },
+    select: {
+      userId: true,
+      date: true,
+      status: true,
+    },
+  });
+  scheduleData.map((schedule) => {
+    console.log("Raw from DB:", schedule.date);
+console.log("Converted for UI:", new Date(schedule.date).toLocaleString());
+
+  });
+
+  return scheduleData
 }

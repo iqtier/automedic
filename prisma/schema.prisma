@@ -24,6 +24,7 @@ model User {
   created_at DateTime            @default(now())
   bookings   BookingTechnician[]
   ClockInOut ClockInOut[]
+  EmployeeSchedule EmployeeSchedule[]
 }
 
 model ClockInOut {
@@ -35,6 +36,18 @@ model ClockInOut {
   hoursWorked Float?
   createdAt   DateTime  @default(now())
 }
+model EmployeeSchedule {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  date        DateTime
+  status      String    // e.g., "on", "off", "sick", "vacation", "available for on call"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, date])
+}
+
 
 model ServiceFields {
   id        Int     @id @default(autoincrement())

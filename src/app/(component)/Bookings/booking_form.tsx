@@ -119,7 +119,7 @@ type BookingFormProps = {
 const BookingForm: React.FC<BookingFormProps> = ({
   services,
   customers,
-  isEdit,
+
   isAppointment,
   technicians,
 }) => {
@@ -801,8 +801,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
               <DialogFooter>
                <Button type="submit" className="w-full font-bold relative">
                    {isPending ? <span className="absolute inset-0 flex items-center justify-center">
-                  <Spinner/>
-                </span> : "Submit"}
+                  <Spinner/> Creating Booking...
+                </span> : "Create Booking"}
                 </Button>
               </DialogFooter>
             </form>
