@@ -135,6 +135,7 @@ export async function updateSchedule(
   status: string
 ) {
   try {
+   
     const newDate = new Date(date).toISOString();
     await prisma.employeeSchedule.upsert({
       where: {
@@ -158,14 +159,11 @@ export async function updateSchedule(
   }
 }
 export async function fetchScheduleData(weekDays: Date[]) {
-
-  
-
   const scheduleData = await prisma.employeeSchedule.findMany({
     where: {
       date: {
-        gte: weekDays[0],
-        lte: weekDays[weekDays.length - 1],
+        gte: new Date(weekDays[0].toLocaleDateString()),
+        lte: new Date(weekDays[weekDays.length - 1].toLocaleDateString()),
       },
     },
     select: {
@@ -174,11 +172,41 @@ export async function fetchScheduleData(weekDays: Date[]) {
       status: true,
     },
   });
-  scheduleData.map((schedule) => {
-    console.log("Raw from DB:", schedule.date);
-console.log("Converted for UI:", new Date(schedule.date).toLocaleString());
 
+  return scheduleData;
+}
+
+export async function getEmployeeSchedules(dateRange: { start: Date, end: Date }) {
+  return prisma.employeeSchedule.findMany({
+    where: {
+      date: {
+        gte: dateRange.start,
+        lte: dateRange.end,
+      },
+    },
+    include: {
+      user: true,
+    },
   });
+}
 
-  return scheduleData
+export async function updateEmployeeSchedule(data: z.infer<typeof EmployeeScheduleSchema>) {
+  const { userId, date, status } = data;
+
+  return prisma.employeeSchedule.upsert({
+    where: {
+      userId_date: {
+        userId,
+        date,
+      },
+    },
+    update: {
+      status,
+    },
+    create: {
+      userId,
+      date,
+      status,
+    },
+  });
 }

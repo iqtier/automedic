@@ -74,7 +74,7 @@ const AddEmployeeForm = () => {
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Button className="m-2" onClick={() => setIsDialogOpen(true)}>
-          <UserPlus /> Add Eployee
+          <UserPlus /> Add Employee
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

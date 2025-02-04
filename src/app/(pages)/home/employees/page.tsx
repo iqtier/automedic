@@ -28,7 +28,7 @@ const Page = async () => {
     <div>
       {isAdmin && <AddEmployeeForm />}
 
-      <Tabs defaultValue="Clock IN/Out" className="w-full mt-2">
+      <Tabs defaultValue="Schedule" className="w-full mt-2">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="Clock IN/Out">Clock IN/Out</TabsTrigger>
           <TabsTrigger value="Schedule">Schedule</TabsTrigger>

@@ -1,5 +1,7 @@
 import React from "react";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { ArrowBigLeft, ArrowBigRight,  } from "lucide-react";
 
 type ScheduleHeaderProps = {
     currentWeekStart: Date;
@@ -12,12 +14,12 @@ export function ScheduleHeader({
                              }: ScheduleHeaderProps) {
     return (
         <div className="flex justify-between items-center mb-4">
-            <button
+            <Button
                 onClick={() => handleWeekChange("prev")}
-                className="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+                className="px-2 py-1 rounded-lg"
             >
-                {"<"}
-            </button>
+             <ArrowBigLeft /> Previous Week
+            </Button>
             <h2 className="text-xl font-semibold">
                 {format(currentWeekStart, "MMMM dd")} -{" "}
                 {format(
@@ -29,12 +31,12 @@ export function ScheduleHeader({
                     "MMMM dd, yyyy"
                 )}
             </h2>
-            <button
+            <Button
                 onClick={() => handleWeekChange("next")}
-                className="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+                className="px-2 py-1  rounded-lg"
             >
-                {">"}
-            </button>
+                Next Week <ArrowBigRight />
+            </Button>
         </div>
     );
 }
