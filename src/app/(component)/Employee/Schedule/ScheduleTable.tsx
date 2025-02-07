@@ -1,5 +1,5 @@
 "use client";
-
+import { useSession } from "next-auth/react";
 import React, { useState, useEffect } from "react";
 import {
   format,
@@ -21,6 +21,7 @@ import {
 } from "@/app/actions/employeeActions";
 import { ScheduleHeader } from "./ScheduleHeader";
 import { toast } from "react-toastify";
+import { User } from "@/types/type";
 
 const ScheduleSchema = z.object({
   schedules: z.record(
@@ -32,6 +33,9 @@ const ScheduleSchema = z.object({
 type ScheduleForm = z.infer<typeof ScheduleSchema>;
 
 export function ScheduleTable() {
+  const { data: session } = useSession();
+  const user = session?.user as User;
+  const isUserAdmin = user?.role === "admin";
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 0 })
   );
@@ -195,7 +199,7 @@ export function ScheduleTable() {
       </div>
 
       <div className="mt-4">
-        <Button type="submit" disabled={!isDirty}>
+        <Button type="submit" disabled={!isDirty || !isUserAdmin}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"

@@ -30,7 +30,7 @@ const CompletedJobs: React.FC<CompletedJobsProps> = ({ bookings }) => {
 
   if (!completedBookings || completedBookings.length === 0) {
     return (
-      <Card className="flex-grow ">
+      <Card className="flex-grow dark:bg-gray-800 dark:border-gray-700">
         <CardHeader>
           <CardTitle className="font-semibold text-2xl">
             Completed Jobs
@@ -42,7 +42,7 @@ const CompletedJobs: React.FC<CompletedJobsProps> = ({ bookings }) => {
   }
 
   return (
-    <Card className="flex-grow">
+    <Card className="flex-grow dark:bg-gray-800 dark:border-gray-700">
       <CardHeader>
         <CardTitle className="font-semibold text-2xl">
           Completed Jobs
@@ -54,8 +54,8 @@ const CompletedJobs: React.FC<CompletedJobsProps> = ({ bookings }) => {
           {completedBookings.map((booking) => (
             <li
                 key={booking.id}
-                className="border relative rounded-md p-4 bg-gray-50 dark:bg-gray-800 shadow-sm"
-              >
+                className="border relative rounded-lg p-4 bg-gray-50 dark:bg-gray-600 shadow-green-500 shadow-lg"
+                    >
                 <div className="flex flex-wrap justify-between gap-x-4">
                   <div>
                     <p>
@@ -88,7 +88,7 @@ const CompletedJobs: React.FC<CompletedJobsProps> = ({ bookings }) => {
                     </div>
                   </div>
                   <div className="absolute  top-4 right-4">
-                    <div className="rounded-full bg-blue-100 dark:bg-blue-900  p-1">
+                    <div className=" bg-green-200 dark:bg-green-700 p-2 rounded-full ">
                       <DataTableRowActions booking_id={booking.id.toString()} />
                     </div>
                   </div>

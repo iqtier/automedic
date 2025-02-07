@@ -25,22 +25,22 @@ const Page = async () => {
   const users = await prisma.user?.findMany();
 
   return (
-    <div>
+    <div className="">
       {isAdmin && <AddEmployeeForm />}
 
-      <Tabs defaultValue="Schedule" className="w-full mt-2">
+      <Tabs defaultValue="Clock IN/Out" className="w-full mt-2">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="Clock IN/Out">Clock IN/Out</TabsTrigger>
           <TabsTrigger value="Schedule">Schedule</TabsTrigger>
           <TabsTrigger value="List">List</TabsTrigger>
         </TabsList>
-        <TabsContent value="Clock IN/Out">
+        <TabsContent value="Clock IN/Out" className="animate-in fade-in slide-in-from-bottom-10">
           <ClockInForm />
         </TabsContent>
-        <TabsContent value="Schedule">
+        <TabsContent value="Schedule" className="animate-in fade-in slide-in-from-bottom-10">
         <ScheduleTable/>
         </TabsContent>
-        <TabsContent value="List">
+        <TabsContent value="List" className="animate-in fade-in slide-in-from-bottom-10">
           <div className="mt-4">
             <EmployeeTable
               columns={columns}

@@ -38,7 +38,7 @@ const page = async () => {
   }));
 
   return (
-    <div>
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-10">
       {isUserAdmin && <div className="  flex flex-1 gap-x-4">
         <AddNewInventory categories={categories} />
         <AddNewCatagory fromAddNewItemForm={false} />

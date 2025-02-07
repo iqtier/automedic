@@ -14,7 +14,7 @@ const Page = async () => {
   const isAdmin = user?.role === "admin";
   const services = await getAllServices();
   return (
-    <div className="m-5">
+    <div className="animate-in fade-in slide-in-from-bottom-10">
    
 
       <ServicesAccordion services={services} isAdmin={isAdmin} />

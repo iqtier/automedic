@@ -64,6 +64,7 @@ export async function getAllBookings() {
         vehicle: true,
         services: { include: { service: {include:{fields:true}} } },
         technicians: { include: { technician:true } },
+        UsedInventory: { include: { inventory: true }}
       },
     });
     return bookings;
@@ -87,7 +88,7 @@ export async function getBooking(id: string) {
       },
       customer: true,
       vehicle: true,
-      UsedInventory: true,
+      UsedInventory: {include: { inventory: true}},
     },
   });
   return booking;
@@ -170,4 +171,40 @@ export async function getBookedTimeSlotsByDateRange(
   });
 
   return bookings;
+}
+
+export async function calculateBookingEarnings(bookingId: string): Promise<number> {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id:parseInt(bookingId) },
+      include: {
+          services: { include: { service: true } },
+          UsedInventory: { include: { inventory: true } }
+      }
+  });
+
+  if (!booking) {
+      console.error(`Booking with id ${bookingId} not found.`);
+      return 0;
+  }
+    let serviceRevenue = booking.services?.reduce((serviceAcc, serviceItem) => {
+      const price = serviceItem.service?.price || 0;
+      const qty = parseInt(serviceItem.qty, 10) || 1;
+      return serviceAcc + (price * qty);
+  }, 0) || 0;
+
+  let inventoryRevenue = booking.UsedInventory?.reduce((inventoryAcc, inventoryItem) => {
+       if (!inventoryItem.includedWithService) {
+          const retailPrice = inventoryItem.inventory?.retailPrice || 0;
+          const quantity = inventoryItem.quantity || 1;
+           return inventoryAcc + (retailPrice * quantity);
+        }
+           return inventoryAcc;
+  }, 0) || 0;
+
+  return serviceRevenue + inventoryRevenue;
+  } catch (error) {
+    console.error(`Error calculating earnings for booking id ${bookingId}:`, error);
+    return 0;
+  }
 }

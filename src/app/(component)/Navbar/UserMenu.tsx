@@ -1,13 +1,7 @@
 import {
-  LifeBuoy,
   LogOut,
-  Mail,
-  MessageSquare,
-  Plus,
-  PlusCircle,
   User,
-  UserPlus,
-  Users,
+ 
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -17,15 +11,12 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 import { auth } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 
 import Link from "next/link";
 import { signOut } from "@/lib/auth";
@@ -35,39 +26,48 @@ export async function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-          <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src="https://github.com/shadcn.png" alt={session?.user?.name || "User"} />
+            <AvatarFallback className="bg-muted-foreground text-foreground">{session?.user?.name?.slice(0, 2).toUpperCase()}</AvatarFallback>
+          </Avatar>
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
+      <DropdownMenuContent className="w-56 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="dark:bg-slate-700" />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <User />
-            <Link href={`/home/${session?.user?.id}`}> Profile</Link>
+          <DropdownMenuItem className="dark:hover:bg-gray-700">
+            
+             <Link href={`/home/${session?.user?.id}`} className="">
+             <div
+              className="flex items-center px-4 gap-1 ">
+             <User className="mr-2 h-4 w-4" />
+                <p>Profile</p>
+                
+             </div>
+             
+             
+              </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        
-
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuSeparator className="dark:bg-slate-700" />
+        <DropdownMenuItem >
           <form
             action={async () => {
               "use server";
               await signOut({ redirectTo: "/sign-in" });
             }}
           >
-            <button
-              className="flex flex-row gap-1 justify-center items-center"
-              type="submit"
-            >
-              <LogOut />
-
-              <span>Sign Out </span>
-            </button>
+              <Button
+                className="flex flex-row gap-1 items-center "
+                type="submit"
+                variant={"destructive"}
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+            </Button>
           </form>
         </DropdownMenuItem>
       </DropdownMenuContent>

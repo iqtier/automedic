@@ -1,3 +1,6 @@
+import { Contact, Inventory, InventoryFields, InventoryTransaction, UsedInventory } from "@prisma/client";
+
+
 import { z } from "zod";
 
 export const LogInSchema = z.object({
@@ -200,6 +203,7 @@ export type Booking = {
   technicians: BookingTechnician[];
   vehicle?: Vehicle | null;
   customer: Customer;
+  UsedInventory: UsedInventoryType[];
 };
 type BookingTechnician = {
   id: number;
@@ -230,3 +234,80 @@ export const EmployeeScheduleSchema = z.object({
 });
 
 export type EmployeeScheduleType = z.infer<typeof EmployeeScheduleSchema>;
+
+
+// types/type.ts
+
+export interface InventoryTransactionType {
+  id: number;
+  date: Date;
+  supplier: SupplierType;
+  supplierId: number;
+  type: string; // e.g., "receipt", "sale", "adjustment"
+  inventoryId: number;
+  inventory: InventoryType;
+  quantity: number;
+  referenceNumber?: string | null;
+  cost?: number | null;
+  notes?: string | null;
+}
+
+export interface UsedInventoryType {
+  id: number;
+  inventoryId: number;
+  inventory: InventoryType;
+  bookingId: number;
+  quantity: number;
+  transactionType: string;
+  includedWithService: boolean;
+}
+
+export interface InventoryType {
+  id: number;
+  sku?: string | null;
+  name: string;
+  brand?: string | null;
+  categoryId: number;
+  quantityOnHand: number;
+  unitCost: number;
+  retailPrice: number;
+  measure_of_unit: string;
+  reorderPoint?: number | null;
+  location?: string | null;
+  compatibleVehicles: string;
+  
+  
+}
+
+export interface InventoryFieldsType {
+  id: number;
+  name: string;
+  value: string;
+  inventoryId: number;
+  inventory: InventoryType;
+}
+
+export interface CategoryType {
+  id: number;
+  name: string;
+  description: string;
+  fields: string[];
+  compatibleVehicles: boolean;
+  
+}
+
+export interface SupplierType {
+  id: number;
+  name: string;
+  contact: ContactType;
+  contactId: number;
+ 
+}
+
+export interface ContactType {
+  id: number;
+  phone: string;
+  email: string;
+  address?: string | null;
+  supplier?: SupplierType | null;
+}

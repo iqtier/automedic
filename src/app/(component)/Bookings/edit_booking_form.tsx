@@ -326,7 +326,7 @@ const EditBookingForm: React.FC<{
                             <CommandGroup>
                               {technicians?.map((technician) => (
                                 <CommandItem
-                                  value={technician.name}
+                                  value={technician.id}
                                   key={technician.id}
                                   onSelect={() => {
                                     const selectedTechnicianIds = (
@@ -410,7 +410,7 @@ const EditBookingForm: React.FC<{
                               <CommandGroup>
                                 {inventories?.map((inventory) => (
                                   <CommandItem
-                                    value={inventory.name}
+                                    value={inventory.id.toString()}
                                     key={inventory.id}
                                     onSelect={() => {
                                       form.setValue(
@@ -519,9 +519,9 @@ const EditBookingForm: React.FC<{
             )}
           />
 
-          <Button type="submit" className="relative">
+          <Button type="submit" className="relative w-full">
             {isPending ? (
-              <span className="absolute inset-0 flex items-center justify-center">
+              <span className="absolute inset-0 flex items-center gap-x-4 justify-center">
                 <Spinner /> Updating...
               </span>
             ) : (

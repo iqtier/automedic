@@ -1,5 +1,5 @@
 import React from "react";
-import { getBooking } from "@/app/actions/bookingActions";
+import { calculateBookingEarnings, getBooking } from "@/app/actions/bookingActions";
 
 import {
   Card,
@@ -29,10 +29,7 @@ const BookingDetails = async ({
   }
 
   const isPaid = booking.payment_status === "paid";
-  const totalCost = booking.services.reduce(
-    (acc, service) => acc + service.service.price * parseInt(service.qty),
-    0
-  );
+  const totalCost = await calculateBookingEarnings(booking_id)
   return (
     <Card className="w-[800px]">
       <CardHeader>
@@ -67,6 +64,19 @@ const BookingDetails = async ({
               </li>
             ))}
           </ul>
+        </div>
+        <Separator />
+        <div>
+          <Label>Inventories:</Label>
+        
+          {booking.UsedInventory.length > 0?(<ul className="list-disc pl-6">
+            {booking.UsedInventory.map((inventory) => (
+              <li key={inventory.id}>
+                {inventory.inventory.name} (Qty: {inventory.quantity}) 
+                { !inventory.includedWithService && ` - $${(inventory.inventory.retailPrice *inventory.quantity).toFixed(2)}`}
+              </li>
+            ))}
+          </ul>):<p>No inventories used</p>}
         </div>
         <Separator />
         <div>

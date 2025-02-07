@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
 import { z } from "zod";
-import { Service, BookingSchema, CustomerType } from "@/types/type";
+import { Service, BookingSchema, } from "@/types/type";
 import { cn } from "@/lib/utils";
 import "react-day-picker/style.css";
 import {
@@ -17,7 +17,7 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
+
   FormMessage,
 } from "@/components/ui/form";
 import {
@@ -56,6 +56,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { Calendar } from "@/components/ui/calendar";
 
 type Ramp = 1 | 2 | 0;
 type TimeSlot = {
@@ -298,7 +299,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                               className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                               align="start"
                             >
-                              <DayPicker
+                              <Calendar
                             className="rounded-md border p-2"
                                 month={month}
                                 disabled={{ before: new Date() }}
@@ -645,7 +646,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                               <CommandGroup>
                                 {technicians.map((technician) => (
                                   <CommandItem
-                                    value={technician.name}
+                                    value={technician.id}
                                     key={technician.id}
                                     onSelect={() => {
                                       const selectedTechnicianIds =

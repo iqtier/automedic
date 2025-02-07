@@ -11,7 +11,7 @@ const page = async () => {
   const isAdmin = user?.role === "admin";
   const customers = await getAllCustomer();
   return (
-    <div className='space-y-4'>
+    <div className='space-y-4 animate-in fade-in slide-in-from-bottom-10'>
  
 
     <Clients isAdmin={isAdmin} customers = {customers}/>

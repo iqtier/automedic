@@ -49,7 +49,7 @@ export const DataTableRowActions: React.FC<DataTableRowActionsProps> = ({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-           <Button variant="ghost" className="h-8 w-8 p-0 relative group">
+           <Button  className="h-8 w-8 relative group rounded-full bg-green-500 ">
               <span className="sr-only">Open menu</span>
               <MoreHorizontal className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
             </Button>
