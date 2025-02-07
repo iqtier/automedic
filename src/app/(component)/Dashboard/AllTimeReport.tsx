@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 import {
   Popover,
@@ -100,6 +100,29 @@ const Dashboard = () => {
       }, 0) || 0;
     return acc + serviceRevenue + inventoryRevenue;
   }, 0);
+
+  const topSellingServices = () => {
+    if (!filteredBookings) return [];
+  
+    const serviceCounts: { [key: string]: number } = {};
+  
+    filteredBookings.forEach((booking) => {
+      booking.services?.forEach((serviceItem) => {
+        const serviceName = serviceItem.service?.name;
+        if (serviceName) {
+          serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+        }
+      });
+    });
+  
+    // Convert the result into an array of objects instead of tuples
+    return Object.entries(serviceCounts)
+      .sort(([, countA], [, countB]) => countB - countA)
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count })); // Convert tuple to object
+  };
+  
+
 
   const outOfStockInventoryCount = inventories?.filter(
     (inventory) => inventory.quantityOnHand <= 0
@@ -321,7 +344,15 @@ const Dashboard = () => {
               Most requested services based on booking history.
             </CardDescription>
           </CardHeader>
-          <CardContent>No Data</CardContent>
+          <CardContent>
+           <ol className="list-decimal pl-4">
+              {topSellingServices().map(({name, count}) => (
+                <li key={name} className="text-gray-900 dark:text-gray-400">
+                  {name} ({count} bookings)
+                </li>
+              ))}
+            </ol>
+          </CardContent>
         </Card>
       </div>
     </div>
