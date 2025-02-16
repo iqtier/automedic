@@ -1,6 +1,6 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import InventoryListTable from "@/app/(component)/Inventory/InventoryListTable";
+
 import Adjustment from "@/app/(component)/Inventory/Adjustment";
 import Reports from "@/app/(component)/Inventory/Reports";
 import AddNewCatagory from "@/app/(component)/Inventory/AddNewCatagory";

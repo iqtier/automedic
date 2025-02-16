@@ -75,7 +75,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     <Sidebar
       collapsible="icon"
        {...props}
-       className="bg-stone-50 dark:bg-slate-900 border-r dark:border-gray-700 shadow-md"
+       className="bg-stone-50 dark:bg-slate-900 border-r dark:border-gray-700 shadow-md z-20"
     >
       <SidebarHeader>
         <BrandLogo />

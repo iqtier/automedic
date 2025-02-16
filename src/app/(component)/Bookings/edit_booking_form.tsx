@@ -60,8 +60,8 @@ const bookingSchema = z.object({
   inventories: z
     .array(
       z.object({
-        id: z.string().min(1),
-        qty: z.string().min(1),
+        id: z.string().min(1,"Must Select a item"),
+        qty: z.string().min(1 , "Enter a valid quantity"),
         included: z.boolean().default(false),
       })
     )
@@ -72,6 +72,8 @@ type BookingFormValues = z.infer<typeof bookingSchema>;
 type Inventory = {
   id: number;
   name: string;
+  quantity: number;
+  unit: string;
 };
 const EditBookingForm: React.FC<{
   booking_id: string;
@@ -79,6 +81,8 @@ const EditBookingForm: React.FC<{
 }> = ({ booking_id, setIsOpen }) => {
   const [technicians, setTechnicians] = useState<User[] | null>(null);
   const [inventories, setInventories] = useState<Inventory[] | null>(null);
+  const [isPaid, setIsPaid] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -103,6 +107,7 @@ const EditBookingForm: React.FC<{
     const get_booking = async () => {
       try {
         const booking = await getBooking(booking_id);
+        console.log(booking);
         form.reset({
           status: booking?.status || "",
           note: booking?.note || "",
@@ -116,6 +121,10 @@ const EditBookingForm: React.FC<{
               included: Boolean(inv.includedWithService),
             })) || [],
         });
+        if (booking) {
+          setIsPaid(booking.payment_status === "paid");
+          setIsCompleted(booking.status === "completed");
+        }
       } catch (error: any) {
         setError(error.message);
       } finally {
@@ -187,7 +196,10 @@ const EditBookingForm: React.FC<{
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600">
+                        <SelectTrigger
+                          disabled={isCompleted}
+                          className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                        >
                           <SelectValue>
                             {field.value
                               ? field.value.toUpperCase()
@@ -222,7 +234,10 @@ const EditBookingForm: React.FC<{
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600">
+                        <SelectTrigger
+                          disabled={isPaid}
+                          className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                        >
                           <SelectValue>
                             {field.value
                               ? field.value.toUpperCase()
@@ -294,6 +309,7 @@ const EditBookingForm: React.FC<{
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={isCompleted}
                             variant="outline"
                             role="combobox"
                             className={cn(
@@ -385,6 +401,7 @@ const EditBookingForm: React.FC<{
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
+                              disabled={isCompleted}
                               variant="outline"
                               role="combobox"
                               className={cn(
@@ -413,11 +430,18 @@ const EditBookingForm: React.FC<{
                                     value={inventory.id.toString()}
                                     key={inventory.id}
                                     onSelect={() => {
-                                      form.setValue(
-                                        `inventories.${index}.id`,
-                                        inventory.id.toString()
-                                      );
+                                      if (inventory.quantity > 0) {
+                                        form.setValue(
+                                          `inventories.${index}.id`,
+                                          inventory.id.toString()
+                                        );
+                                      }
                                     }}
+                                    className={cn(
+                                      "flex items-center justify-between cursor-pointer",
+                                      inventory.quantity <= 0 &&
+                                        "cursor-not-allowed"
+                                    )}
                                   >
                                     <Check
                                       className={cn(
@@ -427,7 +451,13 @@ const EditBookingForm: React.FC<{
                                           : "opacity-0"
                                       )}
                                     />
-                                    {inventory.name}
+                                    <span
+                                      className={`${
+                                        inventory.quantity <= 0
+                                          ? "text-red-500"
+                                          : ""
+                                      }`}
+                                    >{`${inventory.name} - ${inventory.quantity} ${inventory.unit}`}</span>
                                   </CommandItem>
                                 ))}
                               </CommandGroup>
@@ -441,22 +471,69 @@ const EditBookingForm: React.FC<{
                   )}
                 />
                 <FormField
-                  control={form.control}
-                  name={`inventories.${index}.qty`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Quantity</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Quantity"
-                          {...field}
-                          className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+  control={form.control}
+  name={`inventories.${index}.qty`}
+  rules={{
+    required: "Quantity is required",
+    validate: (value) => {
+      const numericValue = parseFloat(value);
+      const selectedInventory = inventories?.find(
+        (inventory) =>
+          inventory.id.toString() === form.watch(`inventories.${index}.id`)
+      );
+
+      if (isNaN(numericValue)) return "Please enter a valid number";
+      if (numericValue <= 0) return "Quantity must be greater than 0";
+      if (selectedInventory && numericValue > selectedInventory.quantity)
+        return `Max available quantity: ${selectedInventory.quantity}`;
+
+      return true;
+    },
+  }}
+  render={({ field, fieldState }) => {
+    const selectedInventory = inventories?.find(
+      (inventory) =>
+        inventory.id.toString() === form.watch(`inventories.${index}.id`)
+    );
+
+    return (
+      <FormItem>
+        <FormLabel>Quantity</FormLabel>
+        <FormControl>
+          <Input
+            disabled={isCompleted}
+            placeholder="Quantity"
+            {...field}
+            className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
+            onChange={(e) => {
+              let value = e.target.value.replace(/[^0-9.]/g, ""); // Allow only numbers & decimal
+              const numericValue = parseFloat(value);
+
+              if (selectedInventory && numericValue > selectedInventory.quantity) {
+                field.onChange(selectedInventory.quantity.toString());
+              } else {
+                field.onChange(value);
+              }
+            }}
+            onBlur={(e) => {
+              let value = e.target.value.trim();
+              const numericValue = parseFloat(value);
+
+              if (isNaN(numericValue) || numericValue <= 0) {
+                field.onChange(""); // Clear input if invalid
+              }
+            }}
+          />
+        </FormControl>
+        {fieldState.error && (
+          <p className="text-red-500 text-sm">{fieldState.error.message}</p>
+        )}
+      </FormItem>
+    );
+  }}
+/>
+
+
                 <div className="flex flex-row place-items-baseline space-x-1 ">
                   <FormField
                     control={form.control}
@@ -467,6 +544,7 @@ const EditBookingForm: React.FC<{
                         <FormItem className="flex flex-row items-center space-x-3 space-y-0 ">
                           <FormControl>
                             <Checkbox
+                              disabled={isCompleted}
                               checked={field.value === true}
                               onCheckedChange={(checked) =>
                                 field.onChange(checked)
@@ -479,6 +557,7 @@ const EditBookingForm: React.FC<{
                     }}
                   />
                   <Button
+                    disabled={isCompleted}
                     type="button"
                     variant="destructive"
                     className="mt-8"
@@ -491,6 +570,7 @@ const EditBookingForm: React.FC<{
             ))}
             <Button
               type="button"
+              disabled={isCompleted}
               onClick={() => append({ id: "", qty: "", included: false })}
             >
               Add Inventory
@@ -519,7 +599,11 @@ const EditBookingForm: React.FC<{
             )}
           />
 
-          <Button type="submit" className="relative w-full">
+          <Button
+            type="submit"
+            className="relative w-full"
+            disabled={isCompleted && isPaid}
+          >
             {isPending ? (
               <span className="absolute inset-0 flex items-center gap-x-4 justify-center">
                 <Spinner /> Updating...

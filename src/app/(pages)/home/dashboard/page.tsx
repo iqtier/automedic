@@ -1,4 +1,5 @@
-import AllTimeReport from "@/app/(component)/Dashboard/AllTimeReport";
+
+import AllTimeReport from "@/app/(component)/Dashboard/AllTimeReport/AllTimeReport";
 import CompletedJobs from "@/app/(component)/Dashboard/CompletedJobs";
 import CurrentJobs from "@/app/(component)/Dashboard/CurrentJobs";
 import UpcomingJobs from "@/app/(component)/Dashboard/UpcomingJobs";
@@ -11,7 +12,7 @@ const page = async () => {
   const bookings = await getAllBookings();
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-10">
-      <Tabs defaultValue="current" className="w-full">
+      <Tabs defaultValue="alltime" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="current">Current</TabsTrigger>
           <TabsTrigger value="alltime">All time</TabsTrigger>
@@ -24,7 +25,7 @@ const page = async () => {
           </div>
         </TabsContent>
         <TabsContent value="alltime">
-          <AllTimeReport />
+       <AllTimeReport/>
         </TabsContent>
       </Tabs>
     </div>

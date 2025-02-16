@@ -168,6 +168,8 @@ export async function getInventoryNameAndId() {
         id: true,
         name: true,
         brand: true,
+        quantityOnHand:true,
+        measure_of_unit:true,
         InventoryFields: {
           select: {
             value: true,
@@ -177,6 +179,8 @@ export async function getInventoryNameAndId() {
     });
     const transformedInventory = inventory.map((item) => ({
       id: item.id,
+      quantity:item.quantityOnHand,
+      unit:item.measure_of_unit,
       name: `${item.brand} ${item.name} ${item.InventoryFields.map(
         (field) => field.value
       ).join(" ")}`,

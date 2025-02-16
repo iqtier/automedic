@@ -1,4 +1,6 @@
 "use client";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 type InventoryItem = {
   id: number;
@@ -47,7 +49,18 @@ export const colums: ColumnDef<InventoryItem>[] = [
     accessorKey: "quantity",
     header: "Quantity On Hand",
     cell: ({ row }) => {
-        return <div>{row.getValue("quantity")} </div>
+      const quantity = parseInt((row.getValue("quantity") as string).split(" ")[0]) 
+      const reorderPoint = parseInt((row.getValue("reorderPoint")as string).split(" ")[0])     
+      const isUnderCriticalPoint = quantity<reorderPoint
+
+        return (
+          <Badge className={cn(
+                                "uppercase dark:text-white",
+                                isUnderCriticalPoint ? "bg-orange-500 dark:bg-orange-900" : "bg-green-500 dark:bg-green-900"
+                            )}>
+            {row.getValue("quantity")}
+          </Badge>
+        )
     }
   },
   {

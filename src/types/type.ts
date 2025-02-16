@@ -1,5 +1,11 @@
-import { Contact, Inventory, InventoryFields, InventoryTransaction, UsedInventory } from "@prisma/client";
-
+import {
+  Contact,
+  Inventory,
+  InventoryFields,
+  InventoryTransaction,
+  UsedInventory,
+  ClockInOut,
+} from "@prisma/client";
 
 import { z } from "zod";
 
@@ -44,7 +50,7 @@ export const BookingSchema = z.object({
   date: z.date({
     required_error: "A date of Appointment is required.",
   }),
-  time: z.string().min(1, "Please select a time slot." ),
+  time: z.string().min(1, "Please select a time slot."),
   customer_id: z.string().min(1, "Please Select a customer"),
   vehicle_id: z.string().min(1, "Please Select a car"),
   type: z.string(),
@@ -76,13 +82,15 @@ export const CustomerSchema = z.object({
   discountRate: z.number().default(0),
   discountType: z.union([z.string(), z.null()]).default(null),
   isChargeAccount: z.boolean().default(false),
-  vehicles: z.array(
-    z.object({
-      make: z.string().min(1,"Make Required"),
-      model: z.string().min(1,"Model Required"),
-      year: z.string().min(1,"Year Required"),
-    })
-  ).optional(),
+  vehicles: z
+    .array(
+      z.object({
+        make: z.string().min(1, "Make Required"),
+        model: z.string().min(1, "Model Required"),
+        year: z.string().min(1, "Year Required"),
+      })
+    )
+    .optional(),
 });
 
 export const inventoryReceivingSchema = z.object({
@@ -103,15 +111,15 @@ export const supplierSchema = z.object({
 export const inventorySchema = z.object({
   name: z.string().min(1),
   sku: z.string().default("Not Provided"),
-  brand:z.string().default("Not Provided"),
+  brand: z.string().default("Not Provided"),
   categoryId: z.number().min(1),
-  quantityOnHand:z.string().default("0"),
+  quantityOnHand: z.string().default("0"),
   unit_cost: z.string().min(1),
   retail_price: z.string().min(1),
   measure_of_unit: z.string(),
   reorder_point: z.string().min(1),
   storage_location: z.string().min(1),
-  compatibleVehicles:z.string().default("Not Applicable"),
+  compatibleVehicles: z.string().default("Not Applicable"),
   fields: z.array(
     z.object({
       name: z.string().min(1),
@@ -158,6 +166,19 @@ export type User = {
   password: string;
   role: string;
   created_at: Date;
+  bookings: {
+    id: number;
+    bookingId: number;
+    technicianId: string;
+  }[];
+  ClockInOut: {
+    id: string;
+    userId: string;
+    clockIn: Date;
+    clockOut: Date | null;
+    hoursWorked: number | null;
+    createdAt: Date;
+  }[];
 };
 type ServiceFields = {
   id: number;
@@ -221,7 +242,7 @@ export type Category = {
   id: number;
   name: string;
   description: string;
-  fields:string[]
+  fields: string[];
   compatibleVehicles: boolean;
 };
 
@@ -234,7 +255,6 @@ export const EmployeeScheduleSchema = z.object({
 });
 
 export type EmployeeScheduleType = z.infer<typeof EmployeeScheduleSchema>;
-
 
 // types/type.ts
 
@@ -275,8 +295,6 @@ export interface InventoryType {
   reorderPoint?: number | null;
   location?: string | null;
   compatibleVehicles: string;
-  
-  
 }
 
 export interface InventoryFieldsType {
@@ -293,7 +311,6 @@ export interface CategoryType {
   description: string;
   fields: string[];
   compatibleVehicles: boolean;
-  
 }
 
 export interface SupplierType {
@@ -301,7 +318,6 @@ export interface SupplierType {
   name: string;
   contact: ContactType;
   contactId: number;
- 
 }
 
 export interface ContactType {

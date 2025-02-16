@@ -63,7 +63,13 @@ export async function getAllBookings() {
         customer: {include:{vehicles:true}},
         vehicle: true,
         services: { include: { service: {include:{fields:true}} } },
-        technicians: { include: { technician:true } },
+        technicians: { include: { technician:{
+          include:{
+            bookings:true,
+            ClockInOut:true,
+            
+          }
+        } } },
         UsedInventory: { include: { inventory: true }}
       },
     });
@@ -129,7 +135,7 @@ export async function updateBooking(
         UsedInventory: {
           deleteMany: {},
           create: inventories?.map((inventory) => ({
-            quantity: parseInt(inventory.qty),
+            quantity: parseFloat(inventory.qty),
             includedWithService: inventory.included,
             inventory: { connect: { id: parseInt(inventory.id) } },
             transactionType: "booking",
@@ -140,7 +146,7 @@ export async function updateBooking(
     });
     if (status === "completed" && inventories) {
       await Promise.all(inventories.map(async (inventory) => {
-          const parsedQuantity = parseInt(inventory.qty, 10);
+          const parsedQuantity = parseFloat(inventory.qty);
 
             await prisma.inventory.update({
             where: { id: parseInt(inventory.id) },

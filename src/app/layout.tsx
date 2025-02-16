@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
-import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { ToastContainer } from "react-toastify";

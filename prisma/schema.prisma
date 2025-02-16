@@ -136,7 +136,7 @@ model Inventory {
   brand              String?
   category           Category               @relation(fields: [categoryId], references: [id])
   categoryId         Int
-  quantityOnHand     Int                    @default(0)
+  quantityOnHand     Float                    @default(0)
   unitCost           Float
   retailPrice        Float
   measure_of_unit    String
@@ -189,7 +189,7 @@ model InventoryTransaction {
   type            String // e.g., "receipt", "sale", "adjustment"
   inventoryId     Int
   inventory       Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
-  quantity        Int
+  quantity        Float
   referenceNumber String? // Invoice/Work Order number
   cost            Float? // Cost at the time of the transaction
   notes           String?
@@ -201,7 +201,7 @@ model UsedInventory {
   inventory           Inventory @relation(fields: [inventoryId], references: [id])
   bookingId           Int
   booking             Booking   @relation(fields: [bookingId], references: [id])
-  quantity            Int
+  quantity            Float
   transactionType     String
   includedWithService Boolean
 }

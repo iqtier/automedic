@@ -6,7 +6,7 @@ import { ActionResult } from "@/types/type";
 import { User } from "@prisma/client";
 import { EmployeeScheduleSchema } from "@/types/type";
 import { z } from "zod";
-import { format, isSameDay } from "date-fns";
+
 export async function deleteEmployee(
   email: string
 ): Promise<ActionResult<User>> {
@@ -18,6 +18,17 @@ export async function deleteEmployee(
   } catch (error) {
     return { status: "error", error: error as string };
   }
+}
+
+export async function getAllEmployees() {
+  const employees = await prisma.user.findMany({ 
+    include:{
+      bookings:true,
+      ClockInOut:true,
+      
+    }
+  })
+  return employees
 }
 
 export async function ClockIn(pin: string): Promise<ActionResult<User>> {
@@ -102,7 +113,16 @@ export async function ClockOut(pin: string): Promise<ActionResult<User>> {
 }
 
 export async function getTechnicians() {
-  return prisma.user.findMany({ where: { role: "technician" } });
+  return prisma.user.findMany({ 
+    where: { 
+      role: "technician" 
+    },
+    include:{
+      bookings:true,
+      ClockInOut:true,
+      
+    } 
+  });
 }
 
 export async function getCurrentClockedInUsers() {

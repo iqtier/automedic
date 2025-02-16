@@ -14,7 +14,7 @@ import { CalendarIcon,  } from "lucide-react";
 import {
   getAllBookings,
 } from "@/app/actions/bookingActions";
-import { getTechnicians } from "@/app/actions/employeeActions";
+import { getAllEmployees, getTechnicians } from "@/app/actions/employeeActions";
 import { getAllCustomer } from "@/app/actions/customerActions";
 import { getAllInventory } from "@/app/actions/inventoryActions";
 import { Booking, User, Customer } from "@/types/type";
@@ -28,7 +28,8 @@ import {
 import { Calendar } from "@/components/ui/calendar"
 import { type DateRange } from "react-day-picker"
 
-const Dashboard = () => {
+const InventoryReport = () => {
+    const [employees, setEmployees] = useState<User[] | null>(null)
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [technicians, setTechnicians] = useState<User[] | null>(null);
   const [customers, setCustomers] = useState<Customer[] | null>(null);
@@ -43,16 +44,18 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const allEmployees = await getAllEmployees();
         const allBookings = await getAllBookings();
         const allTechnicians = await getTechnicians();
         const allCustomers = await getAllCustomer();
         const allInventories = await getAllInventory();
 
-        if (allBookings && allTechnicians && allCustomers && allInventories) {
+        if (allBookings && allTechnicians && allCustomers && allInventories && allEmployees) {
           setBookings(allBookings);
           setTechnicians(allTechnicians);
           setCustomers(allCustomers);
           setInventories(allInventories);
+          setEmployees(allEmployees)
         }
       } catch (err) {
         setError("Failed to load data.");
@@ -126,16 +129,16 @@ const Dashboard = () => {
 
   const outOfStockInventoryCount = inventories?.filter(
     (inventory) => inventory.quantityOnHand <= 0
-  ).length;
+  ).length ||0;
 
   const inventoryUnderReorderPointCount = inventories?.filter(
     (inventory) => inventory.quantityOnHand <= inventory.reorderPoint
-  ).length;
+  ).length || 0;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold tracking-tight">Dashboard</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Inventories</h2>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -180,67 +183,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-              Total Revenue
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              ${totalRevenue?.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-              Total Bookings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {filteredBookings?.length}
-            </div>
-            <CardDescription className="text-gray-500 dark:text-gray-400">
-              Across all bookings
-            </CardDescription>
-          </CardContent>
-        </Card>
-
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-              Total Employees
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              {technicians?.length}
-            </div>
-            <CardDescription className="text-gray-500 dark:text-gray-400">
-              All employees
-            </CardDescription>
-          </CardContent>
-        </Card>
-
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-              Total Customers
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-              {customers?.length}
-            </div>
-            <CardDescription className="text-gray-500 dark:text-gray-400">
-              All Registered Customers
-            </CardDescription>
-          </CardContent>
-        </Card>
-
+       
         <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -256,7 +199,7 @@ const Dashboard = () => {
             </CardDescription>
           </CardContent>
         </Card>
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
+        { outOfStockInventoryCount > 0 && (<Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
               Out of Stock Inventory Items
@@ -270,9 +213,9 @@ const Dashboard = () => {
               Inventory that needs re-stocking
             </CardDescription>
           </CardContent>
-        </Card>
+        </Card>)}
 
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
+       { inventoryUnderReorderPointCount>0 && ( <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
               Inventory Items Reaches reorder point
@@ -286,74 +229,13 @@ const Dashboard = () => {
               Inventory that needs re-stocking
             </CardDescription>
           </CardContent>
-        </Card>
+        </Card>)}
       </div>
 
       {/* Detailed Statistics */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-              Booking Status Breakdown
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <p className="text-gray-500 dark:text-gray-400">
-                Completed:{" "}
-                {
-                  filteredBookings?.filter(
-                    (booking) => booking.status === "completed"
-                  ).length
-                }
-              </p>
-              <p className="text-gray-500 dark:text-gray-400">
-                Ongoing:{" "}
-                {
-                  filteredBookings?.filter(
-                    (booking) => booking.status === "ongoing"
-                  ).length
-                }
-              </p>
-              <p className="text-gray-500 dark:text-gray-400">
-                Cancelled:{" "}
-                {
-                  filteredBookings?.filter(
-                    (booking) => booking.status === "cancelled"
-                  ).length
-                }
-              </p>
-              <p className="text-gray-500 dark:text-gray-400">
-                Pending:{" "}
-                {
-                  filteredBookings?.filter(
-                    (booking) => booking.status === "pending"
-                  ).length
-                }
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-              Top Selling Services
-            </CardTitle>
-            <CardDescription className="text-gray-500 dark:text-gray-400">
-              Most requested services based on booking history.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-           <ol className="list-decimal pl-4">
-              {topSellingServices().map(({name, count}) => (
-                <li key={name} className="text-gray-900 dark:text-gray-400">
-                  {name} ({count} bookings)
-                </li>
-              ))}
-            </ol>
-          </CardContent>
-        </Card>
+       
+        
       </div>
     </div>
   );
@@ -361,4 +243,4 @@ const Dashboard = () => {
 
 // Helper function to prevent typescript errors
 
-export default Dashboard;
+export default InventoryReport;
