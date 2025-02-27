@@ -142,6 +142,7 @@ export const categorySchema = z.object({
 export type CustomerType = z.infer<typeof CustomerSchema>;
 
 export type Employee = {
+  id:string
   username: string;
   email: string;
   role: string;
@@ -211,6 +212,8 @@ type ServiceIdQty = {
 export type Booking = {
   id: number;
   date: Date;
+  start:Date | null;
+  finish: Date|null;
   time: string;
   ramp: string | null;
   vehicle_id?: number | null;
@@ -295,6 +298,7 @@ export interface InventoryType {
   reorderPoint?: number | null;
   location?: string | null;
   compatibleVehicles: string;
+  InventoryFields:InventoryFieldsType[]
 }
 
 export interface InventoryFieldsType {
@@ -302,7 +306,7 @@ export interface InventoryFieldsType {
   name: string;
   value: string;
   inventoryId: number;
-  inventory: InventoryType;
+  
 }
 
 export interface CategoryType {
@@ -327,3 +331,12 @@ export interface ContactType {
   address?: string | null;
   supplier?: SupplierType | null;
 }
+
+export type BusinessDetailsType = {
+  location: [string, string | undefined];
+  businame: string;
+  phone: string;
+  roadname: string;
+  postal: string;
+  logo: File;
+};

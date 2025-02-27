@@ -28,6 +28,7 @@ import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Employee, User } from "@/types/type";
+import Link from "next/link";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -44,6 +45,7 @@ export const columns: ColumnDef<Employee>[] = [
     header: "Email",
     cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
   },
+ 
   {
     accessorKey: "role",
     header: () => <div className="text-right">Role</div>,
@@ -57,6 +59,7 @@ export const columns: ColumnDef<Employee>[] = [
     id: "actions",
     cell: ({ row }) => {
       const router = useRouter();
+      const id = row.original.id
       const email = row.getValue("email");
       const { data: session } = useSession()
       const user = session?.user as User;
@@ -83,9 +86,9 @@ export const columns: ColumnDef<Employee>[] = [
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant={"ghost"}>
-                  <Eye />
-                </Button>
+                <Link href={`/home/${id}`}>
+                <Eye/>
+                </Link>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Details</p>

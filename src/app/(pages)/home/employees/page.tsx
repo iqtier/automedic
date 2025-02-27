@@ -45,6 +45,7 @@ const Page = async () => {
             <EmployeeTable
               columns={columns}
               data={users?.map((user) => ({
+                id: user.id,
                 email: user.email,
                 password: user.password,
                 role: user.role,

@@ -70,7 +70,7 @@ export async function getAllBookings() {
             
           }
         } } },
-        UsedInventory: { include: { inventory: true }}
+        UsedInventory: { include: { inventory: {include:{InventoryFields:true}} }}
       },
     });
     return bookings;
@@ -86,15 +86,17 @@ export async function getBooking(id: string) {
       id: parseInt(id),
     },
     include: {
-      services: { include: { service: true } },
-      technicians: {
-        include: {
-          technician: true,
-        },
-      },
-      customer: true,
+      customer: {include:{vehicles:true}},
       vehicle: true,
-      UsedInventory: {include: { inventory: true}},
+      services: { include: { service: {include:{fields:true}} } },
+      technicians: { include: { technician:{
+        include:{
+          bookings:true,
+          ClockInOut:true,
+          
+        }
+      } } },
+      UsedInventory: { include: { inventory:{include:{InventoryFields:true}} }}
     },
   });
   return booking;
@@ -116,16 +118,24 @@ export async function updateBooking(
   }
 ): Promise<ActionResult<Booking>> {
   const { status, note, payment_status, payment_method, technician_ids, inventories } = data;
-  console.log("data", data);
-  console.log("id", id)
+  const now = new Date();
+  const utcDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000); 
   try {
+    const currentBooking = await prisma.booking.findUnique({
+      where: { id: parseInt(id) },
+      select: { start: true },
+    })
+    const startTime = currentBooking?.start;
     const booking = await prisma.booking.update({
       where: { id: parseInt(id) },
       data: {
         status,
+        start: (status === "ongoing" && !startTime) ? utcDate : startTime,
+        finish: status === "completed" ? utcDate : null,
         note: note || "",
         payment_status,
         payment_method,
+        
         technicians: {
           deleteMany: {},
           create: technician_ids?.map((technicianId) => ({

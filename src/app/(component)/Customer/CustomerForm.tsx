@@ -286,7 +286,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                             </FormControl>
                             <SelectContent className="dark:bg-gray-900 dark:border-gray-200 dark:text-white">
                               <SelectItem value="flat_amount">
-                                Falt Amount
+                                Flat Amount
                               </SelectItem>
                               <SelectItem value="percentage">
                                 Percentage

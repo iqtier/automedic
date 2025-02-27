@@ -14,16 +14,25 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id         String              @id @default(cuid())
+model BusinessDetails {
+  id         String   @id @default(cuid())
   name       String
-  email      String              @unique
-  password   String
-  role       String
-  pin        String?             @unique
-  created_at DateTime            @default(now())
-  bookings   BookingTechnician[]
-  ClockInOut ClockInOut[]
+  phone      String
+  address    Json
+  logo       Bytes
+  created_at DateTime @default(now())
+}
+
+model User {
+  id               String              @id @default(cuid())
+  name             String
+  email            String              @unique
+  password         String
+  role             String
+  pin              String?             @unique
+  created_at       DateTime            @default(now())
+  bookings         BookingTechnician[]
+  ClockInOut       ClockInOut[]
   EmployeeSchedule EmployeeSchedule[]
 }
 
@@ -36,17 +45,18 @@ model ClockInOut {
   hoursWorked Float?
   createdAt   DateTime  @default(now())
 }
+
 model EmployeeSchedule {
-  id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-  date        DateTime
-  status      String    // e.g., "on", "off", "sick", "vacation", "available for on call"
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime
+  status    String // e.g., "on", "off", "sick", "vacation", "available for on call"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([userId, date])
 }
-
 
 model ServiceFields {
   id        Int     @id @default(autoincrement())
@@ -85,6 +95,8 @@ model Vehicle {
 model Booking {
   id             Int                 @id @default(autoincrement())
   date           DateTime
+  start          DateTime?
+  finish         DateTime?
   time           String
   ramp           String?
   vehicle_id     Int?
@@ -136,7 +148,7 @@ model Inventory {
   brand              String?
   category           Category               @relation(fields: [categoryId], references: [id])
   categoryId         Int
-  quantityOnHand     Float                    @default(0)
+  quantityOnHand     Float                  @default(0)
   unitCost           Float
   retailPrice        Float
   measure_of_unit    String

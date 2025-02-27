@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getAllBookings } from "@/app/actions/bookingActions";
+
 import { Booking } from "@/types/type";
 import { DataTableRowActions } from "../Bookings/booking_row_actions";
 

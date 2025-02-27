@@ -107,7 +107,7 @@ const EditBookingForm: React.FC<{
     const get_booking = async () => {
       try {
         const booking = await getBooking(booking_id);
-        console.log(booking);
+        
         form.reset({
           status: booking?.status || "",
           note: booking?.note || "",
@@ -134,7 +134,7 @@ const EditBookingForm: React.FC<{
     get_inventors();
     get_technicians();
     get_booking();
-    console.log(form.getValues());
+    
   }, [booking_id]);
 
   const form = useForm<BookingFormValues>({

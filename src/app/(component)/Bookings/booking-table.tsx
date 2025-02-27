@@ -32,7 +32,8 @@ import {
   VisibilityState,
   ColumnDef
 } from '@tanstack/react-table';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -43,7 +44,10 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([{
+    id: 'bookingid',
+    desc: true, // sort by name in descending order by default
+  },]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
@@ -65,6 +69,7 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
     },
+    
   });
 
   return (
@@ -112,16 +117,59 @@ export function DataTable<TData, TValue>({
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className={`bg-gray-100 text-left text-sm font-medium text-gray-900 dark:bg-gray-800 dark:text-gray-200 ${
-                        header.column.id === 'actions' ? 'sticky right-0 bg-white dark:bg-gray-800 z-20 shadow-left' : ''
-                      }`}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
+                    
+                      <TableHead
+                        key={header.id}
+                        className="relative h-10 border-t select-none"
+                        aria-sort={
+                          header.column.getIsSorted() === "asc"
+                            ? "ascending"
+                            : header.column.getIsSorted() === "desc"
+                              ? "descending"
+                              : "none"
+                        }
+                      >
+                        {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                          <div
+                            className={cn(
+                              header.column.getCanSort() &&
+                                "flex h-full cursor-pointer items-center justify-between gap-2 select-none",
+                            )}
+                            onClick={header.column.getToggleSortingHandler()}
+                            onKeyDown={(e) => {
+                              // Enhanced keyboard handling for sorting
+                              if (header.column.getCanSort() && (e.key === "Enter" || e.key === " ")) {
+                                e.preventDefault();
+                                header.column.getToggleSortingHandler()?.(e);
+                              }
+                            }}
+                            tabIndex={header.column.getCanSort() ? 0 : undefined}
+                          >
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                            {{
+                              asc: (
+                                <ChevronUpIcon
+                                  className="shrink-0 opacity-60"
+                                  size={16}
+                                  aria-hidden="true"
+                                />
+                              ),
+                              desc: (
+                                <ChevronDownIcon
+                                  className="shrink-0 opacity-60"
+                                  size={16}
+                                  aria-hidden="true"
+                                />
+                              ),
+                            }[header.column.getIsSorted() as string] ?? (
+                              <span className="size-4" aria-hidden="true" />
+                            )}
+                          </div>
+                        ) : (
+                          flexRender(header.column.columnDef.header, header.getContext())
+                        )}
+                      </TableHead>
+                    
                   ))}
                 </TableRow>
               ))}

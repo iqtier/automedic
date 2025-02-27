@@ -242,7 +242,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
       }
     });
   }
-    const availableRamps = ["1", "2","0"];
+  
   return (
     <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

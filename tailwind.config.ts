@@ -100,3 +100,4 @@ export default {
   },
   plugins: [require("tailwindcss-animate"),heroui()],
 } satisfies Config;
+ 

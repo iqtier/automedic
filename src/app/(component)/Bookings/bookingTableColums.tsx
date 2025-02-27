@@ -33,10 +33,11 @@ type BookingDetail = {
 
 export const columns: ColumnDef<BookingDetail>[] = [
      {
-         id: "bookingid",
+      accessorKey: "bookingid",
       header:  () => <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">ID</div>,
           cell: ({ row }) =>  <div className="text-gray-900 dark:text-gray-400 text-sm">{row.original.bookingid}</div>,
-   },
+          
+        },
   {
        accessorKey: "date",
     header:  () => <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">Date</div>,
@@ -66,7 +67,7 @@ export const columns: ColumnDef<BookingDetail>[] = [
       ),
   },
     {
-        id: "vehicle",
+      accessorKey: "vehicle",
     header: () => <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">Vehicle</div>,
       cell: ({ row }) => {
         return (
@@ -77,7 +78,7 @@ export const columns: ColumnDef<BookingDetail>[] = [
       },
   },
   {
-    id: "services",
+    accessorKey: "services",
     header: () => <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">Services</div>,
         cell: ({ row }) => {
             const services = row.original.services as ServiceDetail[];
@@ -93,7 +94,7 @@ export const columns: ColumnDef<BookingDetail>[] = [
         },
   },
     {
-        id: "status",
+      accessorKey: "status",
     header:  () => <div className="text-left text-sm font-semibold text-gray-900 dark:text-gray-400">Status</div>,
         cell: ({ row }) => {
             const status = row.original.status as string;
