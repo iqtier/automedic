@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { tree } from "next/dist/build/templates/app-page";
 
 type Customer = CustomerType & { id: string };
 type CustomerFormProps = {
@@ -212,7 +213,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         aria-readonly
-                        className=" text-gray-900 dark:text-gray-400  bg-gray-200 dark:bg-gray-600"
+                        className={` text-gray-900 dark:text-gray-400  bg-gray-200  ${field.value ===true ?"dark:bg-green-500":"dark:bg-gray-600" } `}
                       />
                     </FormControl>
                   </FormItem>
@@ -234,7 +235,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         aria-readonly
-                        className=" text-gray-900 dark:text-gray-400  bg-gray-200 dark:bg-gray-600"
+                        className={` text-gray-900 dark:text-gray-400  bg-gray-200  ${field.value ===true ?"dark:bg-green-500":"dark:bg-gray-600" } `}
                       />
                     </FormControl>
                   </FormItem>
@@ -259,7 +260,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         aria-readonly
-                        className=" text-gray-900 dark:text-gray-400  bg-gray-200 dark:bg-gray-600"
+                        className=  {` text-gray-900 dark:text-gray-400  bg-gray-200  ${field.value ===true ?"dark:bg-green-500":"dark:bg-gray-600" } `}
                       />
                     </FormControl>
                   </FormItem>
