@@ -9,9 +9,9 @@ const SECONDARY_COLOR = "#000";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { booking_id: string } }
+  { params }: { params: Promise<{ booking_id: string }> }
 ) {
-  const { booking_id } = params;
+  const { booking_id } = await params;
   const booking = await getBooking(booking_id);
 
   if (!booking) {
