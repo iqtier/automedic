@@ -50,6 +50,7 @@ import { toast } from "react-toastify";
 import { getInventoryNameAndId } from "@/app/actions/inventoryActions";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/app/store/useUserStore";
 
 const bookingSchema = z.object({
   status: z.string(),
@@ -87,10 +88,11 @@ const EditBookingForm: React.FC<{
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const {business} = useUserStore()
   useEffect(() => {
     const get_technicians = async () => {
       try {
-        const technicians = await getTechnicians();
+        const technicians = await getTechnicians(business?.id as string);
         setTechnicians(technicians);
       } catch (error: any) {
         setError(error.message);
@@ -98,7 +100,7 @@ const EditBookingForm: React.FC<{
     };
     const get_inventors = async () => {
       try {
-        const inventors = await getInventoryNameAndId();
+        const inventors = await getInventoryNameAndId(business?.id as string);
         setInventories(inventors);
       } catch (error: any) {
         setError(error.message);

@@ -167,9 +167,12 @@ export async function getAllInventory(businesId: string) {
   }
 }
 
-export async function getInventoryNameAndId() {
+export async function getInventoryNameAndId(businesId: string) {
   try {
     const inventory = await prisma.inventory.findMany({
+      where: {
+        business_Id: businesId,
+      },  // Select only the required fields
       select: {
         id: true,
         name: true,
