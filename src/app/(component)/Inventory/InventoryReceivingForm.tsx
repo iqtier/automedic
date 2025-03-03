@@ -59,7 +59,7 @@ const InventoryReceivingForm = () => {
   useEffect(() => {
     const getInventoriesAndSuppliers = async () => {
       try {
-        const inventory = await getInventoryNameAndId();
+        const inventory = await getInventoryNameAndId(user.business_Id as string);
         setInventories(inventory);
         const suppliers = await getSupplierNameAndId();
         setSuppliers(suppliers);
