@@ -26,8 +26,7 @@ import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 import { createBusinessDetails } from "@/app/actions/settingActions";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { User } from "@/types/type";
+
 import { useUserStore } from "@/app/store/useUserStore";
 
 const formSchema = z.object({
