@@ -26,11 +26,12 @@ import {
 } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { type DateRange } from "react-day-picker";
+import { useUserStore } from "@/app/store/useUserStore";
 
 const EmployeeReport = () => {
   const [employees, setEmployees] = useState<User[] | null>(null);
   const [bookings, setBookings] = useState<Booking[] | null>(null);
-  const [technicians, setTechnicians] = useState<User[] | null>(null);
+  const {business} = useUserStore();
 
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), 0, 1),
@@ -42,8 +43,8 @@ const EmployeeReport = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const allEmployees = await getAllEmployees();
-        const allBookings = await getAllBookings();
+        const allEmployees = await getAllEmployees(business?.id as string);
+        const allBookings = await getAllBookings(business?.id as string);
 
         if (allBookings && allEmployees) {
           setBookings(allBookings);

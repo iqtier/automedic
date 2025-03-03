@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 
 import {
   Popover,
@@ -11,13 +11,10 @@ import { Button, } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon,  } from "lucide-react";
-import {
-  getAllBookings,
-} from "@/app/actions/bookingActions";
-import { getAllEmployees, getTechnicians } from "@/app/actions/employeeActions";
-import { getAllCustomer } from "@/app/actions/customerActions";
+
+
 import { getAllInventory } from "@/app/actions/inventoryActions";
-import { Booking, User, Customer } from "@/types/type";
+
 import {
   Card,
   CardContent,
@@ -27,12 +24,10 @@ import {
 } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar"
 import { type DateRange } from "react-day-picker"
+import { useUserStore } from "@/app/store/useUserStore";
 
 const InventoryReport = () => {
-    const [employees, setEmployees] = useState<User[] | null>(null)
-  const [bookings, setBookings] = useState<Booking[] | null>(null);
-  const [technicians, setTechnicians] = useState<User[] | null>(null);
-  const [customers, setCustomers] = useState<Customer[] | null>(null);
+
   const [inventories, setInventories] = useState<any[] | null>(null);
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), 0, 1),
@@ -40,22 +35,22 @@ const InventoryReport = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const {business} = useUserStore();
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const allEmployees = await getAllEmployees();
-        const allBookings = await getAllBookings();
-        const allTechnicians = await getTechnicians();
-        const allCustomers = await getAllCustomer();
-        const allInventories = await getAllInventory();
+     
+  
+   
+ 
+        const allInventories = await getAllInventory(business?.id as string);
 
-        if (allBookings && allTechnicians && allCustomers && allInventories && allEmployees) {
-          setBookings(allBookings);
-          setTechnicians(allTechnicians);
-          setCustomers(allCustomers);
+        if (allInventories ) {
+        
+      
+   
           setInventories(allInventories);
-          setEmployees(allEmployees)
+   
         }
       } catch (err) {
         setError("Failed to load data.");
@@ -78,52 +73,6 @@ const InventoryReport = () => {
     return <div>Error: {error}</div>;
   }
 
-  const filteredBookings = bookings?.filter((booking) => {
-    if (!date?.from || !date?.to) return true;
-    const bookingDate = new Date(booking.date);
-    return bookingDate >= date.from && bookingDate <= date.to;
-  });
-
-  const totalRevenue = filteredBookings?.reduce((acc, booking) => {
-    let serviceRevenue =
-      booking.services?.reduce((serviceAcc, serviceItem) => {
-        const price = serviceItem.service?.price || 0;
-        const qty = parseInt(serviceItem.qty, 10) || 1;
-        return serviceAcc + price * qty;
-      }, 0) || 0;
-
-    let inventoryRevenue =
-      booking.UsedInventory?.reduce((inventoryAcc, inventoryItem) => {
-        if (!inventoryItem.includedWithService) {
-          const retailPrice = inventoryItem.inventory?.retailPrice || 0;
-          const quantity = inventoryItem.quantity || 1;
-          return inventoryAcc + retailPrice * quantity;
-        }
-        return inventoryAcc;
-      }, 0) || 0;
-    return acc + serviceRevenue + inventoryRevenue;
-  }, 0);
-
-  const topSellingServices = () => {
-    if (!filteredBookings) return [];
-  
-    const serviceCounts: { [key: string]: number } = {};
-  
-    filteredBookings.forEach((booking) => {
-      booking.services?.forEach((serviceItem) => {
-        const serviceName = serviceItem.service?.name;
-        if (serviceName) {
-          serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
-        }
-      });
-    });
-  
-    // Convert the result into an array of objects instead of tuples
-    return Object.entries(serviceCounts)
-      .sort(([, countA], [, countB]) => countB - countA)
-      .slice(0, 5)
-      .map(([name, count]) => ({ name, count })); // Convert tuple to object
-  };
   
 
 
