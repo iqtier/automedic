@@ -3,26 +3,24 @@
 import React, { useState } from "react";
 import { auth } from "@/lib/auth";
 
-import { getUserByEmail } from "@/app/actions/authActions";
-
 import { columns } from "@/app/(component)/Employee/userTableColumns";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import AddEmployeeForm from "@/app/(component)/Employee/add-employee-form";
-import { prisma } from "@/lib/prisma";
+
 import { EmployeeTable } from "@/app/(component)/Employee/employee-table";
 import { ClockInForm } from "@/app/(component)/Employee/clockInOut";
 
 import { ScheduleTable } from "@/app/(component)/Employee/Schedule/ScheduleTable";
+import { User } from "@/types/type";
+import { getAllEmployees } from "@/app/actions/employeeActions";
+
 const Page = async () => {
   const session = await auth();
-
-  const userEmail = session?.user?.email;
-
-  const user = await getUserByEmail(userEmail as string);
-  const isAdmin = user?.role === "admin";
-  const users = await prisma.user?.findMany();
+  const currentUser = session?.user as User;
+  const isAdmin = currentUser?.role === "admin";
+  const employees = await getAllEmployees(currentUser.business_Id as string);
 
   return (
     <div className="">
@@ -34,22 +32,31 @@ const Page = async () => {
           <TabsTrigger value="Schedule">Schedule</TabsTrigger>
           <TabsTrigger value="List">List</TabsTrigger>
         </TabsList>
-        <TabsContent value="Clock IN/Out" className="animate-in fade-in slide-in-from-bottom-10">
+        <TabsContent
+          value="Clock IN/Out"
+          className="animate-in fade-in slide-in-from-bottom-10"
+        >
           <ClockInForm />
         </TabsContent>
-        <TabsContent value="Schedule" className="animate-in fade-in slide-in-from-bottom-10">
-        <ScheduleTable/>
+        <TabsContent
+          value="Schedule"
+          className="animate-in fade-in slide-in-from-bottom-10"
+        >
+          <ScheduleTable />
         </TabsContent>
-        <TabsContent value="List" className="animate-in fade-in slide-in-from-bottom-10">
+        <TabsContent
+          value="List"
+          className="animate-in fade-in slide-in-from-bottom-10"
+        >
           <div className="mt-4">
             <EmployeeTable
               columns={columns}
-              data={users?.map((user) => ({
-                id: user.id,
-                email: user.email,
-                password: user.password,
-                role: user.role,
-                username: user.name,
+              data={employees?.map((employee) => ({
+                id: employee.id,
+                email: employee.email,
+                password: employee.password,
+                role: employee.role,
+                username: employee.name,
               }))}
             />
           </div>

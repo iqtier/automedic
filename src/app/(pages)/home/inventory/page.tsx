@@ -9,20 +9,22 @@ import AddNewSupplier from "@/app/(component)/Inventory/AddNewSupplier";
 import {
   getAllCategories,
   getAllInventory,
-  getAllSuppliers,
+ 
 } from "@/app/actions/inventoryActions";
 import { DataTable } from "@/app/(component)/Inventory/inventory_table";
 import { colums } from "@/app/(component)/Inventory/inventory_table_colums";
 import InventoryReceivingForm from "@/app/(component)/Inventory/InventoryReceivingForm";
 import { auth } from "@/lib/auth";
 import { User } from "@/types/type";
+import { getUserById } from "@/app/actions/authActions";
 
 const page = async () => {
   const session = await auth();
   const user = session?.user as User;
   const isUserAdmin = user?.role === "admin";
+   const currentUser = await getUserById(session?.user?.id as string);
   const categories = await getAllCategories();
-  const inventories = await getAllInventory();
+  const inventories = await getAllInventory(currentUser?.business_Id as string);
   const tabeldata = inventories?.map((item) => ({
     id: item.id,
     sku: item.sku,

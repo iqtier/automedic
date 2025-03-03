@@ -20,15 +20,17 @@ export async function deleteEmployee(
   }
 }
 
-export async function getAllEmployees() {
-  const employees = await prisma.user.findMany({ 
-    include:{
-      bookings:true,
-      ClockInOut:true,
-      
-    }
-  })
-  return employees
+export async function getAllEmployees(businessId: string) {
+  const employees = await prisma.user.findMany({
+    where: {
+      business_Id: businessId,
+    },
+    include: {
+      bookings: true,
+      ClockInOut: true,
+    },
+  });
+  return employees;
 }
 
 export async function ClockIn(pin: string): Promise<ActionResult<User>> {
@@ -112,24 +114,27 @@ export async function ClockOut(pin: string): Promise<ActionResult<User>> {
   }
 }
 
-export async function getTechnicians() {
-  return prisma.user.findMany({ 
-    where: { 
-      role: "technician" 
+export async function getTechnicians(businesId: string) {
+  return prisma.user.findMany({
+    where: {
+      business_Id: businesId,
+      role: "technician",
     },
-    include:{
-      bookings:true,
-      ClockInOut:true,
-      
-    } 
+    include: {
+      bookings: true,
+      ClockInOut: true,
+    },
   });
 }
 
-export async function getCurrentClockedInUsers() {
+export async function getCurrentClockedInUsers(businesId: string) {
   try {
     const currentUsers = await prisma.clockInOut.findMany({
       where: {
         clockOut: null,
+        user: {
+          business_Id: businesId,
+        },
       },
       include: {
         user: true,
@@ -155,7 +160,6 @@ export async function updateSchedule(
   status: string
 ) {
   try {
-   
     const newDate = new Date(date).toISOString();
     await prisma.employeeSchedule.upsert({
       where: {
@@ -196,7 +200,10 @@ export async function fetchScheduleData(weekDays: Date[]) {
   return scheduleData;
 }
 
-export async function getEmployeeSchedules(dateRange: { start: Date, end: Date }) {
+export async function getEmployeeSchedules(dateRange: {
+  start: Date;
+  end: Date;
+}) {
   return prisma.employeeSchedule.findMany({
     where: {
       date: {
@@ -210,7 +217,9 @@ export async function getEmployeeSchedules(dateRange: { start: Date, end: Date }
   });
 }
 
-export async function updateEmployeeSchedule(data: z.infer<typeof EmployeeScheduleSchema>) {
+export async function updateEmployeeSchedule(
+  data: z.infer<typeof EmployeeScheduleSchema>
+) {
   const { userId, date, status } = data;
 
   return prisma.employeeSchedule.upsert({

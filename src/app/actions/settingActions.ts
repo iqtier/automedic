@@ -1,29 +1,46 @@
 "use server";
 
-import { ActionResult, BusinessDetailsType } from "@/types/type";
-import { BusinessDetails } from "@prisma/client";
+import { ActionResult, BusinessType } from "@/types/type";
+import { Business } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export async function createBusinessDetails(
-  data: BusinessDetailsType
-): Promise<ActionResult<BusinessDetails>> {
+  data: BusinessType,
+  userId: string
+): Promise<ActionResult<Business>> {
   const { businame, phone, location, roadname, postal, logo } = data;
-   try {
+  console.log(userId);
+  try {
     const buffer = await logo.arrayBuffer();
     const imageBinary = Buffer.from(buffer);
-    const business = await prisma.businessDetails.create({
-        data: {
-          name:businame,
-          phone,
-          address: {country:location[0],state:location[1],roadname:roadname,postal:postal},
-          logo: imageBinary, // Store binary data
+    const business = await prisma.business.create({
+      data: {
+        name: businame,
+        phone,
+        address: {
+          country: location[0],
+          state: location[1],
+          roadname: roadname,
+          postal: postal,
         },
-      });
+        logo: imageBinary, // Store binary data
+        users: {
+          connect: { id: userId },
+        },
+      },
+    });
 
-    return { status: "success", data: business }
-   } catch (error) {
+    return { status: "success", data: business };
+  } catch (error) {
     console.error("Error creating service:", error);
     return { status: "error", error: error as string };
-   }
+  }
+}
 
+export async function getBusinessById(businessId: string) {
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    
+  });
+  return business;
 }

@@ -5,9 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { useTransition } from 'react';
+import { useTransition } from "react";
 import { signInUser } from "@/app/actions/authActions";
-import { LogInSchema } from "@/types/type";
+import { LogInSchema, User } from "@/types/type";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,12 +26,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useForm } from "react-hook-form";
-
+import { useUserStore } from "@/app/store/useUserStore";
+import { getSession, useSession } from "next-auth/react";
+import { getBusinessById } from "@/app/actions/settingActions";
 
 export function LoginForm() {
+  const { setUser, setBusiness } = useUserStore();
+  
+
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const form = useForm<z.infer<typeof LogInSchema>>({
@@ -43,14 +48,32 @@ export function LoginForm() {
   });
 
   async function onSubmit(values: z.infer<typeof LogInSchema>) {
-      startTransition(async () => {
-        const result = await signInUser(values);
-         if (result?.status === "success") {
-          router.push("/home");
-        } else {
-          toast.error(result?.error as string);
+    startTransition(async () => {
+      const result = await signInUser(values);
+
+      if (result?.status === "success") {
+        const session = await getSession()
+        const user = session?.user as User;
+        const currentUser = {
+          id: user?.id,
+          name: user?.name,
+          email: user?.email,
+          role: user?.role,
+          business_Id: user?.business_Id,
+        };
+        
+        if(currentUser?.business_Id){
+          const business = await getBusinessById(currentUser?.business_Id);
+          if(business){
+            setBusiness(business);
+          }
         }
-      });
+        setUser(currentUser);
+        router.push("/");
+      } else {
+        toast.error(result?.error as string);
+      }
+    });
   }
   return (
     <Card className="mx-auto max-w-md shadow-2xl dark:bg-gray-800 dark:border-gray-700 dark:ring-offset-slate-900 animate-in fade-in slide-in-from-bottom-10">
@@ -82,7 +105,7 @@ export function LoginForm() {
                       className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </FormControl>
-                    <FormMessage />
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -103,21 +126,27 @@ export function LoginForm() {
                       className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </FormControl>
-                    <FormMessage />
+                  <FormMessage />
                 </FormItem>
               )}
             />
             <Button type="submit" className="w-full relative">
-              {isPending? <span className="absolute inset-0 flex justify-center items-center">
-              <Spinner/>
+              {isPending ? (
+                <span className="absolute inset-0 flex justify-center items-center">
+                  <Spinner />
                 </span>
-                : 'Log In'}
+              ) : (
+                "Log In"
+              )}
             </Button>
           </form>
         </Form>
         <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
           Don't have an account?{" "}
-          <Link href="/sign-up" className="underline text-blue-500 dark:text-blue-400">
+          <Link
+            href="/sign-up"
+            className="underline text-blue-500 dark:text-blue-400"
+          >
             Register
           </Link>
         </div>

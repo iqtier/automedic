@@ -167,6 +167,7 @@ export type User = {
   password: string;
   role: string;
   created_at: Date;
+  business_Id: string | null | undefined;
   bookings: {
     id: number;
     bookingId: number;
@@ -332,7 +333,7 @@ export interface ContactType {
   supplier?: SupplierType | null;
 }
 
-export type BusinessDetailsType = {
+export type BusinessType = {
   location: [string, string | undefined];
   businame: string;
   phone: string;

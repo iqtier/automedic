@@ -38,7 +38,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { tree } from "next/dist/build/templates/app-page";
+import { useUserStore } from "@/app/store/useUserStore";
+
 
 type Customer = CustomerType & { id: string };
 type CustomerFormProps = {
@@ -51,6 +52,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   customerToEdit,
   fromBooking,
 }) => {
+  const {business} = useUserStore();
+  console.log(business);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -95,7 +98,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         result = await updateCustomer(customerToEdit?.id, data);
       }
     } else {
-      result = await createCustomer(data);
+      result = await createCustomer(data, business?.id as string);
     }
 
     if (result?.status === "success") {

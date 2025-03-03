@@ -12,13 +12,17 @@ import BookingForm from "@/app/(component)/Bookings/booking_form";
 import { getTechnicians } from "@/app/actions/employeeActions";
 import { Spinner } from "@/components/ui/spinner";
 import { Booking, Customer, Service, User } from "@/types/type";
+import { getUserById } from "@/app/actions/authActions";
+import { auth } from "@/lib/auth";
 
 const Bookings = async () => {
+   const session = await auth();
+  const currentUser = await getUserById(session?.user?.id as string);
   const [services, customers, bookings, technicians] = await Promise.all([
-    getAllServices() as Promise<Service[]>,
-    getAllCustomer() as Promise<Customer[]>,
-    getAllBookings() as Promise<Booking[]>,
-    getTechnicians() as Promise<User[]>,
+    getAllServices(currentUser?.business_Id as string) as Promise<Service[]>,
+    getAllCustomer(currentUser?.business_Id as string) as Promise<Customer[]>,
+    getAllBookings(currentUser?.business_Id as string) as Promise<Booking[]>,
+    getTechnicians(currentUser?.business_Id as string) as Promise<User[]>,
    ]);
 
    const data = bookings?.map((booking) => ({

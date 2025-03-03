@@ -50,7 +50,7 @@ export default function MyForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const result = await createBusinessDetails(values);
+      const result = await createBusinessDetails(values,"2");
               if (result?.status === "success") {
                 toast.success(`Appointment successfully added`);
                
@@ -256,54 +256,5 @@ const PhoneInput = forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 
 PhoneInput.displayName = "PhoneInput";
 
-type CountrySelectProps = {
-  disabled?: boolean;
-  value: RPNInput.Country;
-  onChange: (value: RPNInput.Country) => void;
-  options: { label: string; value: RPNInput.Country | undefined }[];
-};
 
-const CountrySelect = ({ disabled, value, onChange, options }: CountrySelectProps) => {
-  const handleSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange(event.target.value as RPNInput.Country);
-  };
 
-  return (
-    <div className="border-input bg-background text-muted-foreground focus-within:border-ring/40 ring-ring/8 dark:ring-ring/12 hover:bg-accent hover:text-foreground has-aria-invalid:border-destructive/60 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/25 relative inline-flex items-center self-stretch rounded-s-lg border py-2 ps-3 pe-2 transition-shadow focus-within:z-10 focus-within:ring-[3px] focus-within:outline-hidden has-disabled:pointer-events-none has-disabled:opacity-50">
-      <div className="inline-flex items-center gap-1" aria-hidden="true">
-        <FlagComponent country={value} countryName={value} aria-hidden="true" />
-        <span className="text-muted-foreground/80">
-          <ChevronDownIcon size={16} aria-hidden="true" />
-        </span>
-      </div>
-      <select
-        disabled={disabled}
-        value={value}
-        onChange={handleSelect}
-        className="absolute inset-0 text-sm opacity-0"
-        aria-label="Select country"
-      >
-        <option key="default" value="">
-          Select a country
-        </option>
-        {options
-          .filter((x) => x.value)
-          .map((option, i) => (
-            <option key={option.value ?? `empty-${i}`} value={option.value}>
-              {option.label} {option.value && `+${RPNInput.getCountryCallingCode(option.value)}`}
-            </option>
-          ))}
-      </select>
-    </div>
-  );
-};
-
-const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
-  const Flag = flags[country];
-
-  return (
-    <span className="w-5 overflow-hidden rounded-sm">
-      {Flag ? <Flag title={countryName} /> : <PhoneIcon size={16} aria-hidden="true" />}
-    </span>
-  );
-}

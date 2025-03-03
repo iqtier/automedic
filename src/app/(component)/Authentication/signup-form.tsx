@@ -54,7 +54,7 @@ export function SignUpForm() {
 
   async function onSubmit(values: z.infer<typeof UserSchema>) {
    startTransition(async () => {
-        const result = await registerUser(values);
+        const result = await registerUser(null,values);
         if (typeof result === "string") {
           toast.error(result);
           return;
@@ -71,7 +71,7 @@ export function SignUpForm() {
   }
 
   return (
-    <Card className="mx-auto max-w-md shadow-2xl dark:bg-gray-800 dark:border-gray-700 dark:ring-offset-slate-900 animate-in fade-in slide-in-from-bottom-10">
+    <Card className="mx-auto  shadow-2xl dark:bg-gray-800 dark:border-gray-700 dark:ring-offset-slate-900 animate-in fade-in slide-in-from-bottom-10">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
           Register

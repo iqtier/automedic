@@ -36,6 +36,7 @@ import {
 import { UserPlus } from "lucide-react";
 import { UserSchema } from "@/types/type";
 import { z } from "zod";
+import { useUserStore } from "@/app/store/useUserStore";
 const AddEmployeeForm = () => {
   const form = useForm<z.infer<typeof UserSchema>>({
     resolver: zodResolver(UserSchema),
@@ -46,6 +47,9 @@ const AddEmployeeForm = () => {
       role: "",
     },
   });
+  const{business,user} = useUserStore();
+  console.log(business);
+  console.log(user)
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const handleDialogClose = () => {
     setIsDialogOpen(false);
@@ -54,7 +58,8 @@ const AddEmployeeForm = () => {
   const router = useRouter();
 
   async function onSubmit(values: z.infer<typeof UserSchema>) {
-    const result = await registerUser(values);
+  
+    const result = await registerUser(business?.id,values);
 
     if (typeof result === "string") {
       toast.error(result);

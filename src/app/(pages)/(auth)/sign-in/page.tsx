@@ -35,9 +35,9 @@ const SignIn = () => {
           </div>
         </div>
       </nav>
-      <div className="flex h-screen w-full items-center justify-center px-4"><LoginForm  /></div>
-      
-
+      <div className="flex h-screen w-full items-center justify-center px-4">
+        <LoginForm />
+      </div>
     </div>
   );
 };

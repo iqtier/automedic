@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
 import { z } from "zod";
-import { Service, BookingSchema, } from "@/types/type";
+import { Service, BookingSchema } from "@/types/type";
 import { cn } from "@/lib/utils";
 import "react-day-picker/style.css";
 import {
@@ -17,7 +17,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-
   FormMessage,
 } from "@/components/ui/form";
 import {
@@ -31,7 +30,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { CalendarIcon, Check, ChevronsUpDown, Clock } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+
 import { useTransition } from "react";
 import {
   Command,
@@ -57,6 +56,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Calendar } from "@/components/ui/calendar";
+import { useUserStore } from "@/app/store/useUserStore";
 
 type Ramp = 1 | 2 | 0;
 type TimeSlot = {
@@ -120,19 +120,19 @@ type BookingFormProps = {
 const BookingForm: React.FC<BookingFormProps> = ({
   services,
   customers,
-
   isAppointment,
   technicians,
 }) => {
+  const { business } = useUserStore();
   const router = useRouter();
-    const [isPending, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const [month, setMonth] = useState(new Date());
   const [date, setDate] = useState<Date>();
   const [bookedSlots, setBookedSlots] = useState<
     { date: Date; time: string; ramp: string | null }[]
   >([]);
-    const [ramp, setRamp] = useState<Ramp>(0);
+  const [ramp, setRamp] = useState<Ramp>(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const form = useForm<BookingFormType>({
     resolver: zodResolver(BookingSchema),
@@ -157,41 +157,43 @@ const BookingForm: React.FC<BookingFormProps> = ({
     name: "services_id_qty",
   });
 
-    const fetchBookedSlots = useCallback(async () => {
-        if (isAppointment && month) {
-            const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
-            const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-            try {
-                const booked = await getBookedTimeSlotsByDateRange(
-                    startOfMonth, endOfMonth
-                );
-                setBookedSlots(booked || []);
-            } catch (error) {
-                console.error("Error fetching booked slots:", error);
-                toast.error("Failed to load booked slots. Please try again later.");
-            }
-        }else{
-            setBookedSlots([])
-        }
-    },[isAppointment,month]);
+  const fetchBookedSlots = useCallback(async () => {
+    if (isAppointment && month) {
+      const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+      const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+      try {
+        const booked = await getBookedTimeSlotsByDateRange(
+          business?.id as string,
+          startOfMonth,
+          endOfMonth
+        );
+        setBookedSlots(booked || []);
+      } catch (error) {
+        console.error("Error fetching booked slots:", error);
+        toast.error("Failed to load booked slots. Please try again later.");
+      }
+    } else {
+      setBookedSlots([]);
+    }
+  }, [isAppointment, month]);
 
   useEffect(() => {
-      fetchBookedSlots();
+    fetchBookedSlots();
   }, [fetchBookedSlots, ramp, date]);
 
   useEffect(() => {
     if (isAppointment) {
       form.setValue("time", "");
     }
-  }, [isAppointment,month, ramp, date]);
+  }, [isAppointment, month, ramp, date]);
 
   const isTimeSlotDisabled = (timeSlot: string, dateToCheck: Date) => {
     const startOfDay = new Date(dateToCheck);
     startOfDay.setHours(0, 0, 0, 0);
-  
+
     const endOfDay = new Date(dateToCheck);
     endOfDay.setHours(23, 59, 59, 999);
-  
+
     return bookedSlots.some((slot) => {
       const slotDate = new Date(slot.date);
       return (
@@ -203,46 +205,45 @@ const BookingForm: React.FC<BookingFormProps> = ({
     });
   };
 
-    const isDateDisabled = (dateToCheck: Date) => {
-        const startOfDay = new Date(dateToCheck);
-        startOfDay.setHours(0, 0, 0, 0);
+  const isDateDisabled = (dateToCheck: Date) => {
+    const startOfDay = new Date(dateToCheck);
+    startOfDay.setHours(0, 0, 0, 0);
 
-        const endOfDay = new Date(dateToCheck);
-        endOfDay.setHours(23, 59, 59, 999);
+    const endOfDay = new Date(dateToCheck);
+    endOfDay.setHours(23, 59, 59, 999);
 
-        for (const currentRamp of [0,1,2]) {
-            const isRampAvailable = !bookedSlots.some((slot) => {
-                const slotDate = new Date(slot.date);
-                return (
-                    slotDate.getTime() >= startOfDay.getTime() &&
-                    slotDate.getTime() <= endOfDay.getTime() &&
-                    slot.ramp === currentRamp.toString()
-                );
-            });
+    for (const currentRamp of [0, 1, 2]) {
+      const isRampAvailable = !bookedSlots.some((slot) => {
+        const slotDate = new Date(slot.date);
+        return (
+          slotDate.getTime() >= startOfDay.getTime() &&
+          slotDate.getTime() <= endOfDay.getTime() &&
+          slot.ramp === currentRamp.toString()
+        );
+      });
 
-            if (isRampAvailable) {
-                return false;
-            }
-        }
-        return true;
-    };
-
+      if (isRampAvailable) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   async function onSubmit(data: BookingFormType) {
-    startTransition( async () => {
-      const result = await createBooking(data);
-        if (result?.status === "success") {
-          toast.success(`Appointment successfully added`);
-          router.refresh();
-          setIsDialogOpen(false);
-          form.reset();
-        } else {
-          form.setError("root.serverError", { message: result?.error as string });
-          toast.error(`${result?.error}`);
+    startTransition(async () => {
+      const result = await createBooking(data, business?.id as string);
+      if (result?.status === "success") {
+        toast.success(`Appointment successfully added`);
+        router.refresh();
+        setIsDialogOpen(false);
+        form.reset();
+      } else {
+        form.setError("root.serverError", { message: result?.error as string });
+        toast.error(`${result?.error}`);
       }
     });
   }
-  
+
   return (
     <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -254,12 +255,17 @@ const BookingForm: React.FC<BookingFormProps> = ({
               : " bg-green-500 hover:bg-green-700"
           }`}
         >
-         <Button  className="relative">
-              {isPending? <span className="absolute inset-0 flex justify-center items-center">
-                  <Spinner/>
-                </span>
-                : (isAppointment ? "Appointment" : "Drive Through")}
-            </Button>
+          <Button className="relative">
+            {isPending ? (
+              <span className="absolute inset-0 flex justify-center items-center">
+                <Spinner />
+              </span>
+            ) : isAppointment ? (
+              "Appointment"
+            ) : (
+              "Drive Through"
+            )}
+          </Button>
         </DialogTrigger>
         <DialogContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-white animate-in fade-in slide-in-from-bottom-10">
           <DialogHeader>
@@ -295,132 +301,68 @@ const BookingForm: React.FC<BookingFormProps> = ({
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                              align="start"
-                            >
-                              <Calendar
-                            className="rounded-md border p-2"
-                                month={month}
-                                disabled={{ before: new Date() }}
-                                hidden={isDateDisabled}
-                                onMonthChange={setMonth}
-                                autoFocus
-                                mode="single"
-                                selected={field.value}
-                                onSelect={(date) => {
-                                  field.onChange(date)
-                                  setDate(date);
-                                }}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                  <FormField
-                    control={form.control}
-                    name="ramp"
-                    render={({ field }) => (
-                      <FormItem className="flex-1 min-w-[150px]">
-                        <Select
-                          onValueChange={(value) => {field.onChange(value); setRamp(parseInt(value) as Ramp )}}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger
-                               className={cn(
-                                "w-full  text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <SelectValue placeholder="Select a ramp or select N/A" />
-                            </SelectTrigger>
-                          </FormControl>
-                            <SelectContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-                              <SelectItem value="1">Ramp 1</SelectItem>
-                              <SelectItem value="2">Ramp 2</SelectItem>
-                            <SelectItem value="0">Not applicable</SelectItem>
-                            </SelectContent>
-                        </Select>
-
+                          <PopoverContent
+                            className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                            align="start"
+                          >
+                            <Calendar
+                              className="rounded-md border p-2"
+                              month={month}
+                              disabled={{ before: new Date() }}
+                              hidden={isDateDisabled}
+                              onMonthChange={setMonth}
+                              autoFocus
+                              mode="single"
+                              selected={field.value}
+                              onSelect={(date) => {
+                                field.onChange(date);
+                                setDate(date);
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  {isAppointment && (
-                    <FormField
-                      control={form.control}
-                      name="time"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col flex-1 min-w-[150px]">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                   className={cn(
-                                    "w-full  text-left font-normal text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value
-                                    ? timeSlots.find(
-                                        (slot) => slot.value === field.value
-                                      )?.label
-                                    : "Select time slot"}
-                                   <Clock className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-                              <Command>
-                                <CommandInput
-                                  placeholder="Search time slot..."
-                                  className="h-9"
-                                />
-                                <CommandList>
-                                  <CommandEmpty>
-                                    No time slot found.
-                                  </CommandEmpty>
-                                  <CommandGroup>
-                                    {timeSlots.map((slot) => (
-                                      <CommandItem
-                                        value={slot.label}
-                                        key={slot.value}
-                                        disabled={isTimeSlotDisabled(slot.value,form.getValues("date"))}
-                                        onSelect={() =>
-                                          form.setValue("time", slot.value)
-                                        }
-                                      >
-                                        {slot.label}
-                                        <Check
-                                          className={cn(
-                                            "ml-auto",
-                                            slot.value === field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                )}
+                <FormField
+                  control={form.control}
+                  name="ramp"
+                  render={({ field }) => (
+                    <FormItem className="flex-1 min-w-[150px]">
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setRamp(parseInt(value) as Ramp);
+                        }}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={cn(
+                              "w-full  text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            <SelectValue placeholder="Select a ramp or select N/A" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                          <SelectItem value="1">Ramp 1</SelectItem>
+                          <SelectItem value="2">Ramp 2</SelectItem>
+                          <SelectItem value="0">Not applicable</SelectItem>
+                        </SelectContent>
+                      </Select>
 
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {isAppointment && (
                   <FormField
                     control={form.control}
-                    name="customer_id"
+                    name="time"
                     render={({ field }) => (
                       <FormItem className="flex flex-col flex-1 min-w-[150px]">
                         <Popover>
@@ -430,46 +372,45 @@ const BookingForm: React.FC<BookingFormProps> = ({
                                 variant="outline"
                                 role="combobox"
                                 className={cn(
-                                  "w-full  text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
+                                  "w-full  text-left font-normal text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
                                   !field.value && "text-muted-foreground"
                                 )}
                               >
                                 {field.value
-                                  ? customers.find(
-                                      (customer) =>
-                                        customer.id.toString() === field.value
-                                    )?.name
-                                  : "Select customer"}
-                                <ChevronsUpDown className="opacity-50" />
+                                  ? timeSlots.find(
+                                      (slot) => slot.value === field.value
+                                    )?.label
+                                  : "Select time slot"}
+                                <Clock className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
                           <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                             <Command>
                               <CommandInput
-                                placeholder="Search customer..."
+                                placeholder="Search time slot..."
                                 className="h-9"
                               />
                               <CommandList>
-                                <CommandEmpty>No customer found.</CommandEmpty>
+                                <CommandEmpty>No time slot found.</CommandEmpty>
                                 <CommandGroup>
-                                  {customers.map((customer) => (
+                                  {timeSlots.map((slot) => (
                                     <CommandItem
-                                      value={customer.name}
-                                      key={customer.id}
-                                      onSelect={() => {
-                                        form.setValue(
-                                          "customer_id",
-                                          customer.id.toString()
-                                        );
-                                        form.setValue("vehicle_id", "");
-                                      }}
+                                      value={slot.label}
+                                      key={slot.value}
+                                      disabled={isTimeSlotDisabled(
+                                        slot.value,
+                                        form.getValues("date")
+                                      )}
+                                      onSelect={() =>
+                                        form.setValue("time", slot.value)
+                                      }
                                     >
-                                      {customer.name}
+                                      {slot.label}
                                       <Check
                                         className={cn(
                                           "ml-auto",
-                                          customer.id.toString() === field.value
+                                          slot.value === field.value
                                             ? "opacity-100"
                                             : "opacity-0"
                                         )}
@@ -485,196 +426,60 @@ const BookingForm: React.FC<BookingFormProps> = ({
                       </FormItem>
                     )}
                   />
-                    <FormField
-                      control={form.control}
-                      name="vehicle_id"
-                      render={({ field }) => (
-                        <FormItem className="flex-1 min-w-[150px]">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                   className={cn(
-                                  "w-full  text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                                  disabled={!form.watch("customer_id")}
-                                >
-                                  {field.value
-                                    ? customers
-                                        .find(
-                                          (customer) =>
-                                            customer.id ===
-                                            form.watch("customer_id")
-                                        )
-                                        ?.vehicles.find(
-                                          (vehicle) =>
-                                            vehicle.id.toString() === field.value
-                                        )?.make +
-                                      " " +
-                                      customers
-                                        .find(
-                                          (customer) =>
-                                            customer.id ===
-                                            form.watch("customer_id")
-                                        )
-                                        ?.vehicles.find(
-                                          (vehicle) =>
-                                            vehicle.id.toString() === field.value
-                                        )?.model +
-                                      " " +
-                                      customers
-                                        .find(
-                                          (customer) =>
-                                            customer.id ===
-                                            form.watch("customer_id")
-                                        )
-                                        ?.vehicles.find(
-                                          (vehicle) =>
-                                            vehicle.id.toString() === field.value
-                                        )?.year
-                                  : "Select vehicle"}
-                                <ChevronsUpDown className="opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-                            <Command>
-                              <CommandInput
-                                placeholder="Search vehicle..."
-                                className="h-9"
-                              />
-                              <CommandList>
-                                <CommandEmpty>No vehicle found.</CommandEmpty>
-                                <CommandGroup>
-                                  {customers
-                                    .find(
-                                      (customer) =>
-                                        customer.id ===
-                                        form.watch("customer_id")
-                                    )
-                                    ?.vehicles.map((vehicle) => (
-                                      <CommandItem
-                                        value={
-                                          vehicle.make +
-                                          " " +
-                                          vehicle.model +
-                                          " " +
-                                          vehicle.year
-                                        }
-                                        key={vehicle.id}
-                                        onSelect={() => {
-                                          form.setValue(
-                                            "vehicle_id",
-                                            vehicle.id.toString()
-                                          );
-                                        }}
-                                      >
-                                        {vehicle.make +
-                                          " " +
-                                          vehicle.model +
-                                          " " +
-                                          vehicle.year}
-                                        <Check
-                                          className={cn(
-                                            "ml-auto",
-                                            vehicle.id.toString() ===
-                                              field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                      </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                 <CustomerForm
-                    isEdit={false}
-                    customerToEdit={null}
-                    fromBooking={true}
-                  />
-                </div>
+                )}
+
                 <FormField
                   control={form.control}
-                  name="technician_ids"
+                  name="customer_id"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem className="flex flex-col flex-1 min-w-[150px]">
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
                               variant="outline"
                               role="combobox"
-                               className={cn(
-                                "w-full text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
-                                !field.value || field.value.length === 0
-                                  ? "text-muted-foreground"
-                                  : ""
+                              className={cn(
+                                "w-full  text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
+                                !field.value && "text-muted-foreground"
                               )}
                             >
-                              {field.value && field.value.length > 0
-                                ? technicians
-                                    .filter((technician) =>
-                                      field.value?.includes(
-                                        technician.id.toString()
-                                      )
-                                    )
-                                    .map((technician) => technician.name)
-                                    .join(", ")
-                                : "Select technicians"}
+                              {field.value
+                                ? customers.find(
+                                    (customer) =>
+                                      customer.id.toString() === field.value
+                                  )?.name
+                                : "Select customer"}
                               <ChevronsUpDown className="opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                       <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                        <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                           <Command>
                             <CommandInput
-                              placeholder="Search technicians..."
+                              placeholder="Search customer..."
                               className="h-9"
                             />
                             <CommandList>
-                              <CommandEmpty>No technician found.</CommandEmpty>
+                              <CommandEmpty>No customer found.</CommandEmpty>
                               <CommandGroup>
-                                {technicians.map((technician) => (
+                                {customers.map((customer) => (
                                   <CommandItem
-                                    value={technician.id}
-                                    key={technician.id}
+                                    value={customer.name}
+                                    key={customer.id}
                                     onSelect={() => {
-                                      const selectedTechnicianIds =
-                                        field.value?.includes(
-                                          technician.id.toString()
-                                        )
-                                          ? field.value.filter(
-                                              (id) =>
-                                                id !== technician.id.toString()
-                                            )
-                                          : [
-                                              ...(field.value || []),
-                                              technician.id.toString(),
-                                            ];
-
                                       form.setValue(
-                                        "technician_ids",
-                                        selectedTechnicianIds
+                                        "customer_id",
+                                        customer.id.toString()
                                       );
+                                      form.setValue("vehicle_id", "");
                                     }}
                                   >
-                                    {technician.name}
+                                    {customer.name}
                                     <Check
                                       className={cn(
                                         "ml-auto",
-                                        field.value?.includes(
-                                          technician.id.toString()
-                                        )
+                                        customer.id.toString() === field.value
                                           ? "opacity-100"
                                           : "opacity-0"
                                       )}
@@ -686,124 +491,336 @@ const BookingForm: React.FC<BookingFormProps> = ({
                           </Command>
                         </PopoverContent>
                       </Popover>
-
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                {fields.map((item, index) => (
-                  <div key={item.id} className="flex flex-wrap items-center gap-x-2">
-                    <FormField
-                      control={form.control}
-                      name={`services_id_qty.${index}.id`}
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col flex-1 min-w-[150px]">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  className={cn(
-                                    "w-full text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value
-                                    ? services.find(
-                                        (service) =>
-                                          service.id.toString() === field.value
-                                      )?.name
-                                    : "Select service"}
-                                  <ChevronsUpDown className="opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-                              <Command>
-                                <CommandInput
-                                  placeholder="Search service..."
-                                  className="h-9"
-                                />
-                                <CommandList>
-                                  <CommandEmpty>No service found.</CommandEmpty>
-                                  <CommandGroup>
-                                    {services.map((service) => (
-                                      <CommandItem
-                                        value={service.name}
-                                        key={service.id}
-                                        onSelect={() => {
-                                          form.setValue(
-                                            `services_id_qty.${index}.id`,
-                                            service.id.toString()
-                                          );
-                                        }}
-                                      >
-                                        {service.name}
-                                        <Check
-                                          className={cn(
-                                            "ml-auto",
-                                            service.id.toString() ===
-                                              field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`services_id_qty.${index}.qty`}
-                      render={({ field }) => (
-                        <FormItem  className="flex-1 min-w-[100px]">
+                <FormField
+                  control={form.control}
+                  name="vehicle_id"
+                  render={({ field }) => (
+                    <FormItem className="flex-1 min-w-[150px]">
+                      <Popover>
+                        <PopoverTrigger asChild>
                           <FormControl>
-                            <Input
-                            className=" text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
-                              placeholder="Enter quantity"
-                              {...field}
-                            />
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "w-full  text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              disabled={!form.watch("customer_id")}
+                            >
+                              {field.value
+                                ? customers
+                                    .find(
+                                      (customer) =>
+                                        customer.id ===
+                                        form.watch("customer_id")
+                                    )
+                                    ?.vehicles.find(
+                                      (vehicle) =>
+                                        vehicle.id.toString() === field.value
+                                    )?.make +
+                                  " " +
+                                  customers
+                                    .find(
+                                      (customer) =>
+                                        customer.id ===
+                                        form.watch("customer_id")
+                                    )
+                                    ?.vehicles.find(
+                                      (vehicle) =>
+                                        vehicle.id.toString() === field.value
+                                    )?.model +
+                                  " " +
+                                  customers
+                                    .find(
+                                      (customer) =>
+                                        customer.id ===
+                                        form.watch("customer_id")
+                                    )
+                                    ?.vehicles.find(
+                                      (vehicle) =>
+                                        vehicle.id.toString() === field.value
+                                    )?.year
+                                : "Select vehicle"}
+                              <ChevronsUpDown className="opacity-50" />
+                            </Button>
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className=" text-red-600"
-                      onClick={() => remove(index)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                ))}
-             
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                          <Command>
+                            <CommandInput
+                              placeholder="Search vehicle..."
+                              className="h-9"
+                            />
+                            <CommandList>
+                              <CommandEmpty>No vehicle found.</CommandEmpty>
+                              <CommandGroup>
+                                {customers
+                                  .find(
+                                    (customer) =>
+                                      customer.id === form.watch("customer_id")
+                                  )
+                                  ?.vehicles.map((vehicle) => (
+                                    <CommandItem
+                                      value={
+                                        vehicle.make +
+                                        " " +
+                                        vehicle.model +
+                                        " " +
+                                        vehicle.year
+                                      }
+                                      key={vehicle.id}
+                                      onSelect={() => {
+                                        form.setValue(
+                                          "vehicle_id",
+                                          vehicle.id.toString()
+                                        );
+                                      }}
+                                    >
+                                      {vehicle.make +
+                                        " " +
+                                        vehicle.model +
+                                        " " +
+                                        vehicle.year}
+                                      <Check
+                                        className={cn(
+                                          "ml-auto",
+                                          vehicle.id.toString() === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                    </CommandItem>
+                                  ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <CustomerForm
+                  isEdit={false}
+                  customerToEdit={null}
+                  fromBooking={true}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="technician_ids"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
+                              !field.value || field.value.length === 0
+                                ? "text-muted-foreground"
+                                : ""
+                            )}
+                          >
+                            {field.value && field.value.length > 0
+                              ? technicians
+                                  .filter((technician) =>
+                                    field.value?.includes(
+                                      technician.id.toString()
+                                    )
+                                  )
+                                  .map((technician) => technician.name)
+                                  .join(", ")
+                              : "Select technicians"}
+                            <ChevronsUpDown className="opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                        <Command>
+                          <CommandInput
+                            placeholder="Search technicians..."
+                            className="h-9"
+                          />
+                          <CommandList>
+                            <CommandEmpty>No technician found.</CommandEmpty>
+                            <CommandGroup>
+                              {technicians.map((technician) => (
+                                <CommandItem
+                                  value={technician.id}
+                                  key={technician.id}
+                                  onSelect={() => {
+                                    const selectedTechnicianIds =
+                                      field.value?.includes(
+                                        technician.id.toString()
+                                      )
+                                        ? field.value.filter(
+                                            (id) =>
+                                              id !== technician.id.toString()
+                                          )
+                                        : [
+                                            ...(field.value || []),
+                                            technician.id.toString(),
+                                          ];
+
+                                    form.setValue(
+                                      "technician_ids",
+                                      selectedTechnicianIds
+                                    );
+                                  }}
+                                >
+                                  {technician.name}
+                                  <Check
+                                    className={cn(
+                                      "ml-auto",
+                                      field.value?.includes(
+                                        technician.id.toString()
+                                      )
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {fields.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="flex flex-wrap items-center gap-x-2"
+                >
+                  <FormField
+                    control={form.control}
+                    name={`services_id_qty.${index}.id`}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col flex-1 min-w-[150px]">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-full text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value
+                                  ? services.find(
+                                      (service) =>
+                                        service.id.toString() === field.value
+                                    )?.name
+                                  : "Select service"}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[200px] p-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                            <Command>
+                              <CommandInput
+                                placeholder="Search service..."
+                                className="h-9"
+                              />
+                              <CommandList>
+                                <CommandEmpty>No service found.</CommandEmpty>
+                                <CommandGroup>
+                                  {services.map((service) => (
+                                    <CommandItem
+                                      value={service.name}
+                                      key={service.id}
+                                      onSelect={() => {
+                                        form.setValue(
+                                          `services_id_qty.${index}.id`,
+                                          service.id.toString()
+                                        );
+                                      }}
+                                    >
+                                      {service.name}
+                                      <Check
+                                        className={cn(
+                                          "ml-auto",
+                                          service.id.toString() === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`services_id_qty.${index}.qty`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1 min-w-[100px]">
+                        <FormControl>
+                          <Input
+                            className=" text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                            placeholder="Enter quantity"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className=" text-red-600"
+                    onClick={() => remove(index)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              ))}
 
               <Button
                 type="button"
                 onClick={() => append({ id: "", qty: "" })}
                 className="mt-2 bg-cyan-500 hover:bg-cyan-600 relative"
               >
-                 {isPending ? <span className="absolute inset-0 flex items-center justify-center">
-                  <Spinner/>
-                </span> : "Add Service"}
+                {isPending ? (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <Spinner />
+                  </span>
+                ) : (
+                  "Add Service"
+                )}
               </Button>
 
               <DialogFooter>
-               <Button type="submit" className="w-full font-bold relative">
-                   {isPending ? <span className="absolute inset-0 flex items-center justify-center">
-                  <Spinner/> Creating Booking...
-                </span> : "Create Booking"}
+                <Button type="submit" className="w-full font-bold relative">
+                  {isPending ? (
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <Spinner /> Creating Booking...
+                    </span>
+                  ) : (
+                    "Create Booking"
+                  )}
                 </Button>
               </DialogFooter>
             </form>

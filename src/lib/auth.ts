@@ -24,8 +24,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           ) {
             return null;
           }
-            return user;
-
+          return user;
         } catch (error) {
           console.error("Authentication error", error);
           return null;
@@ -35,33 +34,44 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   session: { strategy: "jwt" },
   callbacks: {
-      async jwt({ token, user}) {
-          if(user) {
-                const typedUser = user as User
-                return {
-                  ...token,
-                    name: typedUser.name,
-                    email: typedUser.email,
-                    role: typedUser.role,
-                    id: typedUser.id,
+    async jwt({ token, user }) {
+      if (user) {
+        const typedUser = user as unknown as {
+          id: string;
+          name: string;
+          email: string;
+          role: string;
+          business_Id: string;
+        };
+        return {
+          ...token,
+          name: typedUser.name,
+          email: typedUser.email,
+          role: typedUser.role,
+          id: typedUser.id,
+          business_Id: typedUser.business_Id,
+        };
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        //Here is the changed line
+        const typedUser = session.user as unknown as {
+          id: string;
+          name: string;
+          email: string;
+          role: string;
+          business_Id: string;
+        };
+        typedUser.id = token.id as string;
+        typedUser.name = token.name as string;
+        typedUser.email = token.email as string;
+        typedUser.role = token.role as string;
+        typedUser.business_Id = token.business_Id as string;
+      }
 
-                 };
-          }
-          return token;
-      },
-      async session({ session, token }) {
-            if (token && session.user) {
-                    //Here is the changed line
-                      const typedUser = session.user as unknown as {id:string,name:string, email:string, role: string }
-                      typedUser.id = token.id as string;
-                       typedUser.name = token.name as string;
-                       typedUser.email = token.email as string;
-                       typedUser.role = token.role as string;
-
-
-              }
-
-        return session;
-      },
+      return session;
+    },
   },
 });

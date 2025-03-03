@@ -31,6 +31,7 @@ import {
 } from "@/app/actions/employeeActions";
 import { form } from "@heroui/theme";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/app/store/useUserStore";
 
 const FormSchema = z.object({
   pin: z.string().min(4, {
@@ -46,6 +47,7 @@ interface UserData {
 }
 
 export function ClockInForm() {
+  const {business} = useUserStore();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentUsers, setCurrentUsers] = useState<UserData[]>([]);
   const router = useRouter();
@@ -59,7 +61,7 @@ export function ClockInForm() {
   }, []);
 
   const fetchCurrentUsers = useCallback(async () => {
-    const users = await getCurrentClockedInUsers();
+    const users = await getCurrentClockedInUsers(business?.id as string);
     setCurrentUsers(users);
   }, []);
 

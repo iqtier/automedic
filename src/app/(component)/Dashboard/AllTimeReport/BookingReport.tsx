@@ -22,8 +22,10 @@ import {
 } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { type DateRange } from "react-day-picker";
+import { useUserStore } from "@/app/store/useUserStore";
 
 const BookingReport = () => {
+ const {  business } = useUserStore();
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), 0, 1),
@@ -35,7 +37,7 @@ const BookingReport = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const allBookings = await getAllBookings();
+        const allBookings = await getAllBookings(business?.id as string);
       
 
         if (allBookings ) {

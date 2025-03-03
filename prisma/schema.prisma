@@ -14,13 +14,18 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model BusinessDetails {
-  id         String   @id @default(cuid())
+model Business {
+  id         String      @id @default(cuid())
   name       String
   phone      String
   address    Json
   logo       Bytes
-  created_at DateTime @default(now())
+  created_at DateTime    @default(now())
+  users      User[]
+  bookings   Booking[]
+  services   Service[]
+  invenories Inventory[]
+  customers  Customer[]
 }
 
 model User {
@@ -34,6 +39,8 @@ model User {
   bookings         BookingTechnician[]
   ClockInOut       ClockInOut[]
   EmployeeSchedule EmployeeSchedule[]
+  business         Business?            @relation(fields: [business_Id], references: [id])
+  business_Id      String?
 }
 
 model ClockInOut {
@@ -80,6 +87,8 @@ model Customer {
   isChargeAccount         Boolean   @default(false)
   vehicles                Vehicle[]
   bookings                Booking[]
+  business                Business  @relation(fields: [business_Id], references: [id])
+  business_Id             String
 }
 
 model Vehicle {
@@ -111,6 +120,8 @@ model Booking {
   vehicle        Vehicle?            @relation(fields: [vehicle_id], references: [id], onDelete: SetNull)
   customer       Customer            @relation(fields: [customerid], references: [id], onDelete: Cascade)
   UsedInventory  UsedInventory[]
+  business       Business            @relation(fields: [business_Id], references: [id])
+  business_Id    String
 }
 
 model BookingTechnician {
@@ -139,6 +150,8 @@ model Service {
   price        Float
   fields       ServiceFields[]
   ServiceIdQty ServiceIdQty[]
+  business     Business        @relation(fields: [business_Id], references: [id])
+  business_Id  String
 }
 
 model Inventory {
@@ -158,6 +171,8 @@ model Inventory {
   transactions       InventoryTransaction[]
   InventoryFields    InventoryFields[]
   UsedInventory      UsedInventory[]
+  business           Business               @relation(fields: [business_Id], references: [id])
+  business_Id        String
 }
 
 model InventoryFields {

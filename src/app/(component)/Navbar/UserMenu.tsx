@@ -1,8 +1,7 @@
-import {
-  LogOut,
-  User,
- 
-} from "lucide-react";
+"use client"
+import { LogOut,CircleUser  } from "lucide-react";
+import { signOut } from "next-auth/react";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import {
@@ -15,21 +14,35 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { auth } from "@/lib/auth";
+import { User } from "@/types/type";
 import { Button } from "@/components/ui/button";
 
 import Link from "next/link";
-import { signOut } from "@/lib/auth";
 
-export async function UserMenu() {
-  const session = await auth();
+import { useSession } from "next-auth/react";
+import { useUserStore } from "@/app/store/useUserStore";
+
+export  function UserMenu() {
+  const { data: session } = useSession();
+   const user = session?.user as User;
+   const { clearUser } = useUserStore();
+   async function handleSignOut() {
+    console.log("signing out");
+    clearUser(); // ✅ Clear Zustand user data
+    await signOut({ callbackUrl: "/sign-in" }); // ✅ Sign out
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="https://github.com/shadcn.png" alt={session?.user?.name || "User"} />
-            <AvatarFallback className="bg-muted-foreground text-foreground">{session?.user?.name?.slice(0, 2).toUpperCase()}</AvatarFallback>
+            <AvatarImage
+              src="https://github.com/shadcn.png"
+              alt={session?.user?.name || "User"}
+            />
+            <AvatarFallback className="bg-muted-foreground text-foreground">
+              {session?.user?.name?.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -38,37 +51,28 @@ export async function UserMenu() {
         <DropdownMenuSeparator className="dark:bg-slate-700" />
         <DropdownMenuGroup>
           <DropdownMenuItem className="dark:hover:bg-gray-700">
-            
-             <Link href={`/home/${session?.user?.id}`} className="">
-             <div
-              className="flex items-center px-4 gap-1 ">
-             <User className="mr-2 h-4 w-4" />
+            <Link href={`/home/${session?.user?.id}`} className="">
+              <div className="flex items-center px-4 gap-1 ">
+                <CircleUser className="mr-2 h-4 w-4" />
                 <p>Profile</p>
-                
-             </div>
-             
-             
-              </Link>
+              </div>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuSeparator className="dark:bg-slate-700" />
-        <DropdownMenuItem >
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/sign-in" });
-            }}
-          >
-              <Button
-                className="flex flex-row gap-1 items-center "
-                type="submit"
-                variant={"destructive"}
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
+        <DropdownMenuItem>
+          
+            <Button
+              className="flex flex-row gap-1 items-center "
+              type="submit"
+              variant={"destructive"}
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
             </Button>
-          </form>
+          
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

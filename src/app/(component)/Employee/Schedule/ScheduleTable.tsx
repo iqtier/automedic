@@ -22,6 +22,8 @@ import {
 import { ScheduleHeader } from "./ScheduleHeader";
 import { toast } from "react-toastify";
 import { User } from "@/types/type";
+import { useUser } from "@heroui/react";
+import { useUserStore } from "@/app/store/useUserStore";
 
 const ScheduleSchema = z.object({
   schedules: z.record(
@@ -36,6 +38,7 @@ export function ScheduleTable() {
   const { data: session } = useSession();
   const user = session?.user as User;
   const isUserAdmin = user?.role === "admin";
+  const {business} = useUserStore()
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 0 })
   );
@@ -71,7 +74,7 @@ export function ScheduleTable() {
   useEffect(() => {
     const fetchTechniciansAndSchedules = async () => {
       setLoading(true);
-      const techData = await getTechnicians();
+      const techData = await getTechnicians(business?.id as string);
 
       if (techData) {
         setTechnicians(techData);

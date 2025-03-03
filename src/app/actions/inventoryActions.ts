@@ -19,6 +19,7 @@ export async function getAllCategories() {
   try {
     const allCategories = await prisma.category.findMany(
       {
+        
         include:{
           inventory:{
             include:{
@@ -55,7 +56,7 @@ export async function CreateCategory(
   }
 }
 
-export async function getAllSuppliers() {
+export async function getAllSuppliers(businesId: string) {
   try {
     const allSuppliers = await prisma.supplier.findMany({
       include: {
@@ -92,6 +93,7 @@ export async function CreateSupplier(
 }
 
 export async function CreateInventory(
+  business_Id: string,
   data: z.infer<typeof inventorySchema>
 ): Promise<ActionResult<Inventory>> {
   const {
@@ -111,6 +113,7 @@ export async function CreateInventory(
   try {
     const inventory = await prisma.inventory.create({
       data: {
+        business_Id: business_Id,
         name,
         sku,
         brand,
@@ -138,9 +141,12 @@ export async function CreateInventory(
   }
 }
 
-export async function getAllInventory() {
+export async function getAllInventory(businesId: string) {
   try {
     const inventoies = await prisma.inventory.findMany({
+      where: {
+        business_Id: businesId,
+      },
       include: {
         InventoryFields: {
           select: {

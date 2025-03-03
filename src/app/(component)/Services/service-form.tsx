@@ -29,6 +29,7 @@ import { Service, ServiceSchema } from "@/types/type";
 import { createService, updateService } from "@/app/actions/serviceActions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/app/store/useUserStore";
 
 type AddServiceFormProps = { isEdit: boolean; serviceToEdit: Service | null };
 
@@ -36,6 +37,7 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
   isEdit,
   serviceToEdit,
 }) => {
+  const {user} = useUserStore();
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -66,7 +68,7 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
         result = await updateService(serviceToEdit?.id, data);
       }
     } else {
-      result = await createService(data);
+      result = await createService(user?.business_Id as string,data);
     }
     if (result?.status === "success") {
       toast.success(`Service successfully ${isEdit ? "updated" : "added"}`);

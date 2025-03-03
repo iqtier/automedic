@@ -5,7 +5,8 @@ import { Booking } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 export async function createBooking(
-  data: z.infer<typeof BookingSchema>
+  data: z.infer<typeof BookingSchema>,
+  businesId : string
 ): Promise<ActionResult<Booking>> {
   const {
     date,
@@ -23,6 +24,7 @@ export async function createBooking(
   try {
     const booking = await prisma.booking.create({
       data: {
+        business_Id: businesId,
         date: new Date(date),
         time: time,
         ramp: ramp,
@@ -56,21 +58,29 @@ export async function createBooking(
   }
 }
 
-export async function getAllBookings() {
+export async function getAllBookings(businesId: string) {
   try {
     const bookings = await prisma.booking.findMany({
+      where: {
+        business_Id: businesId,
+      },
       include: {
-        customer: {include:{vehicles:true}},
+        customer: { include: { vehicles: true } },
         vehicle: true,
-        services: { include: { service: {include:{fields:true}} } },
-        technicians: { include: { technician:{
-          include:{
-            bookings:true,
-            ClockInOut:true,
-            
-          }
-        } } },
-        UsedInventory: { include: { inventory: {include:{InventoryFields:true}} }}
+        services: { include: { service: { include: { fields: true } } } },
+        technicians: {
+          include: {
+            technician: {
+              include: {
+                bookings: true,
+                ClockInOut: true,
+              },
+            },
+          },
+        },
+        UsedInventory: {
+          include: { inventory: { include: { InventoryFields: true } } },
+        },
       },
     });
     return bookings;
@@ -86,17 +96,22 @@ export async function getBooking(id: string) {
       id: parseInt(id),
     },
     include: {
-      customer: {include:{vehicles:true}},
+      customer: { include: { vehicles: true } },
       vehicle: true,
-      services: { include: { service: {include:{fields:true}} } },
-      technicians: { include: { technician:{
-        include:{
-          bookings:true,
-          ClockInOut:true,
-          
-        }
-      } } },
-      UsedInventory: { include: { inventory:{include:{InventoryFields:true}} }}
+      services: { include: { service: { include: { fields: true } } } },
+      technicians: {
+        include: {
+          technician: {
+            include: {
+              bookings: true,
+              ClockInOut: true,
+            },
+          },
+        },
+      },
+      UsedInventory: {
+        include: { inventory: { include: { InventoryFields: true } } },
+      },
     },
   });
   return booking;
@@ -117,25 +132,32 @@ export async function updateBooking(
     }[];
   }
 ): Promise<ActionResult<Booking>> {
-  const { status, note, payment_status, payment_method, technician_ids, inventories } = data;
+  const {
+    status,
+    note,
+    payment_status,
+    payment_method,
+    technician_ids,
+    inventories,
+  } = data;
   const now = new Date();
-  const utcDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000); 
+  const utcDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
   try {
     const currentBooking = await prisma.booking.findUnique({
       where: { id: parseInt(id) },
       select: { start: true },
-    })
+    });
     const startTime = currentBooking?.start;
     const booking = await prisma.booking.update({
       where: { id: parseInt(id) },
       data: {
         status,
-        start: (status === "ongoing" && !startTime) ? utcDate : startTime,
+        start: status === "ongoing" && !startTime ? utcDate : startTime,
         finish: status === "completed" ? utcDate : null,
         note: note || "",
         payment_status,
         payment_method,
-        
+
         technicians: {
           deleteMany: {},
           create: technician_ids?.map((technicianId) => ({
@@ -152,22 +174,23 @@ export async function updateBooking(
           })),
         },
       },
-     
     });
     if (status === "completed" && inventories) {
-      await Promise.all(inventories.map(async (inventory) => {
+      await Promise.all(
+        inventories.map(async (inventory) => {
           const parsedQuantity = parseFloat(inventory.qty);
 
-            await prisma.inventory.update({
+          await prisma.inventory.update({
             where: { id: parseInt(inventory.id) },
-             data: {
+            data: {
               quantityOnHand: {
-                 decrement: parsedQuantity,
-               },
-             },
-              });
-      }));
-  }
+                decrement: parsedQuantity,
+              },
+            },
+          });
+        })
+      );
+    }
     return { status: "success", data: booking };
   } catch (error) {
     console.error("Error updating booking:", error);
@@ -176,11 +199,13 @@ export async function updateBooking(
 }
 
 export async function getBookedTimeSlotsByDateRange(
+  businesId: string,
   startDate: Date,
   endDate: Date
 ) {
   const bookings = await prisma.booking.findMany({
     where: {
+      business_Id: businesId,
       AND: [{ date: { gte: new Date(startDate), lte: new Date(endDate) } }],
     },
     select: { date: true, time: true, ramp: true },
@@ -189,38 +214,45 @@ export async function getBookedTimeSlotsByDateRange(
   return bookings;
 }
 
-export async function calculateBookingEarnings(bookingId: string): Promise<number> {
+export async function calculateBookingEarnings(
+  bookingId: string
+): Promise<number> {
   try {
     const booking = await prisma.booking.findUnique({
-      where: { id:parseInt(bookingId) },
+      where: { id: parseInt(bookingId) },
       include: {
-          services: { include: { service: true } },
-          UsedInventory: { include: { inventory: true } }
-      }
-  });
+        services: { include: { service: true } },
+        UsedInventory: { include: { inventory: true } },
+      },
+    });
 
-  if (!booking) {
+    if (!booking) {
       console.error(`Booking with id ${bookingId} not found.`);
       return 0;
-  }
-    let serviceRevenue = booking.services?.reduce((serviceAcc, serviceItem) => {
-      const price = serviceItem.service?.price || 0;
-      const qty = parseInt(serviceItem.qty, 10) || 1;
-      return serviceAcc + (price * qty);
-  }, 0) || 0;
+    }
+    let serviceRevenue =
+      booking.services?.reduce((serviceAcc, serviceItem) => {
+        const price = serviceItem.service?.price || 0;
+        const qty = parseInt(serviceItem.qty, 10) || 1;
+        return serviceAcc + price * qty;
+      }, 0) || 0;
 
-  let inventoryRevenue = booking.UsedInventory?.reduce((inventoryAcc, inventoryItem) => {
-       if (!inventoryItem.includedWithService) {
+    let inventoryRevenue =
+      booking.UsedInventory?.reduce((inventoryAcc, inventoryItem) => {
+        if (!inventoryItem.includedWithService) {
           const retailPrice = inventoryItem.inventory?.retailPrice || 0;
           const quantity = inventoryItem.quantity || 1;
-           return inventoryAcc + (retailPrice * quantity);
+          return inventoryAcc + retailPrice * quantity;
         }
-           return inventoryAcc;
-  }, 0) || 0;
+        return inventoryAcc;
+      }, 0) || 0;
 
-  return serviceRevenue + inventoryRevenue;
+    return serviceRevenue + inventoryRevenue;
   } catch (error) {
-    console.error(`Error calculating earnings for booking id ${bookingId}:`, error);
+    console.error(
+      `Error calculating earnings for booking id ${bookingId}:`,
+      error
+    );
     return 0;
   }
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
-import { cookies } from "next/headers";
+
 import { AppSidebar } from "@/app/(component)/SideBar/SideBar";
 
 
@@ -10,6 +10,7 @@ import {
  
 } from "@/components/ui/sidebar";
 import NavBar from "@/app/(component)/Navbar/NavBar";
+import { useUserStore } from "@/app/store/useUserStore";
 
 const HomeLayout = async ({ children }: { children: React.ReactNode }) => {
  

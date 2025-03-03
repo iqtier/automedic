@@ -51,6 +51,7 @@ import { Category, inventorySchema, Supplier } from "@/types/type";
 
 import { useRouter } from "next/navigation";
 import { CreateInventory } from "@/app/actions/inventoryActions";
+import { useUserStore } from "@/app/store/useUserStore";
 
 type AddNewInventoryProps = {
   categories: Category[];
@@ -58,6 +59,8 @@ type AddNewInventoryProps = {
 
 const AddNewInventory: React.FC<AddNewInventoryProps> = ({ categories }) => {
   const router = useRouter();
+  const {user} = useUserStore();
+  console.log(user)
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const form = useForm<z.infer<typeof inventorySchema>>({
     resolver: zodResolver(inventorySchema),
@@ -77,7 +80,7 @@ const AddNewInventory: React.FC<AddNewInventoryProps> = ({ categories }) => {
 
   async function onSubmit(values: z.infer<typeof inventorySchema>) {
     try {
-      const result = await CreateInventory(values);
+      const result = await CreateInventory(user?.business_Id as string,values);
       if (result?.status === "success") {
         toast.success(`Inventory successfully added`);
         form.reset();
