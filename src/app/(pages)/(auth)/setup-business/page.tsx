@@ -4,7 +4,7 @@ import { ModeToggle } from "@/app/(component)/Navbar/ThemeToggleButton";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { signOut } from "@/lib/auth";
 import { LogOut } from "lucide-react";
-import Link from "next/link";
+
 import React from "react";
 
 const page = () => {

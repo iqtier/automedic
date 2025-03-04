@@ -11,7 +11,7 @@ export default auth((req) => {
     const isBusinessRegistered = currentUser?.business_Id;
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);
-
+    console.log("Middleware Session Data:", JSON.stringify(session, null, 2)); 
    
     if (isPublicRoute) {
         return NextResponse.next();
@@ -23,7 +23,7 @@ export default auth((req) => {
         }
         return NextResponse.next();
     }
-    
+
 
     // If the user is logged in but has no business registered, force them to /setup-business
     if (isLoggedIn && !isBusinessRegistered && nextUrl.pathname !== "/setup-business") {
@@ -32,7 +32,7 @@ export default auth((req) => {
     if (!isLoggedIn) {
         return NextResponse.redirect(new URL('/sign-in', nextUrl));
     }
-  
+    
 
     return NextResponse.next();
 });

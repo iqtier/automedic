@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import CustomerForm from "./CustomerForm";
 import { CustomerType } from "@/types/type";
 import {
@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { deleteCustomer } from "@/app/actions/customerActions";
 import { toast } from "react-toastify";
 import { Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 import { useTransition } from "react";
 import { Spinner } from "@/components/ui/spinner";
 

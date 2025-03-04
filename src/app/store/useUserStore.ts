@@ -1,6 +1,6 @@
 import { JsonValue } from "@prisma/client/runtime/library";
 import { create } from "zustand";
-import { persist, PersistStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
 
 interface Business {

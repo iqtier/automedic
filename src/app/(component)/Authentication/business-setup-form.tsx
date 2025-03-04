@@ -1,5 +1,5 @@
 "use client";
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -28,6 +28,7 @@ import { createBusinessDetails } from "@/app/actions/settingActions";
 import { useRouter } from "next/navigation";
 
 import { useUserStore } from "@/app/store/useUserStore";
+import {  useSession } from "next-auth/react";
 
 const formSchema = z.object({
   businame: z.string(),
@@ -40,9 +41,8 @@ const formSchema = z.object({
 
 export default function BusinessSetup() {
   const router = useRouter();
- 
+  const { data: session, update } = useSession();
   const { user, setBusiness } = useUserStore();
- 
 
   const id = useId();
 
@@ -50,17 +50,25 @@ export default function BusinessSetup() {
   const [countryName, setCountryName] = useState<string>("");
   const [stateName, setStateName] = useState<string>("");
 
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const result = await createBusinessDetails(values,user?.id as string);
+      const result = await createBusinessDetails(values, user?.id as string);
       if (result?.status === "success") {
         toast.success(`Business setup completed`);
-        setBusiness(result.data)
+        useUserStore.setState((state) => ({
+          user: state.user ? { ...state.user, business_Id: result.data.id } : null
+        }));
+        setBusiness(result.data);
         form.reset();
+        await update({
+          ...session,
+          user: { ...session?.user, business_Id: result.data.id },
+        });
         router.push("/");
       } else {
         form.setError("root.serverError", { message: result?.error as string });
