@@ -22,7 +22,7 @@ import {
 import { ScheduleHeader } from "./ScheduleHeader";
 import { toast } from "react-toastify";
 import { User } from "@/types/type";
-import { useUser } from "@heroui/react";
+
 import { useUserStore } from "@/app/store/useUserStore";
 
 const ScheduleSchema = z.object({
@@ -78,7 +78,7 @@ export function ScheduleTable() {
 
       if (techData) {
         setTechnicians(techData);
-        const scheduleFetch = await fetchScheduleData(weekDays);
+        const scheduleFetch = await fetchScheduleData(weekDays,business?.id as string);
 
         const initialSchedules = techData.reduce((acc: any, tech: any) => {
           weekDays.forEach((day) => {
@@ -122,11 +122,11 @@ export function ScheduleTable() {
         changedSchedules.map(async ([key, status]) => {
           const [userId, date] = key.split("_");
           const utcDate = new Date(date).toISOString().split("T")[0];
-          return await updateSchedule(userId, utcDate, status);
+          return await updateSchedule(userId, utcDate, status,business?.id as string);
         })
       );
       if (responses.every((res) => res.status === "success")) {
-        const scheduleFetch = await fetchScheduleData(weekDays);
+        const scheduleFetch = await fetchScheduleData(weekDays,business?.id as string);
         const initialSchedules = technicians.reduce((acc: any, tech: any) => {
           weekDays.forEach((day) => {
             const schedule = scheduleFetch.find(

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import React, { useState } from "react";
+import React from "react";
 import { auth } from "@/lib/auth";
 
 import { columns } from "@/app/(component)/Employee/userTableColumns";

@@ -157,7 +157,8 @@ export async function getCurrentClockedInUsers(businesId: string) {
 export async function updateSchedule(
   userId: string,
   date: string,
-  status: string
+  status: string,
+  businesId: string
 ) {
   try {
     const newDate = new Date(date).toISOString();
@@ -166,6 +167,9 @@ export async function updateSchedule(
         userId_date: {
           userId: userId,
           date: new Date(newDate),
+        },
+        user: {
+          business_Id: businesId,
         },
       },
       update: {
@@ -182,12 +186,15 @@ export async function updateSchedule(
     return { status: "error", error };
   }
 }
-export async function fetchScheduleData(weekDays: Date[]) {
+export async function fetchScheduleData(weekDays: Date[],businesId: string) {
   const scheduleData = await prisma.employeeSchedule.findMany({
     where: {
       date: {
         gte: new Date(weekDays[0].toLocaleDateString()),
         lte: new Date(weekDays[weekDays.length - 1].toLocaleDateString()),
+      },
+      user:{
+        business_Id: businesId
       },
     },
     select: {
@@ -200,42 +207,6 @@ export async function fetchScheduleData(weekDays: Date[]) {
   return scheduleData;
 }
 
-export async function getEmployeeSchedules(dateRange: {
-  start: Date;
-  end: Date;
-}) {
-  return prisma.employeeSchedule.findMany({
-    where: {
-      date: {
-        gte: dateRange.start,
-        lte: dateRange.end,
-      },
-    },
-    include: {
-      user: true,
-    },
-  });
-}
 
-export async function updateEmployeeSchedule(
-  data: z.infer<typeof EmployeeScheduleSchema>
-) {
-  const { userId, date, status } = data;
 
-  return prisma.employeeSchedule.upsert({
-    where: {
-      userId_date: {
-        userId,
-        date,
-      },
-    },
-    update: {
-      status,
-    },
-    create: {
-      userId,
-      date,
-      status,
-    },
-  });
-}
+
