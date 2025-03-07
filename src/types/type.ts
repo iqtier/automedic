@@ -338,6 +338,7 @@ export type BusinessType = {
   businame: string;
   phone: string;
   roadname: string;
+  city: string;
   postal: string;
   logo: File;
 };

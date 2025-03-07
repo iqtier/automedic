@@ -1,260 +1,53 @@
-"use client";
-import { forwardRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { getBusinessById } from '@/app/actions/settingActions';
+import { auth } from '@/lib/auth';
+import { User } from '@/types/type';
+import Image from 'next/image';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
 
-import "react-phone-number-input/style.css";
-import { ChevronDownIcon, PhoneIcon } from "lucide-react";
-import PhoneInputWithCountry from "react-phone-number-input/react-hook-form";
-import { Label } from "@/components/ui/label";
-import * as RPNInput from "react-phone-number-input";
-import { useId } from "react";
-import flags from "react-phone-number-input/flags";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import LocationSelector from "@/components/ui/location-input";
-import { CloudUpload } from "lucide-react";
-import { toast } from "react-toastify";
-import { cn } from "@/lib/utils";
-import { createBusinessDetails } from "@/app/actions/settingActions";
+const Page = async () => {
+  const session = await auth();
+  const user = session?.user as User;
+  const businessDetails = await getBusinessById(user?.business_Id as string);
 
-const formSchema = z.object({
-  businame: z.string(),
-  phone: z.string(),
-  location: z.tuple([z.string(), z.string().optional()]),
-  roadname: z.string(),
-  postal: z.string(),
-  logo: z.instanceof(File, { message: "Please select an image file" }),
-});
-
-export default function MyForm() {
-  const id = useId();
-  const [value, setValue] = useState("");
-  const [preview, setPreview] = useState<string | null>(null);
-  const [countryName, setCountryName] = useState<string>("");
-  const [stateName, setStateName] = useState<string>("");
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      const result = await createBusinessDetails(values,"2");
-              if (result?.status === "success") {
-                toast.success(`Appointment successfully added`);
-               
-            
-                form.reset();
-              } else {
-                form.setError("root.serverError", { message: result?.error as string });
-                toast.error(`${result?.error}`);
-            }
-    } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
-    }
+  if (!businessDetails) {
+    return <p className="text-center text-gray-500 dark:text-gray-400">No business details found.</p>;
   }
 
+  const address = businessDetails.address as { state: string; postal: string; country: string; roadname: string };
+
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-8 max-w-3xl mx-auto py-10"
-      >
-        <div className="flex flex-wrap gap-x-4">
-          <div className="flex-grow">
-            <FormField
-              control={form.control}
-              name="businame"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Business Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Business name" type="text" {...field} />
-                  </FormControl>
-                  <FormDescription>This is your business name</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="flex-grow">
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <RPNInput.default
-                      className="flex rounded-lg shadow-xs"
-                      international
-                      inputComponent={PhoneInput}
-                      id={id}
-                      placeholder="Enter phone number"
-                      value={field.value}
-                      onChange={(newValue) => {
-                        if (newValue) {
-                          form.setValue(field.name, newValue.toString());
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Enter your business phone number , Starts with country,area
-                    code
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Select Country</FormLabel>
-              <FormControl>
-                <LocationSelector
-                  onCountryChange={(country) => {
-                    setCountryName(country?.name || "");
-                    form.setValue(field.name, [
-                      country?.name || "",
-                      stateName || "",
-                    ]);
-                  }}
-                  onStateChange={(state) => {
-                    setStateName(state?.name || "");
-                    form.setValue(field.name, [
-                      form.getValues(field.name)[0] || "",
-                      state?.name || "",
-                    ]);
-                  }}
-                />
-              </FormControl>
-              <FormDescription>
-                If your country has states, they will appear after selecting a
-                country.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
+    <div className="flex justify-center items-center min-h-screen p-4 bg-gray-100 dark:bg-gray-900">
+      <Card className="w-full max-w-lg shadow-lg bg-white dark:bg-gray-800 rounded-lg">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold text-center text-gray-900 dark:text-gray-100">{businessDetails.name}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {businessDetails.logo && (
+            <div className="flex justify-center">
+              <Image
+                src={`data:image/png;base64,${Buffer.from(businessDetails.logo).toString('base64')}`}
+                alt="Business Logo"
+                width={100}
+                height={100}
+                className="rounded-lg shadow-md"
+              />
+            </div>
           )}
-        />
-
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-6">
-            <FormField
-              control={form.control}
-              name="roadname"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Road Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Road Name" type="text" {...field} />
-                  </FormControl>
-                  <FormDescription>This is your road name.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="col-span-6">
-            <FormField
-              control={form.control}
-              name="postal"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Postal Code</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Postal Code" type="text" {...field} />
-                  </FormControl>
-                  <FormDescription>This is your postal code.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Image Upload Field */}
-        <FormField
-          control={form.control}
-          name="logo"
-          render={({ field: { onChange } }) => (
-            <FormItem className="*:not-first:mt-2">
-              <FormLabel>Upload Logo</FormLabel>
-              <FormControl>
-                <div>
-                  <Input
-                    className="p-0 pe-3 file:me-3 file:border-0 file:border-e"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      onChange(file);
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                          setPreview(event.target?.result as string);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  {preview && (
-                    <div className="mt-4 ">
-                      <img
-                        src={preview}
-                        alt="Preview"
-                        className="h-48 rounded-2xl"
-                      />
-                    </div>
-                  )}
-                </div>
-              </FormControl>
-              <FormDescription>
-                Select an image file for your business logo.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form>
+          <p className="text-gray-700 dark:text-gray-300"><strong>Phone:</strong> {businessDetails.phone}</p>
+          <p className="text-gray-700 dark:text-gray-300"><strong>Address:</strong></p>
+          <ul className="text-gray-700 dark:text-gray-300 pl-4 list-disc">
+            <li><strong>Road:</strong> {address.roadname}</li>
+            <li><strong>State:</strong> {address.state}</li>
+            <li><strong>Postal Code:</strong> {address.postal}</li>
+            <li><strong>Country:</strong> {address.country}</li>
+          </ul>
+          <p className="text-gray-700 dark:text-gray-300"><strong>Tax Rate:</strong> {businessDetails.taxRate*100} %</p>
+         
+              </CardContent>
+      </Card>
+    </div>
   );
-}
+};
 
-
-const PhoneInput = forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, ...props }, ref) => {
-    return (
-      <Input
-        className={cn("-ms-px rounded-s-none shadow-none focus-visible:z-10", className)}
-        ref={ref}
-        {...props}
-      />
-    );
-  },
-);
-
-PhoneInput.displayName = "PhoneInput";
-
-
-
+export default Page;

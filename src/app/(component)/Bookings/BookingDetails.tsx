@@ -11,25 +11,38 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Check, Printer } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
+import { useUserStore } from "@/app/store/useUserStore";
 
-const TAX_RATE = 0.15; // 15% tax
 
 const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
+ 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [subtotal, setSubtotal] = useState(0);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [discount, setDiscount] = useState(0);
+  const { business } = useUserStore();
+  const TAX_RATE = business?.taxRate ?? 0;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const currentBooking = await getBooking(booking_id);
+   
+        
         if (currentBooking) {
           setBooking(currentBooking);
           const bookingCost = await calculateBookingEarnings(booking_id);
+          if (currentBooking.customer.discounted) {
+            if (currentBooking.customer.discountType === "percentage") {
+              setDiscount(
+                bookingCost * (currentBooking.customer.discountRate / 100)
+              );
+            } else {
+              setDiscount(currentBooking.customer.discountRate);
+            }
+          }
           setSubtotal(bookingCost);
-          setTotal(bookingCost + bookingCost * TAX_RATE);
         }
       } catch (err) {
         setError("Failed to load data.");
@@ -129,11 +142,17 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
               </thead>
               <tbody>
                 {booking.services.map((service) => (
-                  <tr key={service.id} className="border-b border-gray-200 dark:border-gray-700">
+                  <tr
+                    key={service.id}
+                    className="border-b border-gray-200 dark:border-gray-700"
+                  >
                     <td className="py-2 px-4">{service.service.name}</td>
                     <td className="py-2 px-4">{service.qty}</td>
                     <td className="py-2 px-4">
-                      ${(service.service.price * parseInt(service.qty)).toFixed(2)}
+                      $
+                      {(service.service.price * parseInt(service.qty)).toFixed(
+                        2
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -147,7 +166,8 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
                     $
                     {booking.services
                       .reduce(
-                        (acc, service) => acc + service.service.price * parseInt(service.qty),
+                        (acc, service) =>
+                          acc + service.service.price * parseInt(service.qty),
                         0
                       )
                       .toFixed(2)}
@@ -176,9 +196,14 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
               </thead>
               <tbody>
                 {booking.UsedInventory.map((inventory) => (
-                  <tr key={inventory.id} className="border-b border-gray-200 dark:border-gray-700">
+                  <tr
+                    key={inventory.id}
+                    className="border-b border-gray-200 dark:border-gray-700"
+                  >
                     <td className="py-2 px-4">
-                      {`${inventory.inventory.brand} ${inventory.inventory.name} ${inventory.inventory.InventoryFields?.map(
+                      {`${inventory.inventory.brand} ${
+                        inventory.inventory.name
+                      } ${inventory.inventory.InventoryFields?.map(
                         (field) => field.value
                       ).join(" ")}`}
                     </td>
@@ -187,7 +212,9 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
                     </td>
                     <td className="py-2 px-4">
                       $
-                      {(inventory.inventory.retailPrice * inventory.quantity).toFixed(2)}
+                      {(
+                        inventory.inventory.retailPrice * inventory.quantity
+                      ).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -201,7 +228,8 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
                     $
                     {booking.UsedInventory.reduce(
                       (acc, inventory) =>
-                        acc + inventory.inventory.retailPrice * inventory.quantity,
+                        acc +
+                        inventory.inventory.retailPrice * inventory.quantity,
                       0
                     ).toFixed(2)}
                   </td>
@@ -275,11 +303,20 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
             Invoice Summary
           </div>
           <p className="dark:text-gray-400">Subtotal: ${subtotal.toFixed(2)}</p>
+
+          {discount > 0 && (
+            <p className="dark:text-gray-400">
+              Discount: - ${discount.toFixed(2)}
+            </p>
+          )}
           <p className="dark:text-gray-400">
-            Tax (15%): ${(subtotal * TAX_RATE).toFixed(2)}
+            Tax ({TAX_RATE*100}%): ${((subtotal - discount) * TAX_RATE).toFixed(2)}
           </p>
           <p className="font-bold text-lg dark:text-white">
-            Total: ${total.toFixed(2)}
+            Total: $
+            {(subtotal - discount + (subtotal - discount) * TAX_RATE).toFixed(
+              2
+            )}
           </p>
         </div>
 

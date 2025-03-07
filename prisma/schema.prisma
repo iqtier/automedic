@@ -20,6 +20,7 @@ model Business {
   phone      String
   address    Json
   logo       Bytes
+  taxRate    Float @default(0.15)
   created_at DateTime    @default(now())
   users      User[]
   bookings   Booking[]

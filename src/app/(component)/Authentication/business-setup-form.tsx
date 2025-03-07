@@ -36,6 +36,7 @@ const formSchema = z.object({
   location: z.tuple([z.string(), z.string().optional()]),
   roadname: z.string(),
   postal: z.string(),
+  city:z.string(),
   logo: z.instanceof(File, { message: "Please select an image file" }),
 });
 
@@ -54,7 +55,11 @@ export default function BusinessSetup() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
-
+  const arrayBufferToBase64 = (buffer: Uint8Array) => {
+    if (!buffer || buffer.length === 0) return '';
+    return `data:image/png;base64,${btoa(String.fromCharCode(...buffer))}`;
+  };
+  
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const result = await createBusinessDetails(values, user?.id as string);
@@ -63,7 +68,10 @@ export default function BusinessSetup() {
         useUserStore.setState((state) => ({
           user: state.user ? { ...state.user, business_Id: result.data.id } : null
         }));
-        setBusiness(result.data);
+        setBusiness({
+          ...result.data,
+          logo: arrayBufferToBase64(new Uint8Array(result.data.logo)), // Convert before storing
+        });
         form.reset();
         await update({
           ...session,
@@ -177,7 +185,7 @@ export default function BusinessSetup() {
           />
 
           <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-6">
+            <div className="col-span-4">
               <FormField
                 control={form.control}
                 name="roadname"
@@ -193,8 +201,23 @@ export default function BusinessSetup() {
                 )}
               />
             </div>
-
-            <div className="col-span-6">
+            <div className="col-span-4">
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>City</FormLabel>
+                    <FormControl>
+                      <Input placeholder="City" type="text" {...field} />
+                    </FormControl>
+                    <FormDescription>This is your city name.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-4">
               <FormField
                 control={form.control}
                 name="postal"

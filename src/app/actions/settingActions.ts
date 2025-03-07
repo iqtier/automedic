@@ -8,7 +8,7 @@ export async function createBusinessDetails(
   data: BusinessType,
   userId: string
 ): Promise<ActionResult<Business>> {
-  const { businame, phone, location, roadname, postal, logo } = data;
+  const { businame, phone, location,city, roadname, postal, logo } = data;
   console.log(userId);
   try {
     const buffer = await logo.arrayBuffer();
@@ -20,6 +20,7 @@ export async function createBusinessDetails(
         address: {
           country: location[0],
           state: location[1],
+          city: city,
           roadname: roadname,
           postal: postal,
         },

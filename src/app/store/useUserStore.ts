@@ -8,7 +8,8 @@ interface Business {
   name: string;
   phone: string;
   address: JsonValue;
-  logo: Uint8Array<ArrayBufferLike> // Convert `Bytes` to Base64 for easy handling
+  taxRate: number;
+  logo: string // Convert `Bytes` to Base64 for easy handling
   created_at: Date;
 }
 

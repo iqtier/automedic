@@ -23,6 +23,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import SideBarItem from "./SideBarItem";
+import { useUserStore } from "@/app/store/useUserStore";
 
 const items = [
   {
@@ -71,6 +72,7 @@ const items = [
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 export function AppSidebar({ ...props }: AppSidebarProps) {
+  const { business } = useUserStore();
   return (
     <Sidebar
       collapsible="icon"
@@ -78,7 +80,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
        className="bg-stone-50 dark:bg-slate-900 border-r dark:border-gray-700 shadow-md z-20"
     >
       <SidebarHeader>
-        <BrandLogo />
+        <BrandLogo name= {business?.name} logo = {business?.logo}  />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

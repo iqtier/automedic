@@ -2,6 +2,7 @@ import { calculateBookingEarnings, getBooking } from "@/app/actions/bookingActio
 import { NextRequest, NextResponse } from "next/server";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { getBusinessById } from "@/app/actions/settingActions";
 
 const TAX_RATE = 0.15;
 const PRIMARY_COLOR = "#0038A8";
@@ -13,6 +14,7 @@ export async function GET(
 ) {
   const { booking_id } = await params;
   const booking = await getBooking(booking_id);
+  const businessDetails = await getBusinessById(booking?.business_Id as string);
 
   if (!booking) {
     return NextResponse.json({ error: "No booking found" }, { status: 404 });
@@ -36,9 +38,9 @@ export async function GET(
   pdf.text("INVOICE", pageWidth / 2 - 15, 10);
 
   pdf.setFontSize(12);
-  pdf.text("AUTOMEDIC AUTO REPAIR SHOP", 20, 20);
+  pdf.text(`${businessDetails?.name}`, 20, 20);
   pdf.setFontSize(10);
-  pdf.text("Thorban Road, St. John's, NL", 20, 25);
+  pdf.text(`{Thorban Road}, {St. John's}, NL`, 20, 25);
   pdf.text("Phone: +1 709 777 8888 | Email: automedic@gmail.com", 20, 30);
 
   // Invoice Details
@@ -114,7 +116,7 @@ export async function GET(
   pdf.text(`$${total.toFixed(2)}`, 170, summaryY + 15, { align: "right" });
 
   // Footer
-  const footerY = summaryY + 30;
+
   pdf.setFontSize(8);
   pdf.text(
     "Thank you for choosing Automedic Auto Repair Shop. Please contact us for any inquiries.",

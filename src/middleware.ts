@@ -11,7 +11,7 @@ export default auth((req) => {
     const isBusinessRegistered = currentUser?.business_Id;
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);
-    console.log("Middleware Session Data:", JSON.stringify(session, null, 2)); 
+   
    
     if (isPublicRoute) {
         return NextResponse.next();

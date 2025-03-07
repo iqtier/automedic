@@ -47,6 +47,11 @@ export function LoginForm() {
     },
   });
 
+  const arrayBufferToBase64 = (buffer: Uint8Array) => {
+    if (!buffer || buffer.length === 0) return '';
+    return `data:image/png;base64,${btoa(String.fromCharCode(...buffer))}`;
+  };
+  
   async function onSubmit(values: z.infer<typeof LogInSchema>) {
     startTransition(async () => {
       const result = await signInUser(values);
@@ -65,7 +70,10 @@ export function LoginForm() {
         if(currentUser?.business_Id){
           const business = await getBusinessById(currentUser?.business_Id);
           if(business){
-            setBusiness(business);
+            setBusiness({
+              ...business,
+              logo: arrayBufferToBase64(new Uint8Array(business.logo)), // Convert before storing
+            });
           }
         }
         setUser(currentUser);
