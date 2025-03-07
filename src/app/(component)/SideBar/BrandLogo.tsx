@@ -16,8 +16,6 @@ interface BrandLogoProps {
   logo?: string;
 }
 export function BrandLogo({ name, logo }: BrandLogoProps) {
-  
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -26,14 +24,16 @@ export function BrandLogo({ name, logo }: BrandLogoProps) {
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
           {logo && (
-            <div className="flex justify-center">
-              <Image
-                src={logo as string}
-                alt="Business Logo"
-                width={50}
-                height={50}
-                className="rounded-lg shadow-md"
-              />
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-indigo-500 text-white dark:bg-indigo-700 dark:text-gray-200">
+              <div className="flex justify-center">
+                <Image
+                  src={logo as string}
+                  alt="Business Logo"
+                  width={50}
+                  height={50}
+                  className="rounded-lg shadow-md"
+                />
+              </div>
             </div>
           )}
 
