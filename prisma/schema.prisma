@@ -18,6 +18,7 @@ model Business {
   id         String      @id @default(cuid())
   name       String
   phone      String
+  
   address    Json
   logo       Bytes
   taxRate    Float @default(0.15)

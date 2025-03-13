@@ -8,9 +8,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { useUserStore } from "@/app/store/useUserStore";
+
 import Image from "next/image";
-import { getBusinessById } from "@/app/actions/settingActions";
+import { Cog } from "lucide-react";
+
 interface BrandLogoProps {
   name?: string;
   logo?: string;
@@ -23,24 +24,16 @@ export function BrandLogo({ name, logo }: BrandLogoProps) {
           size="lg"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
-          {logo && (
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-indigo-500 text-white dark:bg-indigo-700 dark:text-gray-200">
-              <div className="flex justify-center">
-                <Image
-                  src={logo as string}
-                  alt="Business Logo"
-                  width={50}
-                  height={50}
-                  className="rounded-lg shadow-md"
-                />
-              </div>
+       
+            <div className="flex aspect-square size-10  items-center justify-start ">
+             
+            <Cog color="green" size={35}/>
+        
             </div>
-          )}
+        
 
-          <Link href="/home" className="flex items-center" prefetch={false}>
-            <p className="font-mono text-2xl font-bold tracking-widest hover:text-blue-600 dark:hover:text-blue-400 text-indigo-800 dark:text-indigo-200 transition-colors duration-200">
-              {name?.toUpperCase()}
-            </p>
+          <Link href="/home"  prefetch={false}>
+           <Image src ={'/Logo/name.png'} alt="Brand" width={1000} height={1000}/>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>

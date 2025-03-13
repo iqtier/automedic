@@ -88,6 +88,7 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
     );
   };
 
+  console.log(booking.start)
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -260,14 +261,22 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
           </p>
           <p>
             <span className="font-bold">Job Start: </span>
+            
             <span className="dark:text-gray-400">
-              {booking.start?.toLocaleDateString()}
+             
+              {booking.start?.toLocaleDateString() }
+              {" "} - {booking.start?.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
             </span>
           </p>
           <p>
             <span className="font-bold">Job Completed: </span>
             <span className="dark:text-gray-400">
               {booking.finish?.toLocaleDateString()}
+              {" "} - {booking.finish?.toLocaleTimeString([], {
+            hour: "2-digit",  minute: "2-digit",})}
             </span>
           </p>
           <p>

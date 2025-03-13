@@ -114,6 +114,7 @@ export async function getBooking(id: string) {
       },
     },
   });
+  console.log(booking?.start);
   return booking;
 }
 
@@ -141,7 +142,7 @@ export async function updateBooking(
     inventories,
   } = data;
   const now = new Date();
-  const utcDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  
   try {
     const currentBooking = await prisma.booking.findUnique({
       where: { id: parseInt(id) },
@@ -152,8 +153,8 @@ export async function updateBooking(
       where: { id: parseInt(id) },
       data: {
         status,
-        start: status === "ongoing" && !startTime ? utcDate : startTime,
-        finish: status === "completed" ? utcDate : null,
+        start: status === "ongoing" && !startTime ? now: startTime,
+        finish: status === "completed" ? now : null,
         note: note || "",
         payment_status,
         payment_method,

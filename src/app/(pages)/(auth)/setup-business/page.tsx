@@ -10,7 +10,7 @@ import React from "react";
 const page = () => {
   return (
     <div className="">
-      <nav className="inset-x-0 top-0 sticky bg-white shadow-sm dark:bg-gray-950/90">
+      <nav className="inset-x-0  top-0 sticky bg-white shadow-sm z-10 dark:bg-gray-950">
         <div className="flex justify-between h-14 items-center pr-10 py-5">
           <div className="flex  h-14 items-center pr-10">
             <div className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">

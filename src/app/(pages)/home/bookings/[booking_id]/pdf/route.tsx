@@ -19,7 +19,13 @@ export async function GET(
   if (!booking) {
     return NextResponse.json({ error: "No booking found" }, { status: 404 });
   }
-
+  const address = businessDetails?.address as {
+    state: string;
+    postal: string;
+    country: string;
+    roadname: string;
+    city: string;
+  };
   const subtotal = await calculateBookingEarnings(booking_id);
   const taxAmount = subtotal * TAX_RATE;
   const total = subtotal + taxAmount;
@@ -40,8 +46,8 @@ export async function GET(
   pdf.setFontSize(12);
   pdf.text(`${businessDetails?.name}`, 20, 20);
   pdf.setFontSize(10);
-  pdf.text(`{Thorban Road}, {St. John's}, NL`, 20, 25);
-  pdf.text("Phone: +1 709 777 8888 | Email: automedic@gmail.com", 20, 30);
+  pdf.text(`${address.roadname}, ${address.city}, ${address.postal}, ${address.state}, ${address.country}`, 20, 25);
+  pdf.text(`Phone: ${businessDetails?.phone} `, 20, 30);
 
   // Invoice Details
   pdf.setTextColor(SECONDARY_COLOR);
@@ -119,13 +125,13 @@ export async function GET(
 
   pdf.setFontSize(8);
   pdf.text(
-    "Thank you for choosing Automedic Auto Repair Shop. Please contact us for any inquiries.",
-    20,
+    `Thank you for choosing ${businessDetails?.name} Auto Repair Shop. Please contact us for any inquiries.`,
+    5,
     pageHeight - 20
   );
   pdf.text(
-    "Address: Thorban RD, St. John's, NL | Phone: 709-000-0000 | Email: automedic@gmail.com | Web: www.automedic.com",
-    20,
+   ` Address: ${address?.roadname } ,${address?.city} , ${address?.state} | Phone: ${businessDetails?.phone} | Email: repari@gmail.com | Web: www.website.com`,
+    5,
     pageHeight - 15
   );
 
