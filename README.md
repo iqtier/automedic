@@ -1,5 +1,5 @@
-# AUTOMEDIC
-AutoMedic is a Point of Sale (POS) system designed specifically for automotive repair shops. The system aims to streamline operations by providing features such as service management, employee management, and user authentication. Although the project is not yet complete, it currently supports core functionalities with many more features planned for the future.
+# GarageSync
+GarageSync is a Point of Sale (POS) system for automotive repair shops. The system aims to streamline operations by providing features such as service management, employee management, and user authentication. Although the project is not yet complete, it currently supports core functionalities with many more features planned for the future.
 
 ## INSTALLATION
 ## PREREQUISITES
