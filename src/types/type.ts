@@ -336,6 +336,8 @@ export interface ContactType {
 export type BusinessType = {
   location: [string, string | undefined];
   businame: string;
+  email: string;
+  tax: string;
   phone: string;
   roadname: string;
   city: string;

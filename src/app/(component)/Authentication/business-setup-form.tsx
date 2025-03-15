@@ -1,9 +1,9 @@
 "use client";
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
+import { MoveRight } from "lucide-react";
 import "react-phone-number-input/style.css";
 
 import * as RPNInput from "react-phone-number-input";
@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -28,19 +27,29 @@ import { createBusinessDetails } from "@/app/actions/settingActions";
 import { useRouter } from "next/navigation";
 
 import { useUserStore } from "@/app/store/useUserStore";
-import {  useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { Spinner } from "@/components/ui/spinner";
 
 const formSchema = z.object({
-  businame: z.string(),
+  businame: z.string().min(5, "Minimum 5 character"),
   phone: z.string(),
+  email: z.string().email("provide a valid email address"),
+  tax: z.string().refine(
+    (value) => {
+      const parsed = parseInt(value, 10);
+      return !isNaN(parsed) && parsed >= 0;
+    },
+    { message: "must be a non-negative integer." }
+  ),
   location: z.tuple([z.string(), z.string().optional()]),
   roadname: z.string(),
   postal: z.string(),
-  city:z.string(),
+  city: z.string(),
   logo: z.instanceof(File, { message: "Please select an image file" }),
 });
 
 export default function BusinessSetup() {
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { data: session, update } = useSession();
   const { user, setBusiness } = useUserStore();
@@ -51,37 +60,63 @@ export default function BusinessSetup() {
   const [countryName, setCountryName] = useState<string>("");
   const [stateName, setStateName] = useState<string>("");
 
-  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
-  const arrayBufferToBase64 = (buffer: Uint8Array) => {
-    if (!buffer || buffer.length === 0) return '';
-    return `data:image/png;base64,${btoa(String.fromCharCode(...buffer))}`;
-  };
+  const arrayBufferToBase64 = (buffer: any) => { // Change type to "any" for wider compatibility
+    if (!buffer) {
+      console.warn("arrayBufferToBase64: Buffer is null or undefined");
+      return "";
+    }
   
+    if (buffer.length === 0) {
+      console.warn("arrayBufferToBase64: Buffer is empty");
+      return "";
+    }
+  
+    if (!(buffer instanceof Uint8Array)) {
+      console.error("arrayBufferToBase64: Buffer is not a Uint8Array", buffer);
+      return "";
+    }
+  
+    try {
+        return `data:image/png;base64,${btoa(String.fromCharCode(...buffer))}`;
+    } catch (error) {
+        console.error("arrayBufferToBase64: Error encoding", error);
+        return ""; // Handle encoding errors
+    }
+  };
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const result = await createBusinessDetails(values, user?.id as string);
-      if (result?.status === "success") {
-        toast.success(`Business setup completed`);
-        useUserStore.setState((state) => ({
-          user: state.user ? { ...state.user, business_Id: result.data.id } : null
-        }));
-        setBusiness({
-          ...result.data,
-          logo: arrayBufferToBase64(new Uint8Array(result.data.logo)), // Convert before storing
-        });
-        form.reset();
-        await update({
-          ...session,
-          user: { ...session?.user, business_Id: result.data.id },
-        });
-        router.push("/");
-      } else {
-        form.setError("root.serverError", { message: result?.error as string });
-        toast.error(`${result?.error}`);
-      }
+      startTransition(async () => {
+        const result = await createBusinessDetails(values, user?.id as string);
+        if (result?.status === "success") {
+          toast.success(`Business setup completed`);
+          useUserStore.setState((state) => ({
+            user: state.user
+              ? { ...state.user, business_Id: result.data.id }
+              : null,
+          }));
+          setBusiness({
+            ...result.data,
+            logo: result.data.logo
+              ? arrayBufferToBase64(new Uint8Array(result.data.logo))
+              : "", // Handle null/undefined logo
+          });
+          form.reset();
+          await update({
+            ...session,
+            user: { ...session?.user, business_Id: result.data.id },
+          });
+          router.push("/");
+        } else {
+          form.setError("root.serverError", {
+            message: result?.error as string,
+          });
+          toast.error(`${result?.error}`);
+        }
+      });
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -93,41 +128,48 @@ export default function BusinessSetup() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 max-w-3xl mx-auto py-10"
+          className="space-y-8 max-w-3xl  mx-auto py-10 px-4"
         >
-          <div className="flex flex-wrap gap-x-4">
-            <div className="flex-grow">
+          <div className="grid grid-cols-12 gap-3 ">
+            <div className="col-span-4">
               <FormField
                 control={form.control}
                 name="businame"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Business Name</FormLabel>
+                    <FormLabel className="text-gray-700 dark:text-gray-200">
+                      <div className="flex flex-row gap-1">
+                        Business Name
+                        <FormMessage className="text-red-500" />
+                      </div>
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Business name"
                         type="text"
+                        className="bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>
-                      This is your business name
-                    </FormDescription>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-            <div className="flex-grow">
+            <div className="col-span-4">
               <FormField
                 control={form.control}
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel className="text-gray-700 dark:text-gray-200">
+                      <div className="flex flex-row gap-1">
+                        Phone number
+                        <FormMessage />
+                      </div>
+                    </FormLabel>
                     <FormControl>
                       <RPNInput.default
-                        className="flex rounded-lg shadow-xs"
+                        className="flex rounded-md shadow-sm bg-gray-50 dark:bg-gray-700"
                         international
                         inputComponent={PhoneInput}
                         id={id}
@@ -140,11 +182,31 @@ export default function BusinessSetup() {
                         }}
                       />
                     </FormControl>
-                    <FormDescription>
-                      Enter your business phone number , Starts with
-                      country,area code
-                    </FormDescription>
-                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 dark:text-gray-200">
+                      <div className="flex flex-row gap-1">
+                        Email
+                        <FormMessage className="text-red-500" />
+                      </div>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        className="bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Business email"
+                        type="text"
+                        {...field}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
@@ -156,7 +218,14 @@ export default function BusinessSetup() {
             name="location"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Select Country</FormLabel>
+                <FormLabel>
+                  <FormLabel className="text-gray-700 dark:text-gray-200">
+                    <div className="flex flex-row gap-1">
+                      Country / State
+                      <FormMessage className="text-red-500" />
+                    </div>
+                  </FormLabel>
+                </FormLabel>
                 <FormControl>
                   <LocationSelector
                     onCountryChange={(country) => {
@@ -175,11 +244,6 @@ export default function BusinessSetup() {
                     }}
                   />
                 </FormControl>
-                <FormDescription>
-                  If your country has states, they will appear after selecting a
-                  country.
-                </FormDescription>
-                <FormMessage />
               </FormItem>
             )}
           />
@@ -191,12 +255,20 @@ export default function BusinessSetup() {
                 name="roadname"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Road Name</FormLabel>
+                    <FormLabel className="text-gray-700 dark:text-gray-200">
+                      <div className="flex flex-row gap-1">
+                        Street
+                        <FormMessage className="text-red-500" />
+                      </div>
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="Road Name" type="text" {...field} />
+                      <Input
+                        placeholder="Road Name"
+                        className="bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                        type="text"
+                        {...field}
+                      />
                     </FormControl>
-                    <FormDescription>This is your road name.</FormDescription>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -207,12 +279,22 @@ export default function BusinessSetup() {
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>City</FormLabel>
+                    <FormLabel className="text-gray-700 dark:text-gray-200">
+                      <FormLabel className="text-gray-700 dark:text-gray-200">
+                        <div className="flex flex-row gap-1">
+                          City
+                          <FormMessage className="text-red-500" />
+                        </div>
+                      </FormLabel>
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="City" type="text" {...field} />
+                      <Input
+                        placeholder="City"
+                        type="text"
+                        className="bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                        {...field}
+                      />
                     </FormControl>
-                    <FormDescription>This is your city name.</FormDescription>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -223,12 +305,20 @@ export default function BusinessSetup() {
                 name="postal"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Postal Code</FormLabel>
+                    <FormLabel className="text-gray-700 dark:text-gray-200">
+                      <div className="flex flex-row gap-1">
+                        Postal / Zip
+                        <FormMessage className="text-red-500" />
+                      </div>
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="Postal Code" type="text" {...field} />
+                      <Input
+                        placeholder="Postal / Zip code"
+                        type="text"
+                        className="bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                        {...field}
+                      />
                     </FormControl>
-                    <FormDescription>This is your postal code.</FormDescription>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -236,50 +326,91 @@ export default function BusinessSetup() {
           </div>
 
           {/* Image Upload Field */}
-          <FormField
-            control={form.control}
-            name="logo"
-            render={({ field: { onChange } }) => (
-              <FormItem className="*:not-first:mt-2">
-                <FormLabel>Upload Logo</FormLabel>
-                <FormControl>
-                  <div>
-                    <Input
-                      className="p-0 pe-3 file:me-3 file:border-0 file:border-e"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null;
-                        onChange(file);
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            setPreview(event.target?.result as string);
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                    {preview && (
-                      <div className="mt-4 ">
-                        <img
-                          src={preview}
-                          alt="Preview"
-                          className="h-48 rounded-2xl"
-                        />
+          <div className="flex flex-wrap gap-4">
+            <div className=" flex flex-col flex-gorw ">
+              <FormField
+                control={form.control}
+                name="logo"
+                render={({ field: { onChange } }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 dark:text-gray-200">
+                      <div className="flex flex-row gap-1">
+                        Business Logo
+                        <FormMessage className="text-red-500" />
                       </div>
-                    )}
-                  </div>
-                </FormControl>
-                <FormDescription>
-                  Select an image file for your business logo.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        className="bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          onChange(file);
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              setPreview(event.target?.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              {preview && (
+                <div className="mt-4 ">
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="h-40 rounded-2xl"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="flex-grow">
+              <FormField
+                control={form.control}
+                name="tax"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 dark:text-gray-200">
+                      <div className="flex flex-row gap-1">
+                        Tax Rate
+                        <FormMessage className="text-red-500" />
+                      </div>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="eg.13% / 15%"
+                        type="text"
+                        className="bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
 
-          <Button type="submit">Submit</Button>
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="w-full relative  text-white font-semibold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          >
+            {isPending ? (
+              <span className="absolute inset-0 flex justify-center items-center">
+                <Spinner />
+              </span>
+            ) : (
+              <>
+                Finish Business Setup <MoveRight />
+              </>
+            )}
+          </Button>
         </form>
       </Form>
     </>
@@ -292,6 +423,7 @@ const PhoneInput = forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
       <Input
         className={cn(
           "-ms-px rounded-s-none shadow-none focus-visible:z-10",
+          "bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500",
           className
         )}
         ref={ref}

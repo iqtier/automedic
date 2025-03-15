@@ -12,7 +12,7 @@ import {
 import NavBar from "@/app/(component)/Navbar/NavBar";
 import { useUserStore } from "@/app/store/useUserStore";
 
-const HomeLayout = async ({ children }: { children: React.ReactNode }) => {
+const HomeLayout =  ({ children }: { children: React.ReactNode }) => {
  
 
   return (

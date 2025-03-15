@@ -5,10 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, User, Chrome  } from "lucide-react";
+import { Mail, Lock, User, Chrome } from "lucide-react";
 import { registerUser } from "@/app/actions/authActions";
 import { UserSchema } from "@/types/type";
-import { useTransition } from 'react';
+import { useTransition } from "react";
 
 import {
   Select,
@@ -51,23 +51,21 @@ export function SignUpForm() {
     },
   });
 
-
   async function onSubmit(values: z.infer<typeof UserSchema>) {
-   startTransition(async () => {
-        const result = await registerUser(null,values);
-        if (typeof result === "string") {
-          toast.error(result);
-          return;
-        }
-        if (result.status === "success") {
-          toast.success("User registration successful");
-          router.push("/sign-in");
-        } else {
-          form.setError("root.serverError", { message: result.error as string });
-          toast.error(`${result.error}`);
-        }
+    startTransition(async () => {
+      const result = await registerUser(null, values);
+      if (typeof result === "string") {
+        toast.error(result);
+        return;
+      }
+      if (result.status === "success") {
+        toast.success("User registration successful");
+        router.push("/sign-in");
+      } else {
+        form.setError("root.serverError", { message: result.error as string });
+        toast.error(`${result.error}`);
+      }
     });
-
   }
 
   return (
@@ -89,17 +87,17 @@ export function SignUpForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     Username
                   </FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Enter your username"
                       {...field}
-                     className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </FormControl>
-                   <FormMessage />
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -108,7 +106,7 @@ export function SignUpForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                 <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                  <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
                     <Mail className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     Email
                   </FormLabel>
@@ -117,7 +115,7 @@ export function SignUpForm() {
                       placeholder="Enter your email"
                       type="email"
                       {...field}
-                     className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </FormControl>
                   <FormMessage />
@@ -129,8 +127,8 @@ export function SignUpForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                 <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                   <Lock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     Password
                   </FormLabel>
                   <FormControl>
@@ -141,7 +139,7 @@ export function SignUpForm() {
                       className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </FormControl>
-                   <FormMessage />
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -150,17 +148,15 @@ export function SignUpForm() {
               name="role"
               render={({ field }) => (
                 <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-900 dark:text-white">
-                      Role
-                    </FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-900 dark:text-white">
+                    Role
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger
-                       className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        >
+                      <SelectTrigger className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                     </FormControl>
@@ -169,25 +165,33 @@ export function SignUpForm() {
                       <SelectItem value="technician">Technician</SelectItem>
                     </SelectContent>
                   </Select>
-                 <FormMessage />
+                  <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="w-full relative">
-            {isPending ? <span className="absolute inset-0 flex items-center justify-center">
-              <Spinner/>
-                </span> : "Register"}
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="w-full relative"
+            >
+              {isPending ? (
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <Spinner />
+                </span>
+              ) : (
+                "Register"
+              )}
             </Button>
           </form>
         </Form>
 
-        <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-          <Button variant="outline" className="w-full mb-3  text-gray-900 dark:text-gray-400 dark:border-gray-600 flex items-center justify-center gap-2">
-           <Chrome className="h-4 w-4"/> Login with Google
-          </Button>
+        <div className=" text-center text-sm text-gray-500 dark:text-gray-400">
           Already have an account?{" "}
-          <Link href="/sign-in" className="underline text-blue-500 dark:text-blue-400">
+          <Link
+            href="/sign-in"
+            className="underline text-blue-500 dark:text-blue-400"
+          >
             Sign In
           </Link>
         </div>

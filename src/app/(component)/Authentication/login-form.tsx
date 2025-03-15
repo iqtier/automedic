@@ -30,7 +30,7 @@ import { Mail, Lock } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useForm } from "react-hook-form";
 import { useUserStore } from "@/app/store/useUserStore";
-import { getSession, useSession } from "next-auth/react";
+import { getSession, } from "next-auth/react";
 import { getBusinessById } from "@/app/actions/settingActions";
 
 export function LoginForm() {
@@ -138,7 +138,9 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full relative">
+            <Button type="submit"
+            disabled = {isPending}
+            className="w-full relative">
               {isPending ? (
                 <span className="absolute inset-0 flex justify-center items-center">
                   <Spinner />

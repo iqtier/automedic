@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -18,10 +18,10 @@ model Business {
   id         String      @id @default(cuid())
   name       String
   phone      String
-  
+  email      String?
   address    Json
   logo       Bytes
-  taxRate    Float @default(0.15)
+  taxRate    Float       @default(0.15)
   created_at DateTime    @default(now())
   users      User[]
   bookings   Booking[]
@@ -41,7 +41,7 @@ model User {
   bookings         BookingTechnician[]
   ClockInOut       ClockInOut[]
   EmployeeSchedule EmployeeSchedule[]
-  business         Business?            @relation(fields: [business_Id], references: [id])
+  business         Business?           @relation(fields: [business_Id], references: [id])
   business_Id      String?
 }
 

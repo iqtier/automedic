@@ -28,7 +28,7 @@ async function generateUniquePin(): Promise<string> {
 }
 
 export async function registerUser(
-    businesId: string |null|undefined,
+  businesId: string | null | undefined,
   data: z.infer<typeof UserSchema>
 ): Promise<ActionResult<User>> {
   try {
@@ -67,7 +67,7 @@ export async function signInUser(
       password: data.password,
       redirect: false,
     });
-    
+
     return { status: "success", data: result };
   } catch (error) {
     if (error instanceof AuthError) {
@@ -88,8 +88,5 @@ export async function getUserByEmail(email: string) {
 }
 
 export async function getUserById(id: string) {
-  return await prisma.user.findUnique({ where: { id },
-
-
-});
+  return await prisma.user.findUnique({ where: { id },include:{business:true} });
 }

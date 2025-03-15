@@ -49,10 +49,10 @@ const page = async () => {
       <div className="mt-4">
         <Tabs defaultValue="inventoryList" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="inventoryList">Inventory List</TabsTrigger>
-            <TabsTrigger value="receiving">Reciving</TabsTrigger>
-            <TabsTrigger value="adjustments">Adjustment</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="inventoryList"  className="data-[state=active]:bg-green-500/80  ">Inventory List</TabsTrigger>
+            <TabsTrigger value="receiving"  className="data-[state=active]:bg-green-500/80  ">Reciving</TabsTrigger>
+            <TabsTrigger value="adjustments"  className="data-[state=active]:bg-green-500/80  ">Adjustment</TabsTrigger>
+            <TabsTrigger value="reports"  className="data-[state=active]:bg-green-500/80  ">Reports</TabsTrigger>
           </TabsList>
           <TabsContent value="inventoryList">
             <DataTable columns={colums} data={tabeldata} />

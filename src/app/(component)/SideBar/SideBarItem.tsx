@@ -14,7 +14,7 @@ const SideBarItem = ({
   item: {
     title: string;
     url: string;
-    icon: LucideIcon;
+    icon:  React.JSX.Element;
   };
 }) => {
     const pathname = usePathname()
@@ -24,7 +24,7 @@ const SideBarItem = ({
       <SidebarMenuButton tooltip={item.title} className={cn("group transition-colors duration-200 hover:bg-green-200 dark:hover:bg-green-700",
         active? "bg-green-200 dark:bg-green-700 text-gray-800 dark:text-white " : "text-gray-500 ")} asChild>
         <a href={item.url} className="flex items-center gap-2">
-          <item.icon className="h-8 w-8"/>
+          {item.icon}
             <span>{item.title}</span>
         </a>
       </SidebarMenuButton>

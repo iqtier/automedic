@@ -116,7 +116,7 @@ const LocationSelector = ({
             role="combobox"
             aria-expanded={openCountryDropdown}
             disabled={disabled}
-            className="w-full justify-between"
+            className="w-full justify-between bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
           >
             {selectedCountry ? (
               <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ const LocationSelector = ({
               role="combobox"
               aria-expanded={openStateDropdown}
               disabled={!selectedCountry}
-              className="w-full justify-between"
+              className="w-full justify-between bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
             >
               {selectedState ? (
                 <span>{selectedState.name}</span>

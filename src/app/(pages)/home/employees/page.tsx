@@ -15,7 +15,7 @@ import { ClockInForm } from "@/app/(component)/Employee/clockInOut";
 import { ScheduleTable } from "@/app/(component)/Employee/Schedule/ScheduleTable";
 import { User } from "@/types/type";
 import { getAllEmployees } from "@/app/actions/employeeActions";
-
+import { CalendarClock, CalendarDays, FileUser } from "lucide-react";
 const Page = async () => {
   const session = await auth();
   const currentUser = session?.user as User;
@@ -28,9 +28,27 @@ const Page = async () => {
 
       <Tabs defaultValue="Clock IN/Out" className="w-full mt-2">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="Clock IN/Out">Clock IN/Out</TabsTrigger>
-          <TabsTrigger value="Schedule">Schedule</TabsTrigger>
-          <TabsTrigger value="List">List</TabsTrigger>
+          <TabsTrigger
+            value="Clock IN/Out"
+            className="data-[state=active]:bg-green-500/80  "
+          >
+            <CalendarClock  className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true"/>
+            Clock IN/Out
+          </TabsTrigger>
+          <TabsTrigger
+            value="Schedule"
+            className="data-[state=active]:bg-green-500/80  "
+          >
+            <CalendarDays className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true"/>
+            Schedule
+          </TabsTrigger>
+          <TabsTrigger
+            value="List"
+            className="data-[state=active]:bg-green-500/80  "
+          >
+            <FileUser className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true"/>
+            List
+          </TabsTrigger>
         </TabsList>
         <TabsContent
           value="Clock IN/Out"

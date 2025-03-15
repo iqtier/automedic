@@ -3,9 +3,11 @@ import React from 'react'
 
 const page = () => {
   return (
-    <div className="flex h-screen w-full items-center justify-center px-4">
-      <SignUpForm />
-    </div>
+   <div className="flex flex-1 items-center justify-center">
+        <div className="w-full max-w-xs">
+          <SignUpForm />
+        </div>
+      </div>
   )
 }
 

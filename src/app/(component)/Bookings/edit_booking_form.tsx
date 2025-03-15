@@ -61,8 +61,8 @@ const bookingSchema = z.object({
   inventories: z
     .array(
       z.object({
-        id: z.string().min(1,"Must Select a item"),
-        qty: z.string().min(1 , "Enter a valid quantity"),
+        id: z.string().min(1, "Must Select a item"),
+        qty: z.string().min(1, "Enter a valid quantity"),
         included: z.boolean().default(false),
       })
     )
@@ -88,7 +88,7 @@ const EditBookingForm: React.FC<{
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const {business} = useUserStore()
+  const { business } = useUserStore();
   useEffect(() => {
     const get_technicians = async () => {
       try {
@@ -109,7 +109,7 @@ const EditBookingForm: React.FC<{
     const get_booking = async () => {
       try {
         const booking = await getBooking(booking_id);
-        
+
         form.reset({
           status: booking?.status || "",
           note: booking?.note || "",
@@ -136,7 +136,6 @@ const EditBookingForm: React.FC<{
     get_inventors();
     get_technicians();
     get_booking();
-    
   }, [booking_id]);
 
   const form = useForm<BookingFormValues>({
@@ -170,7 +169,7 @@ const EditBookingForm: React.FC<{
       }
     });
   }
-  console.log(form.getValues());
+
   if (loading)
     return (
       <div className="flex items-center justify-center h-40">
@@ -473,68 +472,84 @@ const EditBookingForm: React.FC<{
                   )}
                 />
                 <FormField
-  control={form.control}
-  name={`inventories.${index}.qty`}
-  rules={{
-    required: "Quantity is required",
-    validate: (value) => {
-      const numericValue = parseFloat(value);
-      const selectedInventory = inventories?.find(
-        (inventory) =>
-          inventory.id.toString() === form.watch(`inventories.${index}.id`)
-      );
+                  control={form.control}
+                  name={`inventories.${index}.qty`}
+                  rules={{
+                    required: "Quantity is required",
+                    validate: (value) => {
+                      const numericValue = parseFloat(value);
+                      const selectedInventory = inventories?.find(
+                        (inventory) =>
+                          inventory.id.toString() ===
+                          form.watch(`inventories.${index}.id`)
+                      );
 
-      if (isNaN(numericValue)) return "Please enter a valid number";
-      if (numericValue <= 0) return "Quantity must be greater than 0";
-      if (selectedInventory && numericValue > selectedInventory.quantity)
-        return `Max available quantity: ${selectedInventory.quantity}`;
+                      if (isNaN(numericValue))
+                        return "Please enter a valid number";
+                      if (numericValue <= 0)
+                        return "Quantity must be greater than 0";
+                      if (
+                        selectedInventory &&
+                        numericValue > selectedInventory.quantity
+                      )
+                        return `Max available quantity: ${selectedInventory.quantity}`;
 
-      return true;
-    },
-  }}
-  render={({ field, fieldState }) => {
-    const selectedInventory = inventories?.find(
-      (inventory) =>
-        inventory.id.toString() === form.watch(`inventories.${index}.id`)
-    );
+                      return true;
+                    },
+                  }}
+                  render={({ field, fieldState }) => {
+                    const selectedInventory = inventories?.find(
+                      (inventory) =>
+                        inventory.id.toString() ===
+                        form.watch(`inventories.${index}.id`)
+                    );
 
-    return (
-      <FormItem>
-        <FormLabel>Quantity</FormLabel>
-        <FormControl>
-          <Input
-            disabled={isCompleted}
-            placeholder="Quantity"
-            {...field}
-            className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
-            onChange={(e) => {
-              let value = e.target.value.replace(/[^0-9.]/g, ""); // Allow only numbers & decimal
-              const numericValue = parseFloat(value);
+                    return (
+                      <FormItem>
+                        <FormLabel>Quantity</FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled={isCompleted}
+                            placeholder="Quantity"
+                            {...field}
+                            className="text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                            onChange={(e) => {
+                              let value = e.target.value.replace(
+                                /[^0-9.]/g,
+                                ""
+                              ); // Allow only numbers & decimal
+                              const numericValue = parseFloat(value);
 
-              if (selectedInventory && numericValue > selectedInventory.quantity) {
-                field.onChange(selectedInventory.quantity.toString());
-              } else {
-                field.onChange(value);
-              }
-            }}
-            onBlur={(e) => {
-              let value = e.target.value.trim();
-              const numericValue = parseFloat(value);
+                              if (
+                                selectedInventory &&
+                                numericValue > selectedInventory.quantity
+                              ) {
+                                field.onChange(
+                                  selectedInventory.quantity.toString()
+                                );
+                              } else {
+                                field.onChange(value);
+                              }
+                            }}
+                            onBlur={(e) => {
+                              let value = e.target.value.trim();
+                              const numericValue = parseFloat(value);
 
-              if (isNaN(numericValue) || numericValue <= 0) {
-                field.onChange(""); // Clear input if invalid
-              }
-            }}
-          />
-        </FormControl>
-        {fieldState.error && (
-          <p className="text-red-500 text-sm">{fieldState.error.message}</p>
-        )}
-      </FormItem>
-    );
-  }}
-/>
-
+                              if (isNaN(numericValue) || numericValue <= 0) {
+                                field.onChange(""); // Clear input if invalid
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        {fieldState.error && (
+                          <p className="text-red-500 text-sm">
+                            {fieldState.error.message}
+                          </p>
+                        )}
+                      </FormItem>
+                    );
+                  }}
+                />
 
                 <div className="flex flex-row place-items-baseline space-x-1 ">
                   <FormField

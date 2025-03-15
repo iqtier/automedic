@@ -20,6 +20,7 @@ const  Page = async ({params}:{params:Promise<{user:string}>}) => {
       <p>User email : {user?.email}</p>
       <p>User role : {user?.role}</p>
       <p>User Pin: {isUserAdmin? user?.pin:'****'}</p>
+      <p>Busines : {user?.business?.name}</p>
       
     </div>
   )

@@ -14,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { User } from "@/types/type";
 import { Button } from "@/components/ui/button";
 
 import Link from "next/link";
@@ -24,10 +23,8 @@ import { useUserStore } from "@/app/store/useUserStore";
 
 export  function UserMenu() {
   const { data: session } = useSession();
-   const user = session?.user as User;
    const { clearUser } = useUserStore();
    async function handleSignOut() {
-    console.log("signing out");
     clearUser(); // ✅ Clear Zustand user data
     await signOut({ callbackUrl: "/sign-in" }); // ✅ Sign out
   }
