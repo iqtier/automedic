@@ -30,7 +30,7 @@ export function BrandLogo({ name, logo }: BrandLogoProps) {
 
           <Link href="/home" prefetch={false}>
             <Image
-              src={"/logo/name.png"}
+              src={"/name.png"}
               alt="Brand"
               width={1000}
               height={1000}
