@@ -50,19 +50,19 @@ Open your browser and navigate to http://localhost:3000 to see the application i
 
 - Employee Management:
 
-Track employee clock-in and clock-out times using secure PINs.
+    -- Track employee clock-in and clock-out times using secure PINs.
 
-Easily create and manage employee schedules.
+    -- Easily create and manage employee schedules.
 
 - Client Management: Store important information about your clients and their vehicles in one central location. Maintain a comprehensive record of customer details.
 
 - Inventory Management:
 
-Keep track of all the parts and materials in your garage's inventory.
+    -- Keep track of all the parts and materials in your garage's inventory.
 
-Monitor inventory usage to optimize stock levels.
+    -- Monitor inventory usage to optimize stock levels.
 
-Receive low stock alerts to prevent running out of essential items.
+    -- Receive low stock alerts to prevent running out of essential items.
 
 - Invoice Generation: Automatically generate invoices from booking details when services are completed. Simplify your billing process and ensure accurate record-keeping.
 
