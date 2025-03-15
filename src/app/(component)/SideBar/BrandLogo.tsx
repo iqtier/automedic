@@ -24,16 +24,19 @@ export function BrandLogo({ name, logo }: BrandLogoProps) {
           size="lg"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
-       
-            <div className="flex aspect-square size-10  items-center justify-start ">
-             
-            <Cog color="green" size={35}/>
-        
-            </div>
-        
+          <div className="flex aspect-square size-10  items-center justify-start ">
+            <Cog color="green" size={35} />
+          </div>
 
-          <Link href="/home"  prefetch={false}>
-           <Image src ={'/Logo/name.png'} alt="Brand" width={1000} height={1000}/>
+          <Link href="/home" prefetch={false}>
+            <Image
+              src={"/logo/name.png"}
+              alt="Brand"
+              width={1000}
+              height={1000}
+              priority // Add priority for initial load
+              className="object-contain" // Make sure image fits nicely
+            />
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
