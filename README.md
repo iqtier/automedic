@@ -1,5 +1,5 @@
 # GarageSync
-GarageSync is a Point of Sale (POS) system for automotive repair shops. The system aims to streamline operations by providing features such as service management, employee management, and user authentication. Although the project is not yet complete, it currently supports core functionalities with many more features planned for the future.
+GarageSync is a robust, multi-tenant Point of Sale (POS) and management solution tailored for automotive repair shops. This application provides a centralized platform to streamline all aspects of your garage operations, from tracking daily activities to handling bookings, managing employees, and generating invoices. GarageSync simplifies complex tasks, empowering garage owners to focus on delivering exceptional service to their customers while maintaining efficient control over their business.
 
 ## INSTALLATION
 ## PREREQUISITES
@@ -10,8 +10,8 @@ GarageSync is a Point of Sale (POS) system for automotive repair shops. The syst
 ### Clone the repository:
 
 ```sh
-git clone https://github.com/iqtier/automedic.git
-cd automedic
+git clone https://github.com/iqtier/garageSync.git
+cd garageSync
 ```
 
 ### Install dependencies:
@@ -37,27 +37,43 @@ npm run dev
 ```
 
 ## Usage
-Open your browser and navigate to http://localhost:3000 to see the application in action. You can add, edit, and delete services, manage employees, and handle authentication through the interface.
+Open your browser and navigate to http://localhost:3000 to see the application in action.
 
 ## Features
-- User Authentication: Secure user authentication and role-based access.
+- Multi-Tenant Architecture: GarageSync is designed to support multiple independent businesses (tenants) on a single platform, ensuring data isolation and security for each garage.
 
-- Employee Management: Manage employees' information and roles.
+- Role-Based Access Control: Granular control over user permissions based on roles. Restrict access to specific features and data based on user roles within the garage (e.g., Admin, Technician)..
 
-- Service Management: Add, edit, and delete automotive services.
+- Dashboard: Get an overview of your garage's current and previous activities at a glance. Track key metrics and stay informed about what's happening in your shop.
+
+- Booking System: Say goodbye to forgotten appointments! Manage your upcoming bookings efficiently and prevent scheduling conflicts, also able to complete drive thru services.
+
+- Employee Management:
+
+Track employee clock-in and clock-out times using secure PINs.
+
+Easily create and manage employee schedules.
+
+- Client Management: Store important information about your clients and their vehicles in one central location. Maintain a comprehensive record of customer details.
+
+- Inventory Management:
+
+Keep track of all the parts and materials in your garage's inventory.
+
+Monitor inventory usage to optimize stock levels.
+
+Receive low stock alerts to prevent running out of essential items.
+
+- Invoice Generation: Automatically generate invoices from booking details when services are completed. Simplify your billing process and ensure accurate record-keeping.
 
 ## Planned Features
-- Inventory Management: Track and manage inventory of parts and materials.
+While GarageSync already offers a robust set of features, these are the plans for future enhancements:
 
-- Customer Management: Store and manage customer information and service history.
+- Reporting and Analytics: Gain insights into your business performance with detailed reports and analytics.
 
-- Billing and Invoicing: Generate invoices and process payments.
+- Notifications: Send automatic reminders for upcoming appointments and service milestones.
 
-- Reporting and Analytics: Generate reports and analyze business data.
-
-- Appointment Scheduling: Schedule and manage repair appointments.
-
-- Notifications: Send notifications for upcoming appointments and service reminders.
+- Integration with Third-Party Software: Seamlessly connect GarageSync with your accounting software for streamlined financial management and automated inventory ordering.
 
 ## Technologies
 - Next.js: React framework for server-side rendering and generating static websites.
@@ -69,6 +85,10 @@ Open your browser and navigate to http://localhost:3000 to see the application i
 - Prisma: Next-generation ORM for Node.jsand TypeScript.
 
 - PostgreSQL: Open-source relational database.
+
+- TailwindCSS: CSS library for styling.
+  
+- nexAuth: auth library for user authentication and session management
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
