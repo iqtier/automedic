@@ -27,5 +27,5 @@ export default async function Home() {
   }
 
   // If no session, show the sign-in page
-  return <SignIn />;
+  redirect('sign-in');
 }
