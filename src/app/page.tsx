@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { redirect } from "next/navigation";
-import "react-big-calendar/lib/css/react-big-calendar.css"
 import SignIn from "./(pages)/(auth)/sign-in/page";
 import { auth } from "@/lib/auth";
 import { User } from "@/types/type";

@@ -145,8 +145,9 @@ export function ScheduleTable() {
         setScheduleData(initialSchedules);
         setInitialFormValues(initialSchedules);
         reset({ schedules: initialSchedules });
+        toast.success("Schedule updated successfully");
       }
-      toast.success("Schedule updated successfully");
+      
     } catch (error) {
       toast.error("Error updating schedule");
       console.error("Error:", error);
