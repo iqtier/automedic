@@ -9,15 +9,11 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 
-import Image from "next/image";
 import { Cog } from "lucide-react";
 import { motion } from "framer-motion";
 
-interface BrandLogoProps {
-  name?: string;
-  logo?: string;
-}
-export function BrandLogo({ name, logo }: BrandLogoProps) {
+
+export function BrandLogo() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>

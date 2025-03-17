@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { getAllBookings } from "@/app/actions/bookingActions";
-import { Booking } from "@/types/type";
+import { Booking, User } from "@/types/type";
 import {
   Card,
   CardContent,
@@ -23,9 +23,12 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { type DateRange } from "react-day-picker";
 import { useUserStore } from "@/app/store/useUserStore";
+import { useSession } from "next-auth/react";
 
 const BookingReport = () => {
- const {  business } = useUserStore();
+  const { data: session } = useSession();
+  const user = session?.user as User;
+
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), 0, 1),
@@ -37,10 +40,9 @@ const BookingReport = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const allBookings = await getAllBookings(business?.id as string);
-      
+        const allBookings = await getAllBookings(user.business_Id as string);
 
-        if (allBookings ) {
+        if (allBookings) {
           setBookings(allBookings);
         }
       } catch (err) {
@@ -110,8 +112,6 @@ const BookingReport = () => {
       .slice(0, 5)
       .map(([name, count]) => ({ name, count })); // Convert tuple to object
   };
-
-
 
   return (
     <div className="space-y-6">

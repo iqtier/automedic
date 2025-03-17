@@ -34,11 +34,11 @@ const ScheduleSchema = z.object({
 
 type ScheduleForm = z.infer<typeof ScheduleSchema>;
 
-export function ScheduleTable() {
+const  ScheduleTable: React.FC<{businessId:string }> = ({businessId}) => {
   const { data: session } = useSession();
   const user = session?.user as User;
   const isUserAdmin = user?.role === "admin";
-  const {business} = useUserStore()
+
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 0 })
   );
@@ -74,11 +74,11 @@ export function ScheduleTable() {
   useEffect(() => {
     const fetchTechniciansAndSchedules = async () => {
       setLoading(true);
-      const techData = await getTechnicians(business?.id as string);
+      const techData = await getTechnicians(businessId);
 
       if (techData) {
         setTechnicians(techData);
-        const scheduleFetch = await fetchScheduleData(weekDays,business?.id as string);
+        const scheduleFetch = await fetchScheduleData(weekDays,businessId);
 
         const initialSchedules = techData.reduce((acc: any, tech: any) => {
           weekDays.forEach((day) => {
@@ -122,11 +122,11 @@ export function ScheduleTable() {
         changedSchedules.map(async ([key, status]) => {
           const [userId, date] = key.split("_");
           const utcDate = new Date(date).toISOString().split("T")[0];
-          return await updateSchedule(userId, utcDate, status,business?.id as string);
+          return await updateSchedule(userId, utcDate, status,businessId);
         })
       );
       if (responses.every((res) => res.status === "success")) {
-        const scheduleFetch = await fetchScheduleData(weekDays,business?.id as string);
+        const scheduleFetch = await fetchScheduleData(weekDays,businessId);
         const initialSchedules = technicians.reduce((acc: any, tech: any) => {
           weekDays.forEach((day) => {
             const schedule = scheduleFetch.find(
@@ -231,3 +231,5 @@ export function ScheduleTable() {
     </form>
   );
 }
+
+export default ScheduleTable

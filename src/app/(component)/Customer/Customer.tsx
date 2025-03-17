@@ -19,9 +19,10 @@ import { Spinner } from "@/components/ui/spinner";
 
 type Customers = CustomerType & { id: string };
 
-const Clients: React.FC<{ isAdmin: boolean; customers: Customers[] }> = ({
+const Clients: React.FC<{ isAdmin: boolean; customers: Customers[], business_id: string}> = ({
   isAdmin,
   customers,
+  business_id
 }) => {
   const router = useRouter();
     const [isPending, startTransition] = useTransition();

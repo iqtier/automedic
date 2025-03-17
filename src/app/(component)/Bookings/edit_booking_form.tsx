@@ -51,6 +51,7 @@ import { getInventoryNameAndId } from "@/app/actions/inventoryActions";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/app/store/useUserStore";
+import { useSession } from "next-auth/react";
 
 const bookingSchema = z.object({
   status: z.string(),
@@ -88,11 +89,13 @@ const EditBookingForm: React.FC<{
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const { business } = useUserStore();
+    const { data: session } = useSession();
+    const user = session?.user as User;
+    const businessId = user.business_Id;
   useEffect(() => {
     const get_technicians = async () => {
       try {
-        const technicians = await getTechnicians(business?.id as string);
+        const technicians = await getTechnicians(businessId as string);
         setTechnicians(technicians);
       } catch (error: any) {
         setError(error.message);
@@ -100,7 +103,7 @@ const EditBookingForm: React.FC<{
     };
     const get_inventors = async () => {
       try {
-        const inventors = await getInventoryNameAndId(business?.id as string);
+        const inventors = await getInventoryNameAndId(businessId as string);
         setInventories(inventors);
       } catch (error: any) {
         setError(error.message);

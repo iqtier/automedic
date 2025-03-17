@@ -7,11 +7,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button, } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon,  } from "lucide-react";
-
+import { CalendarIcon } from "lucide-react";
 
 import { getAllInventory } from "@/app/actions/inventoryActions";
 
@@ -22,12 +21,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar"
-import { type DateRange } from "react-day-picker"
+import { Calendar } from "@/components/ui/calendar";
+import { type DateRange } from "react-day-picker";
 import { useUserStore } from "@/app/store/useUserStore";
+import { useSession } from "next-auth/react";
+import { User } from "@/types/type";
 
 const InventoryReport = () => {
-
+  const { data: session } = useSession();
+  const user = session?.user as User;
   const [inventories, setInventories] = useState<any[] | null>(null);
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), 0, 1),
@@ -35,22 +37,14 @@ const InventoryReport = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const {business} = useUserStore();
+  const { business } = useUserStore();
   useEffect(() => {
     const fetchData = async () => {
       try {
-     
-  
-   
- 
-        const allInventories = await getAllInventory(business?.id as string);
+        const allInventories = await getAllInventory(user.business_Id as string);
 
-        if (allInventories ) {
-        
-      
-   
+        if (allInventories) {
           setInventories(allInventories);
-   
         }
       } catch (err) {
         setError("Failed to load data.");
@@ -73,16 +67,14 @@ const InventoryReport = () => {
     return <div>Error: {error}</div>;
   }
 
-  
+  const outOfStockInventoryCount =
+    inventories?.filter((inventory) => inventory.quantityOnHand <= 0).length ||
+    0;
 
-
-  const outOfStockInventoryCount = inventories?.filter(
-    (inventory) => inventory.quantityOnHand <= 0
-  ).length ||0;
-
-  const inventoryUnderReorderPointCount = inventories?.filter(
-    (inventory) => inventory.quantityOnHand <= inventory.reorderPoint
-  ).length || 0;
+  const inventoryUnderReorderPointCount =
+    inventories?.filter(
+      (inventory) => inventory.quantityOnHand <= inventory.reorderPoint
+    ).length || 0;
 
   return (
     <div className="space-y-6">
@@ -125,14 +117,12 @@ const InventoryReport = () => {
               onSelect={setDate}
               numberOfMonths={1}
               pagedNavigation
-              
             />
           </PopoverContent>
         </Popover>
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-       
         <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -148,44 +138,45 @@ const InventoryReport = () => {
             </CardDescription>
           </CardContent>
         </Card>
-        { outOfStockInventoryCount > 0 && (<Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-              Out of Stock Inventory Items
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {outOfStockInventoryCount}
-            </div>
-            <CardDescription className="text-gray-500 dark:text-gray-400">
-              Inventory that needs re-stocking
-            </CardDescription>
-          </CardContent>
-        </Card>)}
+        {outOfStockInventoryCount > 0 && (
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                Out of Stock Inventory Items
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                {outOfStockInventoryCount}
+              </div>
+              <CardDescription className="text-gray-500 dark:text-gray-400">
+                Inventory that needs re-stocking
+              </CardDescription>
+            </CardContent>
+          </Card>
+        )}
 
-       { inventoryUnderReorderPointCount>0 && ( <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-              Inventory Items Reaches reorder point
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {inventoryUnderReorderPointCount}
-            </div>
-            <CardDescription className="text-gray-500 dark:text-gray-400">
-              Inventory that needs re-stocking
-            </CardDescription>
-          </CardContent>
-        </Card>)}
+        {inventoryUnderReorderPointCount > 0 && (
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                Inventory Items Reaches reorder point
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                {inventoryUnderReorderPointCount}
+              </div>
+              <CardDescription className="text-gray-500 dark:text-gray-400">
+                Inventory that needs re-stocking
+              </CardDescription>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Detailed Statistics */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-       
-        
-      </div>
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2"></div>
     </div>
   );
 };

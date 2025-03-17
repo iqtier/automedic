@@ -37,7 +37,7 @@ import { UserPlus } from "lucide-react";
 import { UserSchema } from "@/types/type";
 import { z } from "zod";
 import { useUserStore } from "@/app/store/useUserStore";
-const AddEmployeeForm = () => {
+const AddEmployeeForm: React.FC<{businessId:string }> = ({businessId}) => {
   const form = useForm<z.infer<typeof UserSchema>>({
     resolver: zodResolver(UserSchema),
     defaultValues: {

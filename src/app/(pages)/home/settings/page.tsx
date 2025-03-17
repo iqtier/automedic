@@ -53,6 +53,11 @@ const Page = async () => {
         <div className="flex items-center space-x-2">
           <strong className="text-gray-700 dark:text-gray-300">Phone:</strong>
           <p className="text-gray-700 dark:text-gray-300">{businessDetails.phone}</p>
+          
+        </div>
+        <div className="flex items-center space-x-2">
+        <strong className="text-gray-700 dark:text-gray-300">Email:</strong>
+        <p className="text-gray-700 dark:text-gray-300">{businessDetails.email}</p>
         </div>
         <div>
           <p className="text-gray-700 dark:text-gray-300 font-semibold">

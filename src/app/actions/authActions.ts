@@ -67,7 +67,7 @@ export async function signInUser(
       password: data.password,
       redirect: false,
     });
-
+ 
     return { status: "success", data: result };
   } catch (error) {
     if (error instanceof AuthError) {

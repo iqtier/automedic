@@ -27,12 +27,14 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { type DateRange } from "react-day-picker";
 import { useUserStore } from "@/app/store/useUserStore";
+import { useSession } from "next-auth/react";
 
 const EmployeeReport = () => {
   const [employees, setEmployees] = useState<User[] | null>(null);
   const [bookings, setBookings] = useState<Booking[] | null>(null);
-  const {business} = useUserStore();
 
+  const { data: session } = useSession();
+  const user = session?.user as User;
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), 0, 1),
     to: new Date(),
@@ -43,8 +45,8 @@ const EmployeeReport = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const allEmployees = await getAllEmployees(business?.id as string);
-        const allBookings = await getAllBookings(business?.id as string);
+        const allEmployees = await getAllEmployees(user.business_Id as string);
+        const allBookings = await getAllBookings(user.business_Id as string);
 
         if (allBookings && allEmployees) {
           setBookings(allBookings);
@@ -97,14 +99,15 @@ const EmployeeReport = () => {
     if (!filteredBookings) return [];
     const bookingCount: { [key: string]: { name: string; count: number } } = {};
     filteredBookings?.forEach((booking) => {
-      booking.technicians?.forEach((technician) =>{
-        if(!bookingCount[technician.technicianId]){
-          bookingCount[technician.technicianId] = {name:technician.technician.name,count:0}
+      booking.technicians?.forEach((technician) => {
+        if (!bookingCount[technician.technicianId]) {
+          bookingCount[technician.technicianId] = {
+            name: technician.technician.name,
+            count: 0,
+          };
         }
-        bookingCount[technician.technicianId].count+=1 
-        
-      })
-      
+        bookingCount[technician.technicianId].count += 1;
+      });
     });
     return Object.values(bookingCount).sort((a, b) => b.count - a.count);
   };
@@ -121,7 +124,6 @@ const EmployeeReport = () => {
       const employeeId = employee.id;
       const employeeName = employee.name;
       employee.ClockInOut?.forEach((attendance) => {
-
         if (employeeId && attendance) {
           if (!employeeHours[employeeId]) {
             employeeHours[employeeId] = { name: employeeName, hours: 0 };
@@ -140,7 +142,7 @@ const EmployeeReport = () => {
 
   console.log(topEmployeeHours());
   console.log(filteredEmployees);
-  console.log(employeersBookingCount())
+  console.log(employeersBookingCount());
 
   return (
     <div className="space-y-6">

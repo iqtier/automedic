@@ -29,6 +29,7 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/app/store/useUserStore";
 import { useSession } from "next-auth/react";
 import { Spinner } from "@/components/ui/spinner";
+import { User } from "@/types/type";
 
 const formSchema = z.object({
   businame: z.string().min(5, "Minimum 5 character"),
@@ -52,7 +53,8 @@ export default function BusinessSetup() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { data: session, update } = useSession();
-  const { user, setBusiness } = useUserStore();
+ 
+  const user = session?.user as User
 
   const id = useId();
 
@@ -63,29 +65,7 @@ export default function BusinessSetup() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
-  const arrayBufferToBase64 = (buffer: any) => { // Change type to "any" for wider compatibility
-    if (!buffer) {
-      console.warn("arrayBufferToBase64: Buffer is null or undefined");
-      return "";
-    }
   
-    if (buffer.length === 0) {
-      console.warn("arrayBufferToBase64: Buffer is empty");
-      return "";
-    }
-  
-    if (!(buffer instanceof Uint8Array)) {
-      console.error("arrayBufferToBase64: Buffer is not a Uint8Array", buffer);
-      return "";
-    }
-  
-    try {
-        return `data:image/png;base64,${btoa(String.fromCharCode(...buffer))}`;
-    } catch (error) {
-        console.error("arrayBufferToBase64: Error encoding", error);
-        return ""; // Handle encoding errors
-    }
-  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -93,17 +73,7 @@ export default function BusinessSetup() {
         const result = await createBusinessDetails(values, user?.id as string);
         if (result?.status === "success") {
           toast.success(`Business setup completed`);
-          useUserStore.setState((state) => ({
-            user: state.user
-              ? { ...state.user, business_Id: result.data.id }
-              : null,
-          }));
-          setBusiness({
-            ...result.data,
-            logo: result.data.logo
-              ? arrayBufferToBase64(new Uint8Array(result.data.logo))
-              : "", // Handle null/undefined logo
-          });
+          
           form.reset();
           await update({
             ...session,

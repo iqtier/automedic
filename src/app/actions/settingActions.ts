@@ -41,6 +41,7 @@ export async function createBusinessDetails(
 }
 
 export async function getBusinessById(businessId: string) {
+  console.log("looking for business form login",businessId);
   const business = await prisma.business.findUnique({
     where: { id: businessId },
     

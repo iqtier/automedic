@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { signInUser } from "@/app/actions/authActions";
-import { LogInSchema, User } from "@/types/type";
+import { LogInSchema,  } from "@/types/type";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,14 +29,9 @@ import { Input } from "@/components/ui/input";
 import { Mail, Lock } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useForm } from "react-hook-form";
-import { useUserStore } from "@/app/store/useUserStore";
-import { getSession, } from "next-auth/react";
-import { getBusinessById } from "@/app/actions/settingActions";
 
 export function LoginForm() {
-  const { setUser, setBusiness } = useUserStore();
-  
-
+ 
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const form = useForm<z.infer<typeof LogInSchema>>({
@@ -47,36 +42,13 @@ export function LoginForm() {
     },
   });
 
-  const arrayBufferToBase64 = (buffer: Uint8Array) => {
-    if (!buffer || buffer.length === 0) return '';
-    return `data:image/png;base64,${btoa(String.fromCharCode(...buffer))}`;
-  };
-  
+ 
   async function onSubmit(values: z.infer<typeof LogInSchema>) {
     startTransition(async () => {
       const result = await signInUser(values);
 
       if (result?.status === "success") {
-        const session = await getSession()
-        const user = session?.user as User;
-        const currentUser = {
-          id: user?.id,
-          name: user?.name,
-          email: user?.email,
-          role: user?.role,
-          business_Id: user?.business_Id,
-        };
         
-        if(currentUser?.business_Id){
-          const business = await getBusinessById(currentUser?.business_Id);
-          if(business){
-            setBusiness({
-              ...business,
-              logo: arrayBufferToBase64(new Uint8Array(business.logo)), // Convert before storing
-            });
-          }
-        }
-        setUser(currentUser);
         router.push("/");
       } else {
         toast.error(result?.error as string);
@@ -90,7 +62,7 @@ export function LoginForm() {
           Login
         </CardTitle>
         <CardDescription className="text-gray-500 dark:text-gray-400">
-          Enter your email and password to log in to your account.
+          Welcome Back! Enter your email and password to log in to your account.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">

@@ -4,7 +4,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getBusinessById } from "@/app/actions/settingActions";
 
-const TAX_RATE = 0.15;
+
 const PRIMARY_COLOR = "#0038A8";
 const SECONDARY_COLOR = "#000";
 
@@ -26,6 +26,7 @@ export async function GET(
     roadname: string;
     city: string;
   };
+  const TAX_RATE = businessDetails?.taxRate?businessDetails?.taxRate:0  ;
   const subtotal = await calculateBookingEarnings(booking_id);
   const taxAmount = subtotal * TAX_RATE;
   const total = subtotal + taxAmount;

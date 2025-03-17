@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { redirect } from "next/navigation";
-import SignIn from "./(pages)/(auth)/sign-in/page";
 import { auth } from "@/lib/auth";
 import { User } from "@/types/type";
 import { getUserById } from "./actions/authActions";
@@ -27,5 +26,5 @@ export default async function Home() {
   }
 
   // If no session, show the sign-in page
-  redirect('sign-in');
+  redirect('/sign-in');
 }

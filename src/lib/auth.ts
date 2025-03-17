@@ -4,7 +4,6 @@ import { prisma } from "./prisma";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { getUserByEmail } from "@/app/actions/authActions";
-import { User } from "@/types/type";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [

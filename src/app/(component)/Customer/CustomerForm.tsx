@@ -26,7 +26,7 @@ import {
 import { Plus, Trash2, UserPlus } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { CustomerSchema, CustomerType } from "@/types/type";
+import { CustomerSchema, CustomerType, User } from "@/types/type";
 import { createCustomer, updateCustomer } from "@/app/actions/customerActions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -38,7 +38,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { useUserStore } from "@/app/store/useUserStore";
+
+import { useSession } from "next-auth/react";
 
 
 type Customer = CustomerType & { id: string };
@@ -52,8 +53,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   customerToEdit,
   fromBooking,
 }) => {
-  const {business} = useUserStore();
-  console.log(business);
+  const {data:session} = useSession()
+  const user = session?.user as User
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -92,13 +93,15 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   });
 
   async function onSubmit(data: CustomerType) {
+
     let result;
     if (isEdit) {
       if (customerToEdit?.id !== undefined) {
         result = await updateCustomer(customerToEdit?.id, data);
       }
     } else {
-      result = await createCustomer(data, business?.id as string);
+      result = await createCustomer(data, user.business_Id as string);
+      
     }
 
     if (result?.status === "success") {

@@ -55,6 +55,7 @@ const Bookings = async () => {
     <div className="flex flex-col gap-y-4 animate-in fade-in slide-in-from-bottom-10">
       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4">
         <BookingForm
+        businessId = {currentUser?.business_Id as string}
           services={services}
           customers={customers}
           isAppointment={true}
@@ -62,6 +63,7 @@ const Bookings = async () => {
           technicians={technicians}
         />
         <BookingForm
+        businessId = {currentUser?.business_Id as string}
           services={services}
           customers={customers}
           isAppointment={false}

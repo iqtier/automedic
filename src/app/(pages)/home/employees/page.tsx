@@ -12,7 +12,7 @@ import AddEmployeeForm from "@/app/(component)/Employee/add-employee-form";
 import { EmployeeTable } from "@/app/(component)/Employee/employee-table";
 import { ClockInForm } from "@/app/(component)/Employee/clockInOut";
 
-import { ScheduleTable } from "@/app/(component)/Employee/Schedule/ScheduleTable";
+import  ScheduleTable  from "@/app/(component)/Employee/Schedule/ScheduleTable";
 import { User } from "@/types/type";
 import { getAllEmployees } from "@/app/actions/employeeActions";
 import { CalendarClock, CalendarDays, FileUser } from "lucide-react";
@@ -24,7 +24,7 @@ const Page = async () => {
 
   return (
     <div className="">
-      {isAdmin && <AddEmployeeForm />}
+      {isAdmin && <AddEmployeeForm businessId= {currentUser.business_Id as string} />}
 
       <Tabs defaultValue="Clock IN/Out" className="w-full mt-2">
         <TabsList className="grid w-full grid-cols-3">
@@ -60,7 +60,7 @@ const Page = async () => {
           value="Schedule"
           className="animate-in fade-in slide-in-from-bottom-10"
         >
-          <ScheduleTable />
+          <ScheduleTable businessId= {currentUser.business_Id as string} />
         </TabsContent>
         <TabsContent
           value="List"

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
 import { z } from "zod";
-import { Service, BookingSchema } from "@/types/type";
+import { Service, BookingSchema, User } from "@/types/type";
 import { cn } from "@/lib/utils";
 import "react-day-picker/style.css";
 import {
@@ -57,6 +57,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Calendar } from "@/components/ui/calendar";
 import { useUserStore } from "@/app/store/useUserStore";
+import { useSession } from "next-auth/react";
 
 type Ramp = 1 | 2 | 0;
 type TimeSlot = {
@@ -110,6 +111,7 @@ interface Customer {
 type BookingFormType = z.infer<typeof BookingSchema>;
 
 type BookingFormProps = {
+  businessId: string;
   services: Service[];
   customers: Customer[];
   isEdit: boolean;
@@ -118,12 +120,12 @@ type BookingFormProps = {
 };
 
 const BookingForm: React.FC<BookingFormProps> = ({
+  businessId,
   services,
   customers,
   isAppointment,
   technicians,
 }) => {
-  const { business } = useUserStore();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -163,7 +165,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
       const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
       try {
         const booked = await getBookedTimeSlotsByDateRange(
-          business?.id as string,
+          businessId as string,
           startOfMonth,
           endOfMonth
         );
@@ -231,7 +233,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
   async function onSubmit(data: BookingFormType) {
     startTransition(async () => {
-      const result = await createBooking(data, business?.id as string);
+      const result = await createBooking(data, businessId as string);
       if (result?.status === "success") {
         toast.success(`Appointment successfully added`);
         router.refresh();

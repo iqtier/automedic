@@ -25,11 +25,12 @@ import {
 import { Trash2 } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { Service, ServiceSchema } from "@/types/type";
+import { Service, ServiceSchema, User } from "@/types/type";
 import { createService, updateService } from "@/app/actions/serviceActions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/app/store/useUserStore";
+import { useSession } from "next-auth/react";
 
 type AddServiceFormProps = { isEdit: boolean; serviceToEdit: Service | null };
 
@@ -37,7 +38,9 @@ const ServiceForm: React.FC<AddServiceFormProps> = ({
   isEdit,
   serviceToEdit,
 }) => {
-  const {user} = useUserStore();
+  const {data:session} = useSession()
+
+  const user = session?.user as User
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 

@@ -7,11 +7,11 @@ import { getUserByEmail } from "@/app/actions/authActions";
 import { getAllServices } from "@/app/actions/serviceActions";
 
 import ServicesAccordion from "@/app/(component)/Services/service-accordion";
+import { User } from "@/types/type";
 const Page = async () => {
   const session = await auth();
-  const userEmail = session?.user?.email;
-  const user = await getUserByEmail(userEmail as string);
-  
+  const user = session?.user as User;
+
   const isAdmin = user?.role === "admin";
   const services = await getAllServices(user?.business_Id as string);
   return (

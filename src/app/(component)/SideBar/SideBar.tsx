@@ -88,7 +88,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
       className="bg-stone-50 dark:bg-slate-900  border-r dark:border-gray-700 shadow-md z-20"
     >
       <SidebarHeader>
-        <BrandLogo name={business?.name} logo={business?.logo} />
+        <BrandLogo />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

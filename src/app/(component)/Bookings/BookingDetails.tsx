@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Booking } from "@/types/type";
+import { Booking, User } from "@/types/type";
 import {
   calculateBookingEarnings,
   getBooking,
@@ -12,24 +12,24 @@ import { Label } from "@/components/ui/label";
 import { Check, Printer } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserStore } from "@/app/store/useUserStore";
+import { useSession } from "next-auth/react";
+import { getBusinessById } from "@/app/actions/settingActions";
 
-
-const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
- 
+const BookingDetails: React.FC<{ booking_id: string, businessId:string }> = ({ booking_id, businessId }) => {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [subtotal, setSubtotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
-  const { business } = useUserStore();
-  const TAX_RATE = business?.taxRate ?? 0;
+  const [tax_rate, setTax_rate] = useState(0);
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const currentBooking = await getBooking(booking_id);
-   
-        
+        const business = await getBusinessById(businessId);
+        if(business) {setTax_rate(business.taxRate)}
         if (currentBooking) {
           setBooking(currentBooking);
           const bookingCost = await calculateBookingEarnings(booking_id);
@@ -88,7 +88,7 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
     );
   };
 
-  console.log(booking.start)
+  console.log(booking.start);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -261,22 +261,23 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
           </p>
           <p>
             <span className="font-bold">Job Start: </span>
-            
+
             <span className="dark:text-gray-400">
-             
-              {booking.start?.toLocaleDateString() }
-              {" "} - {booking.start?.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+              {booking.start?.toLocaleDateString()} -{" "}
+              {booking.start?.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </span>
           </p>
           <p>
             <span className="font-bold">Job Completed: </span>
             <span className="dark:text-gray-400">
-              {booking.finish?.toLocaleDateString()}
-              {" "} - {booking.finish?.toLocaleTimeString([], {
-            hour: "2-digit",  minute: "2-digit",})}
+              {booking.finish?.toLocaleDateString()} -{" "}
+              {booking.finish?.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </span>
           </p>
           <p>
@@ -319,11 +320,12 @@ const BookingDetails: React.FC<{ booking_id: string }> = ({ booking_id }) => {
             </p>
           )}
           <p className="dark:text-gray-400">
-            Tax ({TAX_RATE*100}%): ${((subtotal - discount) * TAX_RATE).toFixed(2)}
+            Tax ({tax_rate * 100}%): $
+            {((subtotal - discount) * tax_rate).toFixed(2)}
           </p>
           <p className="font-bold text-lg dark:text-white">
             Total: $
-            {(subtotal - discount + (subtotal - discount) * TAX_RATE).toFixed(
+            {(subtotal - discount + (subtotal - discount) * tax_rate).toFixed(
               2
             )}
           </p>
