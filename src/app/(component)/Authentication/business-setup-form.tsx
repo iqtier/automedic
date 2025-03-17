@@ -52,7 +52,13 @@ const formSchema = z.object({
 export default function BusinessSetup() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const { data: session, update } = useSession();
+  const { data: session, status, update } = useSession();
+
+  useEffect(() => {
+    if (status === 'loading' || !session) {
+      update();
+    }
+  }, [session, status, update]);
  
   const user = session?.user as User
 
