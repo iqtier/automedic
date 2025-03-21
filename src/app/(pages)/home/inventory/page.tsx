@@ -54,7 +54,7 @@ const page = async () => {
             <DataTable columns={colums} data={tabeldata} />
           </TabsContent>
           <TabsContent value="receiving">
-            <InventoryReceivingForm />
+            <InventoryReceivingForm  businessId={user.business_Id as string} />
           </TabsContent>
           
         </Tabs>

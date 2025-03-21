@@ -45,7 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-const InventoryReceivingForm = () => {
+const InventoryReceivingForm:React.FC<{businessId:string}> = ({businessId}) => {
   const { data: session } = useSession();
   const user = session?.user as User;
   const isUserAdmin = user?.role === "admin";
@@ -59,9 +59,9 @@ const InventoryReceivingForm = () => {
   useEffect(() => {
     const getInventoriesAndSuppliers = async () => {
       try {
-        const inventory = await getInventoryNameAndId(user.business_Id as string);
+        const inventory = await getInventoryNameAndId(businessId);
         setInventories(inventory);
-        const suppliers = await getSupplierNameAndId();
+        const suppliers = await getSupplierNameAndId(businessId);
         setSuppliers(suppliers);
       } catch (error) {
         throw error;
