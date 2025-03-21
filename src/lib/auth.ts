@@ -38,8 +38,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return {...token, ...session.user}
       }
       if (user) {
-        console.log("jwt callback")
-        const dbUser = await getUserById(user.id as string, "authentication");
+       
+        const dbUser = await getUserById(user.id as string);
         return {
           ...token,
           id: dbUser?.id || null,

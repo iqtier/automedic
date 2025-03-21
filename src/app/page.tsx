@@ -9,15 +9,15 @@ export default async function Home() {
   const currentUser = session?.user as User;
   
   // If no session, redirect to sign-in
-  console.log(session)
+ 
   if (!session?.user || !currentUser.id) {
     return redirect('/sign-in');
   }
 
-  console.log("Current User:", currentUser);
+  
 
   // Fetch user from database to get the latest business_Id
-  const user = await getUserById(currentUser.id, "main route");
+  const user = await getUserById(currentUser.id);
  
   // Check if user exists in database. Redirect to sign-in if they don't
   if (!user) {
