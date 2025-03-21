@@ -1,5 +1,5 @@
 "use client";
-import { forwardRef, useState, useTransition } from "react";
+import { forwardRef, useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -58,7 +58,7 @@ export default function BusinessSetup() {
   }, [session, status, update]);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const { data: session, update } = useSession();
+  
  
   const user = session?.user as User
 
