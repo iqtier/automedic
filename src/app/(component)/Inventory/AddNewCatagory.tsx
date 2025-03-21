@@ -36,9 +36,11 @@ import { Switch } from "@/components/ui/switch";
 
 type CategoryFormProps = {
   fromAddNewItemForm: boolean;
+  businessId: string;
 };
 const AddNewCatagory: React.FC<CategoryFormProps> = ({
   fromAddNewItemForm,
+  businessId
 }) => {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -56,7 +58,7 @@ const AddNewCatagory: React.FC<CategoryFormProps> = ({
   });
   async function onSubmit(values: z.infer<typeof categorySchema>) {
     try {
-      const result = await CreateCategory(values);
+      const result = await CreateCategory(values,businessId);
       if (result?.status === "success") {
         toast.success(`Category successfully added`);
         form.reset();

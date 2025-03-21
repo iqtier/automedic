@@ -28,7 +28,12 @@ import { useSession } from "next-auth/react";
 import { User } from "@/types/type";
 
 const InventoryReport = () => {
-  const { data: session } = useSession();
+const { data: session, status, update } = useSession();
+  useEffect(() => {
+    if (status === 'loading' || !session) {
+      update();
+    }
+  }, [session, status, update]);
   const user = session?.user as User;
   const [inventories, setInventories] = useState<any[] | null>(null);
   const [date, setDate] = useState<DateRange | undefined>({

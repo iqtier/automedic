@@ -33,7 +33,12 @@ const EmployeeReport = () => {
   const [employees, setEmployees] = useState<User[] | null>(null);
   const [bookings, setBookings] = useState<Booking[] | null>(null);
 
-  const { data: session } = useSession();
+  const { data: session, status, update } = useSession();
+  useEffect(() => {
+    if (status === 'loading' || !session) {
+      update();
+    }
+  }, [session, status, update]);
   const user = session?.user as User;
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), 0, 1),

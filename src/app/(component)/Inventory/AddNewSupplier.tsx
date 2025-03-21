@@ -34,9 +34,11 @@ import { useRouter } from "next/navigation";
 
 type SupplierFormProps = {
   fromAddNewItemForm: boolean;
+  businessId: string;
 };
 const AddNewSupplier: React.FC<SupplierFormProps> = ({
   fromAddNewItemForm,
+  businessId
 }) => {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -52,7 +54,7 @@ const AddNewSupplier: React.FC<SupplierFormProps> = ({
 
   async function onSubmit(values: z.infer<typeof supplierSchema>) {
     try {
-      const result = await CreateSupplier(values);
+      const result = await CreateSupplier(values, businessId);
       if (result?.status === "success") {
         toast.success(`Supplier successfully added`);
         form.reset();

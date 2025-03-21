@@ -17,18 +17,15 @@ import { z } from "zod";
 
 export async function getAllCategories() {
   try {
-    const allCategories = await prisma.category.findMany(
-      {
-        
-        include:{
-          inventory:{
-            include:{
-              InventoryFields:true
-            }
-          }
-        }
-      }
-    );
+    const allCategories = await prisma.category.findMany({
+      include: {
+        inventory: {
+          include: {
+            InventoryFields: true,
+          },
+        },
+      },
+    });
     return allCategories;
   } catch (error) {
     console.error("Error fetching services:", error);
@@ -36,20 +33,21 @@ export async function getAllCategories() {
   }
 }
 export async function CreateCategory(
-  data: z.infer<typeof categorySchema>
+  data: z.infer<typeof categorySchema>,
+  businesId: string
 ): Promise<ActionResult<Category>> {
   const { name, description, fields, compatibleVehicles } = data;
 
   try {
     const category = await prisma.category.create({
       data: {
+        business_Id: businesId,
         name: name,
         description: description,
         fields: fields.map((field) => field.name), // Transform array of objects to array of strings
         compatibleVehicles: compatibleVehicles,
       },
     });
-    console.log(category);
     return { status: "success", data: category };
   } catch (error) {
     return { status: "error", error: error as string };
@@ -70,20 +68,23 @@ export async function getAllSuppliers(businesId: string) {
   }
 }
 export async function CreateSupplier(
-  data: z.infer<typeof supplierSchema>
+  data: z.infer<typeof supplierSchema>,
+  businessId: string
 ): Promise<ActionResult<Supplier>> {
   const { name, phone, email, address } = data;
   try {
+    const contact = await prisma.contact.create({
+      data: {
+        phone: phone,
+        email: email || "no email associated",
+        address: address || "", // Ensure a default value if undefined
+      },
+    });
     const supplier = await prisma.supplier.create({
       data: {
+        business_Id: businessId,
         name: name,
-        contact: {
-          create: {
-            phone: phone,
-            email: email ? email : "no email associated",
-            address: address,
-          },
-        },
+        contactId: contact.id, // Link by ID
       },
     });
     return { status: "success", data: supplier };
@@ -172,13 +173,13 @@ export async function getInventoryNameAndId(businesId: string) {
     const inventory = await prisma.inventory.findMany({
       where: {
         business_Id: businesId,
-      },  // Select only the required fields
+      }, // Select only the required fields
       select: {
         id: true,
         name: true,
         brand: true,
-        quantityOnHand:true,
-        measure_of_unit:true,
+        quantityOnHand: true,
+        measure_of_unit: true,
         InventoryFields: {
           select: {
             value: true,
@@ -188,8 +189,8 @@ export async function getInventoryNameAndId(businesId: string) {
     });
     const transformedInventory = inventory.map((item) => ({
       id: item.id,
-      quantity:item.quantityOnHand,
-      unit:item.measure_of_unit,
+      quantity: item.quantityOnHand,
+      unit: item.measure_of_unit,
       name: `${item.brand} ${item.name} ${item.InventoryFields.map(
         (field) => field.value
       ).join(" ")}`,
@@ -201,9 +202,12 @@ export async function getInventoryNameAndId(businesId: string) {
   }
 }
 
-export async function getSupplierNameAndId() {
+export async function getSupplierNameAndId(businesId: string) {
   try {
     const supplier = await prisma.supplier.findMany({
+      where: {
+        business_Id: businesId,
+      },
       select: {
         id: true,
         name: true,

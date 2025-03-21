@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import FormInput from "../FormInput/form-input";
+
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { registerUser } from "@/app/actions/authActions";
@@ -33,10 +33,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { UserPlus } from "lucide-react";
-import { UserSchema } from "@/types/type";
+import { Mail, Lock, User, UserPlus, } from "lucide-react";
+import { User as UserType , UserSchema } from "@/types/type";
 import { z } from "zod";
 import { useUserStore } from "@/app/store/useUserStore";
+import { useSession } from "next-auth/react";
+import { Input } from "@/components/ui/input";
 const AddEmployeeForm: React.FC<{businessId:string }> = ({businessId}) => {
   const form = useForm<z.infer<typeof UserSchema>>({
     resolver: zodResolver(UserSchema),
@@ -47,9 +49,13 @@ const AddEmployeeForm: React.FC<{businessId:string }> = ({businessId}) => {
       role: "",
     },
   });
-  const{business,user} = useUserStore();
-  console.log(business);
-  console.log(user)
+const { data: session, status, update } = useSession();
+  useEffect(() => {
+    if (status === 'loading' || !session) {
+      update();
+    }
+  }, [session, status, update]);
+  const user = session?.user as UserType;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const handleDialogClose = () => {
     setIsDialogOpen(false);
@@ -59,7 +65,7 @@ const AddEmployeeForm: React.FC<{businessId:string }> = ({businessId}) => {
 
   async function onSubmit(values: z.infer<typeof UserSchema>) {
   
-    const result = await registerUser(business?.id,values);
+    const result = await registerUser(user.business_Id as string,values);
 
     if (typeof result === "string") {
       toast.error(result);
@@ -91,54 +97,96 @@ const AddEmployeeForm: React.FC<{businessId:string }> = ({businessId}) => {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
-            <FormInput
-              form={form}
+          <FormField
+              control={form.control}
               name="username"
-              label="Username"
-              placeholder="Enter your username"
-              ispassword={false}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    Username
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your username"
+                      {...field}
+                      className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <FormInput
-              form={form}
+            <FormField
+              control={form.control}
               name="email"
-              label="Email"
-              placeholder="Enter your email"
-              ispassword={false}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    Email
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your email"
+                      type="email"
+                      {...field}
+                      className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <FormInput
-              form={form}
+            <FormField
+              control={form.control}
               name="password"
-              label="Password"
-              placeholder="Enter your password"
-              ispassword={true}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    Password
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your password"
+                      type="password"
+                      {...field}
+                      className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <FormField
               control={form.control}
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-900 dark:text-white">
+                    Role
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="dark:bg-gray-700 dark:text-white dark:border-gray-600">
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="technician">Technician</SelectItem>
                     </SelectContent>
                   </Select>
-
                   <FormMessage />
                 </FormItem>
               )}
             />
             <Button type="submit" className="w-full">
-              Add
+              Add Employee
             </Button>
           </form>
         </Form>

@@ -11,8 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Check, Printer } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-import { useUserStore } from "@/app/store/useUserStore";
-import { useSession } from "next-auth/react";
+
 import { getBusinessById } from "@/app/actions/settingActions";
 
 const BookingDetails: React.FC<{ booking_id: string, businessId:string }> = ({ booking_id, businessId }) => {

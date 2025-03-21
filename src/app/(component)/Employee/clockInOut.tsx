@@ -32,6 +32,8 @@ import {
 import { form } from "@heroui/theme";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/app/store/useUserStore";
+import { useSession } from "next-auth/react";
+import { User } from "@/types/type";
 
 const FormSchema = z.object({
   pin: z.string().min(4, {
@@ -46,8 +48,8 @@ interface UserData {
   clockOut: Date | null;
 }
 
-export function ClockInForm() {
-  const {business} = useUserStore();
+export const ClockInForm : React.FC<{businessId:string }> = ({businessId}) => {
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentUsers, setCurrentUsers] = useState<UserData[]>([]);
   const router = useRouter();
@@ -61,7 +63,7 @@ export function ClockInForm() {
   }, []);
 
   const fetchCurrentUsers = useCallback(async () => {
-    const users = await getCurrentClockedInUsers(business?.id as string);
+    const users = await getCurrentClockedInUsers(businessId);
     setCurrentUsers(users);
   }, []);
 

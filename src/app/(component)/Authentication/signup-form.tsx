@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, User, Chrome } from "lucide-react";
+import { Mail, Lock, User, } from "lucide-react";
 import { registerUser } from "@/app/actions/authActions";
 import { UserSchema } from "@/types/type";
 import { useTransition } from "react";

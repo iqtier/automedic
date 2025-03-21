@@ -87,6 +87,8 @@ export async function getUserByEmail(email: string) {
   return await prisma.user.findUnique({ where: { email } });
 }
 
-export async function getUserById(id: string) {
+export async function getUserById(id: string, callingFrom: string) {
+  console.log("calling from :", callingFrom);
+  console.log("id :", id);
   return await prisma.user.findUnique({ where: { id },include:{business:true} });
 }

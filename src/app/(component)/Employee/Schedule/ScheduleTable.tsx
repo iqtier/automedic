@@ -23,7 +23,6 @@ import { ScheduleHeader } from "./ScheduleHeader";
 import { toast } from "react-toastify";
 import { User } from "@/types/type";
 
-import { useUserStore } from "@/app/store/useUserStore";
 
 const ScheduleSchema = z.object({
   schedules: z.record(
@@ -35,7 +34,12 @@ const ScheduleSchema = z.object({
 type ScheduleForm = z.infer<typeof ScheduleSchema>;
 
 const  ScheduleTable: React.FC<{businessId:string }> = ({businessId}) => {
-  const { data: session } = useSession();
+  const { data: session, status, update } = useSession();
+  useEffect(() => {
+    if (status === 'loading' || !session) {
+      update();
+    }
+  }, [session, status, update]);
   const user = session?.user as User;
   const isUserAdmin = user?.role === "admin";
 

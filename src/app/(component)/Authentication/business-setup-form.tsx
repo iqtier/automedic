@@ -1,5 +1,5 @@
 "use client";
-import { forwardRef, useState, useTransition } from "react";
+import { forwardRef, useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import { createBusinessDetails } from "@/app/actions/settingActions";
 import { useRouter } from "next/navigation";
 
-import { useUserStore } from "@/app/store/useUserStore";
+
 import { useSession } from "next-auth/react";
 import { Spinner } from "@/components/ui/spinner";
 import { User } from "@/types/type";
@@ -50,9 +50,15 @@ const formSchema = z.object({
 });
 
 export default function BusinessSetup() {
+  const { data: session, status, update } = useSession();
+  useEffect(() => {
+    if (status === 'loading' || !session) {
+      update();
+    }
+  }, [session, status, update]);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const { data: session, update } = useSession();
+
  
   const user = session?.user as User
 
@@ -98,10 +104,10 @@ export default function BusinessSetup() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 max-w-3xl  mx-auto py-10 px-4"
+          className="space-y-8 max-w-3xl  mx-auto py-5 px-4"
         >
-          <div className="grid grid-cols-12 gap-3 ">
-            <div className="col-span-4">
+          <div className="flex flex-wrap gap-4 ">
+            <div className=" flex-grow ">
               <FormField
                 control={form.control}
                 name="businame"
@@ -125,7 +131,7 @@ export default function BusinessSetup() {
                 )}
               />
             </div>
-            <div className="col-span-4">
+            <div className="flex-grow">
               <FormField
                 control={form.control}
                 name="phone"
@@ -157,7 +163,7 @@ export default function BusinessSetup() {
               />
             </div>
 
-            <div className="col-span-4">
+            <div className="flex-grow">
               <FormField
                 control={form.control}
                 name="email"
@@ -297,7 +303,7 @@ export default function BusinessSetup() {
 
           {/* Image Upload Field */}
           <div className="flex flex-wrap gap-4">
-            <div className=" flex flex-col flex-gorw ">
+            <div className=" flex flex-col flex-grow ">
               <FormField
                 control={form.control}
                 name="logo"
@@ -348,7 +354,7 @@ export default function BusinessSetup() {
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-200">
                       <div className="flex flex-row gap-1">
-                        Tax Rate
+                        Tax Rate {"(%)"}
                         <FormMessage className="text-red-500" />
                       </div>
                     </FormLabel>

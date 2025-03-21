@@ -1,8 +1,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import Adjustment from "@/app/(component)/Inventory/Adjustment";
-import Reports from "@/app/(component)/Inventory/Reports";
+
 import AddNewCatagory from "@/app/(component)/Inventory/AddNewCatagory";
 import AddNewInventory from "@/app/(component)/Inventory/AddNewInventory";
 import AddNewSupplier from "@/app/(component)/Inventory/AddNewSupplier";
@@ -42,29 +41,22 @@ const page = async () => {
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-10">
       {isUserAdmin && <div className="  flex flex-1 gap-x-4">
         <AddNewInventory categories={categories} businessId={user.business_Id as string} />
-        <AddNewCatagory fromAddNewItemForm={false} />
-        <AddNewSupplier fromAddNewItemForm={false} />
+        <AddNewCatagory fromAddNewItemForm={false} businessId={user.business_Id as string} />
+        <AddNewSupplier fromAddNewItemForm={false} businessId={user.business_Id as string} />
       </div>}
       <div className="mt-4">
         <Tabs defaultValue="inventoryList" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="inventoryList"  className="data-[state=active]:bg-green-500/80  ">Inventory List</TabsTrigger>
             <TabsTrigger value="receiving"  className="data-[state=active]:bg-green-500/80  ">Reciving</TabsTrigger>
-            <TabsTrigger value="adjustments"  className="data-[state=active]:bg-green-500/80  ">Adjustment</TabsTrigger>
-            <TabsTrigger value="reports"  className="data-[state=active]:bg-green-500/80  ">Reports</TabsTrigger>
-          </TabsList>
+               </TabsList>
           <TabsContent value="inventoryList">
             <DataTable columns={colums} data={tabeldata} />
           </TabsContent>
           <TabsContent value="receiving">
             <InventoryReceivingForm />
           </TabsContent>
-          <TabsContent value="adjustments">
-            <Adjustment />
-          </TabsContent>
-          <TabsContent value="reports">
-            <Reports />
-          </TabsContent>
+          
         </Tabs>
       </div>
     </div>

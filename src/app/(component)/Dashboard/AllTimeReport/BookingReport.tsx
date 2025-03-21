@@ -26,7 +26,12 @@ import { useUserStore } from "@/app/store/useUserStore";
 import { useSession } from "next-auth/react";
 
 const BookingReport = () => {
-  const { data: session } = useSession();
+  const { data: session, status, update } = useSession();
+  useEffect(() => {
+    if (status === 'loading' || !session) {
+      update();
+    }
+  }, [session, status, update]);
   const user = session?.user as User;
 
   const [bookings, setBookings] = useState<Booking[] | null>(null);

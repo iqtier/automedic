@@ -9,16 +9,16 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  //directUrl = env("DIRECT_URL")
 }
 
 model Business {
   id         String      @id @default(cuid())
   name       String
   phone      String
-  email      String?
+  email      String
   address    Json
   logo       Bytes
   taxRate    Float       @default(0.15)
@@ -28,6 +28,8 @@ model Business {
   services   Service[]
   invenories Inventory[]
   customers  Customer[]
+  Category   Category[]
+  Supplier   Supplier[]
 }
 
 model User {
@@ -36,7 +38,7 @@ model User {
   email            String              @unique
   password         String
   role             String
-  pin              String?             @unique
+  pin              String             @unique
   created_at       DateTime            @default(now())
   bookings         BookingTechnician[]
   ClockInOut       ClockInOut[]
@@ -51,7 +53,7 @@ model ClockInOut {
   user        User      @relation(fields: [userId], references: [id])
   clockIn     DateTime
   clockOut    DateTime?
-  hoursWorked Float?
+  hoursWorked Float @default(0)
   createdAt   DateTime  @default(now())
 }
 
@@ -109,9 +111,9 @@ model Booking {
   start          DateTime?
   finish         DateTime?
   time           String
-  ramp           String?
-  vehicle_id     Int?
-  booking_type   String?
+  ramp           String
+  vehicle_id     Int
+  booking_type   String
   status         String              @default("pending")
   note           String              @default("")
   payment_status String              @default("unpaid")
@@ -119,7 +121,7 @@ model Booking {
   customerid     String
   services       ServiceIdQty[]
   technicians    BookingTechnician[]
-  vehicle        Vehicle?            @relation(fields: [vehicle_id], references: [id], onDelete: SetNull)
+  vehicle        Vehicle            @relation(fields: [vehicle_id], references: [id])
   customer       Customer            @relation(fields: [customerid], references: [id], onDelete: Cascade)
   UsedInventory  UsedInventory[]
   business       Business            @relation(fields: [business_Id], references: [id])
@@ -192,6 +194,8 @@ model Category {
   fields             String[]
   compatibleVehicles Boolean     @default(false)
   inventory          Inventory[]
+  business           Business    @relation(fields: [business_Id], references: [id], onDelete: Cascade)
+  business_Id        String
 }
 
 model Supplier {
@@ -200,13 +204,15 @@ model Supplier {
   contact              Contact                @relation(fields: [contactId], references: [id])
   contactId            Int                    @unique
   InventoryTransaction InventoryTransaction[]
+  business             Business               @relation(fields: [business_Id], references: [id])
+  business_Id          String
 }
 
 model Contact {
   id       Int       @id @default(autoincrement())
   phone    String
   email    String
-  address  String?
+  address  String
   supplier Supplier?
 }
 

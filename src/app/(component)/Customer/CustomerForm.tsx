@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import React, { useState, useTransition } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -53,7 +53,12 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   customerToEdit,
   fromBooking,
 }) => {
-  const {data:session} = useSession()
+  const { data: session, status, update } = useSession();
+    useEffect(() => {
+      if (status === 'loading' || !session) {
+        update();
+      }
+    }, [session, status, update]);
   const user = session?.user as User
   const router = useRouter();
   const [isPending, startTransition] = useTransition();

@@ -19,6 +19,7 @@ import { CalendarClock, CalendarDays, FileUser } from "lucide-react";
 const Page = async () => {
   const session = await auth();
   const currentUser = session?.user as User;
+  
   const isAdmin = currentUser?.role === "admin";
   const employees = await getAllEmployees(currentUser.business_Id as string);
 
@@ -54,7 +55,7 @@ const Page = async () => {
           value="Clock IN/Out"
           className="animate-in fade-in slide-in-from-bottom-10"
         >
-          <ClockInForm />
+          <ClockInForm businessId= {currentUser.business_Id as string}/>
         </TabsContent>
         <TabsContent
           value="Schedule"

@@ -46,7 +46,7 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof LogInSchema>) {
     startTransition(async () => {
       const result = await signInUser(values);
-
+      console.log(result);
       if (result?.status === "success") {
         
         router.push("/");
