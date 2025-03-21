@@ -251,7 +251,7 @@ const AddNewInventory: React.FC<AddNewInventoryProps> = ({ categories,businessId
                   />
                 </div>
                 <div className="col-span-1 mt-5">
-                  <AddNewCatagory fromAddNewItemForm={true} />
+                  <AddNewCatagory fromAddNewItemForm={true} businessId={businessId} />
                 </div>
               </div>
 
