@@ -5,7 +5,7 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const id = url.searchParams.get("id");
-
+    
     if (!id) return NextResponse.json({ exists: false });
 
     const user = await prisma.user.findUnique({
